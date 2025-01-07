@@ -2,7 +2,7 @@
 add_executable(test
     ${GLAD_SOURCES}
     ${STB_SOURCES}
-    test.c
+    getchar.c
 )
 
 # 测试目标

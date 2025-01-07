@@ -15,4 +15,4 @@ add_library(mcore STATIC
 add_executable(MIE main.c)
 
 # 链接库到可执行文件
-target_link_libraries(MIE PRIVATE mcore glfw)
+target_link_libraries(MIE PRIVATE mcore glfw opengl32 archive)
