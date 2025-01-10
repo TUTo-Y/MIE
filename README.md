@@ -37,3 +37,13 @@ cd build
 cmake -G "Visual Studio 16 2019" ..
 cmake --build . --config Release
 ```
+
+## 环境
+
+|模块|功能|
+|:----:|:----:|
+|stb|用于读取和保存图片，渲染字体|
+|GLFW|窗口管理|
+|cglm|矩阵计算|
+|OpenGL|渲染界面, 基于OpenGL的核心渲染模式|
+|glad|OpenGL的加载器生成器|

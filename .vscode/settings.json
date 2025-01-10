@@ -4,6 +4,18 @@
         "time.h": "c",
         "gui.h": "c",
         "guiframe.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "resource.h": "c",
+        "guishader.h": "c",
+        "log.h": "c",
+        "*.tcc": "c",
+        "type_traits": "c",
+        "typeinfo": "c",
+        "stb_image.h": "c",
+        "guitexture.h": "c",
+        "stdio.h": "c",
+        "list.h": "c",
+        "gui_frame.h": "c",
+        "stb_truetype.h": "c"
     }
 }
