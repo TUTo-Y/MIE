@@ -18,6 +18,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BUILD_OUTPUT_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/external/stb) # stb
 include_directories(${PROJECT_SOURCE_DIR}/external/glad/include) # glad
 include_directories(${PROJECT_SOURCE_DIR}/external/glfw/include) # glfw
+include_directories(${PROJECT_SOURCE_DIR}/external/cglm/include) # cglm
 
 # 头文件路径
 include_directories(${PROJECT_SOURCE_DIR}/src/core/include)

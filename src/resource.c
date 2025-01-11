@@ -38,7 +38,7 @@ void resInit(void)
  * \param fileName 文件名
  * \param data 数据
  * \param size 大小
- * \param live 是否常驻内存
+ * \param live 是否常驻内存(只有在第一次加载时有效)
  * \return 是否成功
  */
 bool resGetFile(const char *fileName, void **data, size_t *size, bool live)
@@ -55,40 +55,42 @@ bool resGetFile(const char *fileName, void **data, size_t *size, bool live)
         if (strcmp(item->fileName, fileName) == 0)
         {
             // 如果已经加载，返回数据
-                *data = item->data;
+            *data = item->data;
             if (size)
                 *size = item->size;
 
-            // 如果不常驻内存，删除节点
-            if (live == false)
-                listDeleteNode(&resList, node, free); // 不删除数据，只删除节点
+            // // 如果不常驻内存，删除节点
+            // if (live == false)
+            //     listDeleteNode(&resList, node, free); // 不删除数据，只删除节点
             return true;
         }
         node = node->fd;
     }
 
     // 如果没有加载，加载文件
-    char path[256];
-    sprintf(path, "%s%s", RESOURCE_DIR, fileName);
-    FILE *file = fopen(path, "rb");
-    if (file == NULL)
+    char path[256] = {0};
+    strcpy(path, RESOURCE_DIR);
+    strcat(path, fileName);
+
+    FILE *fp = fopen(path, "rb");
+    if (fp == NULL)
     {
         ERROR("资源文件 %s 不存在\n", fileName);
         return false;
     }
 
     // 获取文件大小
-    fseek(file, 0, SEEK_END);
-    size_t fileSize = ftell(file);
-    fseek(file, 0, SEEK_SET);
+    fseek(fp, 0, SEEK_END);
+    size_t fileSize = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
 
     // 读取文件
     char *fileData = malloc(fileSize + 1);
-    fread(fileData, 1, fileSize, file);
+    fread(fileData, 1, fileSize, fp);
     fileData[fileSize] = '\0';
 
     // 关闭文件
-    fclose(file);
+    fclose(fp);
 
     // 拷贝数据
     *data = fileData;

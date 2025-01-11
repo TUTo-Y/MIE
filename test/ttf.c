@@ -69,13 +69,129 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // 字体
+    stbtt_fontinfo font;
+    stbtt_fontinfo *mFontInfo = &font;
     unsigned char *fontData;
     size_t size;
     resGetFile("kai.ttf", (void **)&fontData, &size, true);
-    guiTTFInit(fontData);
+    stbtt_InitFont(&font, fontData, stbtt_GetFontOffsetForIndex(fontData, 0));
 
     // 渲染文本
-    GUIchar *c = guiTTFGetChar(L'郑');
+    int ascent = 0;
+    int descent = 0;
+    int lineGap = 0;
+    // float scale = stbtt_ScaleForPixelHeight(mFontInfo, 10);
+    stbtt_GetFontVMetrics(mFontInfo, &ascent, &descent, &lineGap);
+    int mLineHeight = ascent - descent + lineGap;
+    DEBUG("ascent: %d, descent: %d, lineGap: %d, lineHeight: %d\n", ascent, descent, lineGap, mLineHeight);
+
+    int advance = 0;
+    int lsb = 0;
+    stbtt_GetCodepointHMetrics(mFontInfo, L's', &advance, &lsb);
+    DEBUG("advance: %d, lsb: %d\n", advance, lsb);
+
+    stbtt_vertex *stbVertex = NULL;
+    int verCount = 0;
+    // wchar_t text[] = L"郑";
+    // 获取 Unicode 代码点
+    verCount = stbtt_GetCodepointShape(mFontInfo, L's', &stbVertex);
+    printf("verCount: %d\n", verCount);
+    int x, y;
+    float point[10240][2] = {0};
+    int count = 0;
+    for (int i = 0; i < verCount; i++)
+    {
+        stbtt_vertex v = stbVertex[i];
+        switch (v.type)
+        {
+        case STBTT_vmove:
+            x = v.x;
+            y = v.y;
+            point[count][0] = x;
+            point[count][1] = y;
+            count++;
+            break;
+        case STBTT_vline:
+            x = v.x;
+            y = v.y;
+            point[count][0] = x;
+            point[count][1] = y;
+            count++;
+            break;
+        case STBTT_vcurve: // 二次贝塞尔曲线
+        {
+            short x0 = x;
+            short y0 = y;
+            short x1 = v.cx;
+            short y1 = v.cy;
+            short x2 = v.x;
+            short y2 = v.y;
+
+            for (int j = 0; j <= 10; j++)
+            {
+                float t = (float)j / 10.0f;
+                float xt = (1 - t) * (1 - t) * x0 + 2 * t * (1 - t) * x1 + t * t * x2;
+                float yt = (1 - t) * (1 - t) * y0 + 2 * t * (1 - t) * y1 + t * t * y2;
+                point[count][0] = xt;
+                point[count][1] = yt;
+                count++;
+            }
+            x = x2;
+            y = y2;
+            break;
+        }
+        case STBTT_vcubic: // 三次贝塞尔曲线
+        {
+            short x0_cubic = x;
+            short y0_cubic = y;
+            short x1_cubic = v.cx;
+            short y1_cubic = v.cy;
+            short x2_cubic = v.cx1;
+            short y2_cubic = v.cy1;
+            short x3_cubic = v.x;
+            short y3_cubic = v.y;
+
+            for (int j = 0; j <= 10; j++)
+            {
+                float t = (float)j / 10.0f;
+                float xt = (1 - t) * (1 - t) * (1 - t) * x0_cubic + 3 * (1 - t) * (1 - t) * t * x1_cubic + 3 * (1 - t) * t * t * x2_cubic + t * t * t * x3_cubic;
+                float yt = (1 - t) * (1 - t) * (1 - t) * y0_cubic + 3 * (1 - t) * (1 - t) * t * y1_cubic + 3 * (1 - t) * t * t * y2_cubic + t * t * t * y3_cubic;
+                if (count < 10240)
+                { // 确保不会超出数组边界
+                    point[count][0] = xt;
+                    point[count][1] = yt;
+                    count++;
+                }
+                else
+                {
+                    // 处理错误：点数组已满
+                    break;
+                }
+            }
+            x = x3_cubic;
+            y = y3_cubic;
+            break;
+        }
+        }
+    }
+    printf("count: %d\n", count);
+    for (int i = 0; i < count; i++)
+    {
+        point[i][0] /= 1000.0f;
+        // point[i][0] -= 0.5f;
+        point[i][1] /= 1000.0f;
+        // point[i][1] -= 0.5f;
+        // printf("%f, %f\n", point[i][0], point[i][1]);
+    }
+    GLuint VBO, VAO;
+    glGenBuffers(1, &VBO);
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);                                              // 绑定缓冲区
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * count * 2, point, GL_STATIC_DRAW); // 将顶点数据复制到缓冲区中
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
 
     char *vertexShaderSource;
     char *fragmentShaderSource;
@@ -84,6 +200,9 @@ int main()
 
     GLuint program = guiShaderCreateProgram(vertexShaderSource, fragmentShaderSource, NULL);
     guiShaderUniform(program, "color", 4f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    // glPointSize(5.0f);
 
     // 初始化GUI界面
     GUIframe frame;
@@ -102,26 +221,26 @@ int main()
         mat4 model = GLM_MAT4_IDENTITY_INIT;
 
         // 投影操作
-        glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.01f, 2000.0f, projection);
+        // glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.01f, 2000.0f, projection);
 
         // 设置视图矩阵
-        float z = (WINDOW_HEIGHT / 2.0f) / tanf(glm_rad(45.0f) / 2.0f) * 2.0f;
-        glm_lookat((vec3){0.0f, 0.0f, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, view);
+        // float z = (WINDOW_HEIGHT / 2.0f) / tanf(glm_rad(45.0f) / 2.0f) * 2.0f;
+        // glm_lookat((vec3){0.0f, 0.0f, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, view);
 
         // 旋转操作
         // glm_translate(model, (vec3){0.0f, 0.0f, -300.0f});
         // glm_rotate(model, (float)glfwGetTime() * 1.5f, (vec3){1.0f, 0.0f, 0.0f});
-
+        
         // 设置视图矩阵
         guiShaderUniformMatrix(program, "model", 4fv, (float *)model);
         guiShaderUniformMatrix(program, "view", 4fv, (float *)view);
         guiShaderUniformMatrix(program, "projection", 4fv, (float *)projection);
 
         // 渲染文本
-        guiTTFRenderChar(c);
-        // glBindVertexArray(VAO);
+        
+        glBindVertexArray(VAO);
         // glDrawArrays(GL_TRIANGLE_FAN, 0, count);
-        // glDrawArrays(GL_LINE_STRIP, 0, count);
+        glDrawArrays(GL_LINE_STRIP, 0, count);
         // glDrawArrays(GL_LINE_STRIP, 0, ((int)glfwGetTime() * 25 + 2) % count);
         // glDrawArrays(GL_TRIANGLES, 0, count/3);
 
@@ -230,7 +349,6 @@ int main()
         glfwSwapBuffers(window);
     }
 #endif
-    guiTTFInit(fontData);
     Quit();
     return 0;
 }

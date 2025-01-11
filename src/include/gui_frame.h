@@ -2,8 +2,8 @@
  * @file guiframe.h
  * @brief 帧率控制
  */
-#ifndef GUIFRAME_H
-#define GUIFRAME_H
+#ifndef GUI_FRAME_H
+#define GUI_FRAME_H
 
 #include <time.h>
 #include <GLFW/glfw3.h>
@@ -28,4 +28,4 @@ void guiFrameInit(GUIframe *frame, int frameRate);
  */
 void guiFrameControl(GUIframe *frame);
 
-#endif // GUIFRAME_H
+#endif // GUI_FRAME_H

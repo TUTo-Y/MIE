@@ -16,6 +16,15 @@
         "stdio.h": "c",
         "list.h": "c",
         "gui_frame.h": "c",
-        "stb_truetype.h": "c"
+        "stb_truetype.h": "c",
+        "stdlib.h": "c",
+        "stb_image_write.h": "c",
+        "gui_ttf.h": "c",
+        "glad.h": "c",
+        "stdbool.h": "c",
+        "wchar.h": "c",
+        "gui_texture.h": "c",
+        "algorithm": "c",
+        "format": "c"
     }
 }

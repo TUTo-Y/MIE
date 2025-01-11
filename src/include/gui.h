@@ -15,6 +15,7 @@
 #include "gui_frame.h"
 #include "gui_shader.h"
 #include "gui_texture.h"
+#include "gui_ttf.h"
 
 #define PI 3.14159265358979323846
 

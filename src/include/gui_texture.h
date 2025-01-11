@@ -2,8 +2,8 @@
  * @file guitexture.h
  * @brief 创建纹理
  */
-#ifndef GUITEXTURE_H
-#define GUITEXTURE_H
+#ifndef GUI_TEXTURE_H
+#define GUI_TEXTURE_H
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -25,4 +25,4 @@
  */
 GLuint guiTextureCreate(const unsigned char *data, int width, int height, int channels, GLint textureFormat);
 
-#endif // GUITEXTURE_H
+#endif // GUI_TEXTURE_H

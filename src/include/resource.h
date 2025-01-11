@@ -24,7 +24,7 @@ void resInit(void);
  * \param fileName 文件名
  * \param data 数据
  * \param size 大小
- * \param live 是否常驻内存
+ * \param live 是否常驻内存(只有在第一次加载时有效)
  * \return 是否成功
  */
 bool resGetFile(const char *fileName, void **data, size_t *size, bool live);
