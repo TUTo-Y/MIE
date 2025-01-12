@@ -68,12 +68,35 @@ int main()
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    float vertex[] = {
+        -(float)WINDOW_WIDTH / 2.0f, 0, 0.0f,
+        (float)WINDOW_WIDTH / 2.0f, 0, 0.0f,
+        0.0f, (float)WINDOW_HEIGHT / 2.0f, 0.0f,
+        0.0f, -(float)WINDOW_HEIGHT / 2.0f, 0.0f
+    };
+
+    GLuint VAO, VBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
+
+    // 设置顶点属性指针
+    glBindVertexArray(VAO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+    
+
     // 创建着色器
     char *vertexShaderSource;
     char *fragmentShaderSource;
     resGetFile("font.vert", (void **)&vertexShaderSource, NULL, true);
     resGetFile("font.frag", (void **)&fragmentShaderSource, NULL, true);
     GLuint programFont = guiShaderCreateProgram(vertexShaderSource, fragmentShaderSource, NULL);
+    resGetFile("vertex.glsl", (void **)&vertexShaderSource, NULL, true);
+    resGetFile("fragment.glsl", (void **)&fragmentShaderSource, NULL, true);
+    GLuint programTemp = guiShaderCreateProgram(vertexShaderSource, fragmentShaderSource, NULL);
     // 设置着色器值
     mat4 projection = GLM_MAT4_IDENTITY_INIT;
     mat4 view = GLM_MAT4_IDENTITY_INIT;
@@ -89,12 +112,12 @@ int main()
     // glm_scale(model, (vec3){0.5f, 0.5f, 0.5f});
 
     // 设置
-    guiShaderUse(programFont);
-    guiShaderUniformMatrix(programFont, "model", 4fv, (float *)model);
-    guiShaderUniformMatrix(programFont, "view", 4fv, (float *)view);
-    guiShaderUniformMatrix(programFont, "projection", 4fv, (float *)projection);
-    // guiShaderUniform(programFont, "color", 4f, 0.0f, 0.0f, 0.0f, 1.0f);
-    guiShaderUniform(programFont, "Texture", 1i, 0);
+    guiShaderUse(programTemp);
+    guiShaderUniformMatrix(programTemp, "model", 4fv, (float *)model);
+    guiShaderUniformMatrix(programTemp, "view", 4fv, (float *)view);
+    guiShaderUniformMatrix(programTemp, "projection", 4fv, (float *)projection);
+    guiShaderUniform(programTemp, "color", 4f, 0.0f, 0.0f, 0.0f, 1.0f);
+    // guiShaderUniform(programTemp, "Texture", 1i, 0);
 
     unsigned char *fontData;
     size_t size;
@@ -102,15 +125,16 @@ int main()
     GUIttf *ttf = guiTTFCreate(fontData, 16, 80, 64, 0);
 
 
-    GUIstr *s1 = guiStrCreate(ttf, 80, programFont, model, view, projection);
-    guiStrSetColor(s1, (vec4){1.0f, 0.0f, 0.0f, 1.0f}, true);
-    guiStrCpy(s1, L"我是中国人");
-    guiStrCpy(s1, L"你好");
-    
-    guiStrCat(s1, L"你好");
-    guiStrCatC(s1, L'！');
-    guiStrBack(s1);
-    guiStrBackN(s1, 7);
+    GUIstr *s1 = guiStrCreate(ttf, 80, programFont, model, view, projection, (vec4){1.0f, 0.0f, 0.0f, 1.0f});
+    guiStrCpy(s1, L"我是郑德泓");
+    guiStrSetMod(s1, GUI_STR_MOD_RIGHT);
+    // GUIstr *s2 = guiStrCreate(ttf, 80, programFont, model, view, projection, (vec4){0.0f, 1.0f, 0.0f, 1.0f});
+    // guiStrCpy(s2, L"我是TUTo");
+
+    // GUIstr *s3 = guiStrCreate(ttf, 80, programFont, model, view, projection, (vec4){0.0f, 0.0f, 1.0f, 1.0f});
+    // guiStrCpy(s3, L"我是中国人");
+
+
     
 
     // 初始化GUI界面
@@ -127,12 +151,17 @@ int main()
         // 渲染文本
         mat4 model = GLM_MAT4_IDENTITY_INIT;
         
-        glm_translate(model, (vec3){0.0f, 100.0f, 0.0f});
-        guiStrRender(s1, model, false, true);
+        glm_translate(model, (vec3){0.0f, 0.0f, 0.0f});
+        guiStrRender(s1, model, false, false, true);
         // glm_translate(model, (vec3){0.0f, -100.0f, 0.0f});
-        // guiStrRender(s2, model, false, true);
+        // guiStrRender(s2, model, false, false, true);
         // glm_translate(model, (vec3){0.0f, -100.0f, 0.0f});
-        // guiStrRender(s3, model, false, true);
+        // guiStrRender(s3, model, false, false, true);
+
+        // 渲染直角坐标系
+        guiShaderUse(programTemp);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_LINES, 0, 4);
 
         // 控制帧率为30Hz
         guiFrameControl(&frame);

@@ -19,48 +19,85 @@ void guiStrCheck(GUIstr *str, size_t count)
 }
 
 /**
- * \brief 设置字符串矩阵
+ * \brief 渲染字符串
  * \param str 字符串
- * \param model 模型矩阵, 为NULL则不更新
- * \param view 视图矩阵, 为NULL则不更新
- * \param projection 投影矩阵, 为NULL则不更新
- * \param appMat 是否更新着色器中的model, view和projection矩阵数据
+ * \param model 模型矩阵
+ * \param appMatView 是否更新view矩阵数据
+ * \param appMatProjection 是否更新projection矩阵数据
+ * \param appColor 是否更新颜色数据
+ * \note 对于view和projection矩阵，需要在调用此函数之前设置
  */
-void guiStrSetMat(GUIstr *str, mat4 model, mat4 view, mat4 projection, bool appMat)
+void guiStrRender(GUIstr *str, mat4 model, bool appMatView, bool appMatProjection, bool appColor)
 {
     if (str == NULL)
         return;
+
+    guiShaderUse(str->program);
+
+    // 模型矩阵
+    mat4 m;
+    glm_mat4_copy(str->model, m);
     if (model)
-        glm_mat4_copy(model, str->model);
-    if (view)
-        glm_mat4_copy(view, str->view);
-    if (projection)
-        glm_mat4_copy(projection, str->projection);
-    if (appMat == true)
+        glm_mat4_mul(model, m, m);
+
+    // 检查是否更新其他数据
+    if (appMatView == true)
     {
-        guiShaderUse(str->program);
-        guiShaderUniformMatrix(str->program, "model", 4fv, (float *)str->model);
         guiShaderUniformMatrix(str->program, "view", 4fv, (float *)str->view);
+    }
+    if (appMatProjection == true)
+    {
         guiShaderUniformMatrix(str->program, "projection", 4fv, (float *)str->projection);
+    }
+    if (appColor == true)
+    {
+        guiShaderUniform(str->program, "color", 4f, str->color[0], str->color[1], str->color[2], str->color[3]);
+    }
+
+    for (size_t i = 0; i < str->count; i++)
+    {
+        guiShaderUniformMatrix(str->program, "model", 4fv, (float *)m);
+        guiTTFRenderChar(str->strChar[i]);
+        glm_translate(m, (vec3){str->strChar[i]->advance, 0.0f, 0.0f});
     }
 }
 
 /**
- * \brief 设置字符串文本颜色
+ * \brief 设置字符串对齐模式(模型矩阵)
  * \param str 字符串
- * \param color 颜色
- * \param appColor 是否更新着色器中的颜色数据
+ * \param mod 对齐模式
  */
-void guiStrSetColor(GUIstr *str, vec4 color, bool appColor)
+void guiStrSetMod(GUIstr *str, int mod)
 {
-    if (str == NULL)
-        return;
-    if (color)
-        glm_vec4_copy(color, str->color);
-    if (appColor == true)
+    GUIfont *font = str->font;
+
+    float x = 0.0f; // x坐标
+    float y = 0.0f; // y坐标
+    float w = 0.0f; // 宽度
+    float h = 0.0f; // 高度
+
+    for (size_t i = 0; i < str->count; i++)
     {
-        guiShaderUse(str->program);
-        guiShaderUniform(str->program, "color", 4f, str->color[0], str->color[1], str->color[2], str->color[3]);
+        w += str->strChar[i]->advance;
+    }
+    h = font->ascent - font->descent;
+    y = font->ascent;
+
+    glm_mat4_identity(str->model);
+    switch (mod)
+    {
+    case GUI_STR_MOD_LEFT: // 左对齐
+        glm_translate(str->model, (vec3){0.0f, (float)h / 2.0f - (float)y, 0.0f});
+        break;
+    case GUI_STR_MOD_CENTER: // 居中对齐
+        glm_translate(str->model, (vec3){-(float)w / 2.0f, (float)h / 2.0f - (float)y, 0.0f});
+        break;
+    case GUI_STR_MOD_RIGHT: // 右对齐
+        glm_translate(str->model, (vec3){-(float)w, (float)h / 2.0f - (float)y, 0.0f});
+        break;
+    case GUI_STR_MOD_LEFT_TOP: // 左上对其
+        glm_translate(str->model, (vec3){0.0f, -(float)y, 0.0f});
+        break;
     }
 }
 
@@ -72,16 +109,35 @@ void guiStrSetColor(GUIstr *str, vec4 color, bool appColor)
  * \param model 模型矩阵
  * \param view 视图矩阵
  * \param projection 投影矩阵
- * \return
+ * \param color 颜色
  * \return GUIstr* 字符串
  */
-GUIstr *guiStrCreate(GUIttf *ttf, int pixels, GLuint program, mat4 model, mat4 view, mat4 projection)
+GUIstr *guiStrCreate(GUIttf *ttf, int pixels, GLuint program, mat4 model, mat4 view, mat4 projection, vec4 color)
 {
     GUIstr *str = (GUIstr *)malloc(sizeof(GUIstr));
 
     str->ttf = ttf;
-    str->pixels = pixels;
     str->program = program;
+
+    // 找对应的字号
+    bool isFind = false; // 是否找到字号
+
+    /* 查找字 */
+    for (int i = 0; i < ttf->fontCount; i++)
+    {
+        str->font = &ttf->fontList[i];
+        if (str->font->pixels == pixels)
+        {
+            isFind = true;
+            break;
+        }
+    }
+    if (!isFind)
+    {
+        ERROR("字号 %d 不存在\n", pixels);
+        free(str);
+        return NULL;
+    }
 
     str->count = 0;
     str->countMax = GUI_SYT_INIT;
@@ -94,10 +150,27 @@ GUIstr *guiStrCreate(GUIttf *ttf, int pixels, GLuint program, mat4 model, mat4 v
     str->strText[0] = L'\0';
 
     // 设置矩阵
-    guiStrSetMat(str, model, view, projection, true);
-    // 设置颜色
-    guiStrSetColor(str, (vec4){0.0f, 0.0f, 0.0f, 1.0f}, true);
+    if (model)
+        guiStrSetMatModel(str, model);
+    else
+        glm_mat4_identity(str->model);
+    if (view)
+        guiStrSetMatView(str, view);
+    else
+        glm_mat4_identity(str->view);
+    if (projection)
+        guiStrSetMatProjection(str, projection);
+    else
+        glm_mat4_identity(str->projection);
 
+    // 设置颜色
+    if (color)
+        guiStrSetColor(str, color);
+    else
+        glm_vec4_copy((vec4){0.0f, 0.0f, 0.0f, 1.0f}, str->color);
+
+    guiStrAppMat(str);
+    guiStrAppColor(str);
     return str;
 }
 
@@ -114,7 +187,7 @@ void guiStrCpy(GUIstr *str, const wchar_t *text)
     for (size_t i = 0; i < textSize; i++)
     {
         str->strText[i] = text[i];
-        str->strChar[i] = guiTTFCreateChar(str->ttf, text[i], str->pixels);
+        str->strChar[i] = guiTTFCreateCharFromFont(str->ttf, str->font, text[i]);
     }
 
     str->strText[textSize] = L'\0';
@@ -134,7 +207,7 @@ void guiStrCat(GUIstr *str, const wchar_t *text)
     for (size_t i = 0; i < textSize; i++)
     {
         str->strText[str->count + i] = text[i];
-        str->strChar[str->count + i] = guiTTFCreateChar(str->ttf, text[i], str->pixels);
+        str->strChar[str->count + i] = guiTTFCreateCharFromFont(str->ttf, str->font, text[i]);
     }
 
     str->strText[str->count + textSize] = L'\0';
@@ -151,7 +224,7 @@ void guiStrCatC(GUIstr *str, const wchar_t text)
     guiStrCheck(str, 1);
 
     str->strText[str->count] = text;
-    str->strChar[str->count] = guiTTFCreateChar(str->ttf, text, str->pixels);
+    str->strChar[str->count] = guiTTFCreateCharFromFont(str->ttf, str->font, text);
 
     str->strText[str->count + 1] = L'\0';
     str->count++;
@@ -185,46 +258,6 @@ void guiStrBackN(GUIstr *str, int n)
 
     str->count -= n;
     str->strText[str->count] = L'\0';
-}
-
-/**
- * \brief 渲染字符串
- * \param str 字符串
- * \param model 模型矩阵
- * \param appMat 是否更新矩阵数据
- * \param appColor 是否更新颜色数据
- * \note 对于view和projection矩阵，需要在调用此函数之前设置
- */
-void guiStrRender(GUIstr *str, mat4 model, bool appMat, bool appColor)
-{
-    if (str == NULL)
-        return;
-
-    guiShaderUse(str->program);
-
-    mat4 m;
-    glm_mat4_copy(str->model, m);
-
-    if (model)
-        glm_mat4_mul(model, m, m);
-
-    if (appMat == true)
-    {
-        // guiShaderUniformMatrix(str->program, "model", 4fv, (float *)str->model);
-        guiShaderUniformMatrix(str->program, "view", 4fv, (float *)str->view);
-        guiShaderUniformMatrix(str->program, "projection", 4fv, (float *)str->projection);
-    }
-    if (appColor == true)
-    {
-        guiShaderUniform(str->program, "color", 4f, str->color[0], str->color[1], str->color[2], str->color[3]);
-    }
-
-    for (size_t i = 0; i < str->count; i++)
-    {
-        guiShaderUniformMatrix(str->program, "model", 4fv, (float *)m);
-        guiTTFRenderChar(str->strChar[i]);
-        glm_translate(m, (vec3){str->strChar[i]->advance, 0.0f, 0.0f});
-    }
 }
 
 /**

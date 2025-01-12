@@ -66,40 +66,18 @@ GUIttf *guiTTFCreate(const unsigned char *fontData, ...)
     return ttf;
 }
 
+
 /**
- * \brief 创建一个文字
+ * \brief 从Font中创建一个文字
  * \param ttf TTF字体
+ * \param font 字号列表
  * \param text 文本内容
- * \param pixels 字号
  * \return GUIchar 单个文字
  */
-GUIchar *guiTTFCreateChar(GUIttf *ttf, const wchar_t text, int pixels)
+GUIchar *guiTTFCreateCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text)
 {
-    GUIfont *font = NULL; // 对应字号的字体
-    bool isFind = false;  //  是否找到字号
-
-    /* 查找字 */
-    for (int i = 0; i < ttf->fontCount; i++)
-    {
-        font = &ttf->fontList[i];
-        if (font->pixels == pixels)
-        {
-            /* 查找文字是否存在 */
-            wchar_t *c = wcschr(font->textList, text);
-            if (c)
-            {
-                return &font->textRend[c - font->textList];
-            }
-
-            isFind = true;
-            break;
-        }
-    }
-    if (!isFind)
-    {
-        ERROR("字号 %d 不存在\n", pixels);
+    if (!font)
         return NULL;
-    }
 
     /* 添加文字 */
     font->textList[font->textCount] = text;
@@ -151,20 +129,60 @@ GUIchar *guiTTFCreateChar(GUIttf *ttf, const wchar_t text, int pixels)
     glGenBuffers(1, &ttfChar->VBO);
     glGenBuffers(1, &ttfChar->EBO);
 
-    glBindVertexArray(ttfChar->VAO);
-
     glBindBuffer(GL_ARRAY_BUFFER, ttfChar->VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ttfChar->EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index), index, GL_STATIC_DRAW);
 
+    glBindVertexArray(ttfChar->VAO);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     return ttfChar;
+}
+
+/**
+ * \brief 创建一个文字
+ * \param ttf TTF字体
+ * \param text 文本内容
+ * \param pixels 字号
+ * \return GUIchar 单个文字
+ */
+GUIchar *guiTTFCreateChar(GUIttf *ttf, const wchar_t text, int pixels)
+{
+    GUIfont *font = NULL; // 对应字号的字体
+    bool isFind = false;  // 是否找到字号
+
+    /* 查找字 */
+    for (int i = 0; i < ttf->fontCount; i++)
+    {
+        font = &ttf->fontList[i];
+        if (font->pixels == pixels)
+        {
+            /* 查找文字是否存在 */
+            wchar_t *c = wcschr(font->textList, text);
+            if (c)
+            {
+                return &font->textRend[c - font->textList];
+            }
+
+            isFind = true;
+            break;
+        }
+    }
+
+    /* 没有找到字号 */
+    if (!isFind)
+    {
+        ERROR("字号 %d 不存在\n", pixels);
+        return NULL;
+    }
+
+    /* 创建文字 */
+    return guiTTFCreateCharFromFont(ttf, font, text);
 }
 
 /**

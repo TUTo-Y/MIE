@@ -80,6 +80,15 @@ typedef struct
 GUIttf *guiTTFCreate(const unsigned char *fontData, ...);
 
 /**
+ * \brief 从Font中创建一个文字
+ * \param ttf TTF字体
+ * \param font 字号列表
+ * \param text 文本内容
+ * \return GUIchar 单个文字
+ */
+GUIchar *guiTTFCreateCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text);
+
+/**
  * \brief 创建一个文字
  * \param ttf TTF字体
  * \param text 文本内容
