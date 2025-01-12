@@ -1,219 +1,206 @@
 #include "gui_ttf.h"
 
-#define GUI_TTF_MAX_ADD 128 // 每次添加文本数量
-
-struct
-{
-    stbtt_fontinfo font; // 字体信息
-
-    int textHigh; // 高度
-
-    GUIchar *textRend; // TTF字体列表
-    wchar_t *textList; // 文本列表
-
-    int textCount; // 文本数量
-    int textMax;   // 最大文本数量
-} GUIfont = {0};
+#define GUI_TTF_FONT_R 8     // 文字预留空间
+#define GUI_TTF_FONT_INIT 32 // 初始化文字数量
+#define GUI_TTF_FONT_ADD 64  // 每次添加文字数量
 
 /**
  * \brief 初始化TTF字体
- * \param fontData TTF字体数据
+ * \param fontData TTF字体数据(二进制数据)
+ * \param ... 字号, 0表示结束
+ * \return GUIttf TTF字体
+ * \note GUIttf *ttf = guiTTFCreate(const unsigned char *fontData, 16, 32, 64, 0); // 初始化字号16, 32, 64
  */
-void guiTTFInit(const unsigned char *fontData)
+GUIttf *guiTTFCreate(const unsigned char *fontData, ...)
 {
-    // 初始化字体
-    stbtt_InitFont(&GUIfont.font, fontData, stbtt_GetFontOffsetForIndex(fontData, 0));
+    GUIttf *ttf = (GUIttf *)malloc(sizeof(GUIttf));
 
-    // 获取字体高度
-    int ascent = 0;  // 上升
-    int descent = 0; // 下降
-    int lineGap = 0; // 行间距
-    stbtt_GetFontVMetrics(&GUIfont.font, &ascent, &descent, &lineGap);
-    GUIfont.textHigh = ascent - descent + lineGap;
-
-    // 初始化文本列表
-    GUIfont.textMax = GUI_TTF_MAX_ADD;
-    GUIfont.textCount = 0;
-    GUIfont.textList = (wchar_t *)malloc(sizeof(wchar_t) * GUIfont.textMax);
-    GUIfont.textRend = (GUIchar *)malloc(sizeof(GUIchar) * GUIfont.textMax);
-
-    // 清空文本列表
-    memset(GUIfont.textList, 0, sizeof(wchar_t) * GUIfont.textMax);
-    memset(GUIfont.textRend, 0, sizeof(GUIchar) * GUIfont.textMax);
-}
-
-/**
- * \brief 清除TTF缓存
- */
-void guiTTFQuit()
-{
-}
-
-/**
- * \brief 渲染一个文字的顶点
- * \param text 文本内容
- * \return 渲染文本
- */
-GUIchar *guiTTFGetChar(const wchar_t text)
-{
-    // 在列表中查找
-    wchar_t *w = wcschr(GUIfont.textList, text);
-    if (w != NULL)
+    /* 读取字体信息 */
+    if (!stbtt_InitFont(&ttf->fontInfo, fontData, stbtt_GetFontOffsetForIndex(fontData, 0)))
     {
-        return &GUIfont.textRend[w - GUIfont.textList];
+        ERROR("字体初始化失败\n");
+        free(ttf);
+        return NULL;
     }
 
-    // 创建新文本
-    GUIfont.textList[GUIfont.textCount] = text;
-    GUIchar *ttf = &GUIfont.textRend[GUIfont.textCount];
-    ttf->c = text;
-    stbtt_GetCodepointHMetrics(&GUIfont.font, text, &ttf->advance, &ttf->advance);
+    /* 计算要初始化字号的数量 */
+    va_list args;
+    va_start(args, fontData);
+    ttf->fontCount = 0;
+    while (va_arg(args, int))
+        ttf->fontCount++;
+    va_end(args);
 
-    /* 渲染新文本 */
-    stbtt_vertex *stbVertex = NULL;
-    int verCount = stbtt_GetCodepointShape(&GUIfont.font, text, &stbVertex);
+    /* 分配空间 */
+    ttf->fontList = (GUIfont *)malloc(sizeof(GUIfont) * ttf->fontCount);
 
-    /* 点控制 */
-    int pointMax = verCount;
-    int pointCount = 0;
-    float *point = (float *)malloc(sizeof(float) * pointMax * 2);
-
-    /* VBO间隔控制 */
-    int VBOmax = 20;
-    ttf->VBOs = (int *)malloc(sizeof(int) * VBOmax);
-    ttf->VBOcount = 0;
-
-    glGenVertexArrays(1, &ttf->VAO);
-    glBindVertexArray(ttf->VAO);
-    for (int i = 0; i < verCount; i++)
+    /* 初始化字号 */
+    va_start(args, fontData);
+    for (int i = 0; i < ttf->fontCount; i++)
     {
-        // 检查点空间是否足够
-        if (pointMax < pointCount + 0x100)
-        {
-            pointMax += 0x100;
-            point = (float *)realloc(point, sizeof(float) * pointMax * 2);
-        }
-        stbtt_vertex v = stbVertex[i];
-        switch (v.type)
-        {
-        case STBTT_vmove: //    移动
-            // 检查VBO空间是否足够
-            if (VBOmax < ttf->VBOcount + 10)
-            {
-                VBOmax += 20;
-                ttf->VBOs = (int *)realloc(ttf->VBOs, sizeof(int) * VBOmax);
-            }
-            // 添加新的断点
-            ttf->VBOs[ttf->VBOcount++] = pointCount;
+        GUIfont *font = &ttf->fontList[i];
 
-        case STBTT_vline: //    直线
-            point[pointCount * 2] = v.x;
-            point[pointCount * 2 + 1] = v.y;
-            pointCount++;
-            break;
-        case STBTT_vcurve: //   二次贝塞尔曲线
-            short x0 = point[(pointCount - 1) * 2];
-            short y0 = point[(pointCount - 1) * 2 + 1];
-            short x1 = v.cx;
-            short y1 = v.cy;
-            short x2 = v.x;
-            short y2 = v.y;
+        /* 初始化字体信息 */
+        font->pixels = va_arg(args, int);                                                     // 设置字号
+        font->scale = stbtt_ScaleForPixelHeight(&ttf->fontInfo, font->pixels);                // 计算缩放比例
+        stbtt_GetFontVMetrics(&ttf->fontInfo, &font->ascent, &font->descent, &font->lineGap); // 获取字体高度
+        font->ascent *= font->scale;
+        font->descent *= font->scale;
+        font->lineGap *= font->scale;
 
-            for (int j = 0; j <= 10; j++)
-            {
-                float t = (float)j / 10.0f;
-                float xt = (1 - t) * (1 - t) * x0 + 2 * t * (1 - t) * x1 + t * t * x2;
-                float yt = (1 - t) * (1 - t) * y0 + 2 * t * (1 - t) * y1 + t * t * y2;
-                point[pointCount * 2] = xt;
-                point[pointCount * 2 + 1] = yt;
-                pointCount++;
-            }
-            break;
-        case STBTT_vcubic: //   三次贝塞尔曲线
-            short x0_cubic = point[(pointCount - 1) * 2];
-            short y0_cubic = point[(pointCount - 1) * 2 + 1];
-            short x1_cubic = v.cx;
-            short y1_cubic = v.cy;
-            short x2_cubic = v.cx1;
-            short y2_cubic = v.cy1;
-            short x3_cubic = v.x;
-            short y3_cubic = v.y;
+        // 初始化文本列表
+        font->textMax = GUI_TTF_FONT_INIT;
+        font->textCount = 0;
+        font->textList = (wchar_t *)malloc(sizeof(wchar_t) * font->textMax);
+        font->textRend = (GUIchar *)malloc(sizeof(GUIchar) * font->textMax);
 
-            for (int j = 0; j <= 10; j++)
-            {
-                float t = (float)j / 10.0f;
-                float xt = (1 - t) * (1 - t) * (1 - t) * x0_cubic + 3 * (1 - t) * (1 - t) * t * x1_cubic + 3 * (1 - t) * t * t * x2_cubic + t * t * t * x3_cubic;
-                float yt = (1 - t) * (1 - t) * (1 - t) * y0_cubic + 3 * (1 - t) * (1 - t) * t * y1_cubic + 3 * (1 - t) * t * t * y2_cubic + t * t * t * y3_cubic;
+        // 清空文本列表
+        memset(font->textList, 0, sizeof(wchar_t) * font->textMax);
+        memset(font->textRend, 0, sizeof(GUIchar) * font->textMax);
 
-                point[pointCount * 2] = xt;
-                point[pointCount * 2 + 1] = yt;
-                pointCount++;
-            }
-            break;
-        default:
-            break;
-        }
+        // 设置文本列表
+        font->textList[0] = L'\0';
     }
-    ttf->VBOs[ttf->VBOcount++] = pointCount;
-
-    // 渲染VBO
-    if (pointCount > 0)
-    {
-        glGenBuffers(1, &ttf->VBO);
-        glBindBuffer(GL_ARRAY_BUFFER, ttf->VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * pointCount * 2, point, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
-        glEnableVertexAttribArray(0);
-    }
-    else
-    {
-        ERROR("TTF渲染错误");
-    }
-
-    // 释放内存
-    free(point);
-    stbtt_FreeShape(&GUIfont.font, stbVertex);
-
-    // 检查列表是否已满
-    if (++GUIfont.textCount >= GUIfont.textMax)
-    {
-        // 扩展列表
-        GUIfont.textMax += GUI_TTF_MAX_ADD;
-        GUIfont.textList = (wchar_t *)realloc(GUIfont.textList, sizeof(wchar_t) * GUIfont.textMax);
-        GUIfont.textRend = (GUIchar *)realloc(GUIfont.textRend, sizeof(GUIchar) * GUIfont.textMax);
-
-        // 清空新扩展的列表
-        memset(GUIfont.textList + GUIfont.textCount, 0, sizeof(wchar_t) * GUI_TTF_MAX_ADD);
-        memset(GUIfont.textRend + GUIfont.textCount, 0, sizeof(GUIchar) * GUI_TTF_MAX_ADD);
-    }
+    va_end(args);
 
     return ttf;
 }
 
 /**
- * \brief 渲染一个文字
- * \param ttf 文本
+ * \brief 创建一个文字
+ * \param ttf TTF字体
+ * \param text 文本内容
+ * \param pixels 字号
+ * \return GUIchar 单个文字
  */
-void guiTTFRenderChar(GUIchar *ttf)
+GUIchar *guiTTFCreateChar(GUIttf *ttf, const wchar_t text, int pixels)
 {
-    glBindVertexArray(ttf->VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, ttf->VBO);
-    for (int i = 0; i < ttf->VBOcount - 1; i++)
+    GUIfont *font = NULL; // 对应字号的字体
+    bool isFind = false;  //  是否找到字号
+
+    /* 查找字 */
+    for (int i = 0; i < ttf->fontCount; i++)
     {
-        glDrawArrays(GL_LINE_STRIP, ttf->VBOs[i], ttf->VBOs[i + 1] - ttf->VBOs[i]);
+        font = &ttf->fontList[i];
+        if (font->pixels == pixels)
+        {
+            /* 查找文字是否存在 */
+            wchar_t *c = wcschr(font->textList, text);
+            if (c)
+            {
+                return &font->textRend[c - font->textList];
+            }
+
+            isFind = true;
+            break;
+        }
+    }
+    if (!isFind)
+    {
+        ERROR("字号 %d 不存在\n", pixels);
+        return NULL;
     }
 
-    // debug
-    // glBindVertexArray(ttf->VAO);
-    // glBindBuffer(GL_ARRAY_BUFFER, ttf->VBO);
-    // for (int i = 0; i < ttf->VBOcount - 1; i++)
-    // {
-    //     if (ttf->VBOs[i + 1] < ((int)(glfwGetTime() * 25)) % (ttf->VBOs[ttf->VBOcount - 1]))
-    //         glDrawArrays(GL_LINE_STRIP, ttf->VBOs[i], ttf->VBOs[i + 1] - ttf->VBOs[i]);
-    //     else
-    //     {
-    //         glDrawArrays(GL_LINE_STRIP, ttf->VBOs[i], ((int)(glfwGetTime() * 25)) % (ttf->VBOs[ttf->VBOcount - 1]) - ttf->VBOs[i]);
-    //         break;
-    //     }
-    // }
+    /* 添加文字 */
+    font->textList[font->textCount] = text;
+    GUIchar *ttfChar = &font->textRend[font->textCount];
+    font->textCount++;
+
+    /* 检查文本列表是否已满 */
+    if (font->textCount >= font->textMax - GUI_TTF_FONT_R)
+    {
+        // 扩展列表
+        font->textMax += GUI_TTF_FONT_ADD;
+        font->textList = (wchar_t *)realloc(font->textList, sizeof(wchar_t) * font->textMax);
+        font->textRend = (GUIchar *)realloc(font->textRend, sizeof(GUIchar) * font->textMax);
+
+        // 清空新扩展的列表
+        memset(font->textList + font->textCount, 0, sizeof(wchar_t) * GUI_TTF_FONT_ADD);
+        memset(font->textRend + font->textCount, 0, sizeof(GUIchar) * GUI_TTF_FONT_ADD);
+    }
+    font->textList[font->textCount] = L'\0';
+
+    /* 设置文字信息 */
+    ttfChar->text = text;
+    ttfChar->ascent = font->ascent;
+    ttfChar->descent = font->descent;
+    ttfChar->lineGap = font->lineGap;
+
+    /* 获取字体宽度 */
+    stbtt_GetCodepointHMetrics(&ttf->fontInfo, text, &ttfChar->advance, &ttfChar->x);
+    ttfChar->advance *= font->scale;
+    ttfChar->x *= font->scale;
+
+    /* 创建纹理 */
+    unsigned char *data = stbtt_GetCodepointBitmap(&ttf->fontInfo, font->scale, font->scale, text, &ttfChar->w, &ttfChar->h, &ttfChar->x, &ttfChar->y);
+    ttfChar->y = -ttfChar->y;
+    ttfChar->texture = guiTextureCreate(data, ttfChar->w, ttfChar->h, 1, GL_RED);
+    stbtt_FreeBitmap(data, 0);
+
+    /* 设置VAO, VBO, EBO */
+    float vertices[] = {
+        // 位置             // 纹理坐标
+        (float)(ttfChar->x), (float)(ttfChar->y), 0.0f, 0.0f,
+        (float)(ttfChar->x + ttfChar->w), (float)(ttfChar->y), 1.0f, 0.0f,
+        (float)(ttfChar->x + ttfChar->w), (float)(ttfChar->y - ttfChar->h), 1.0f, 1.0f,
+        (float)(ttfChar->x), (float)(ttfChar->y - ttfChar->h), 0.0f, 1.0f};
+    const GLuint index[] = {
+        0, 1, 2,
+        0, 2, 3};
+    glGenVertexArrays(1, &ttfChar->VAO);
+    glGenBuffers(1, &ttfChar->VBO);
+    glGenBuffers(1, &ttfChar->EBO);
+
+    glBindVertexArray(ttfChar->VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, ttfChar->VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ttfChar->EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index), index, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    return ttfChar;
+}
+
+/**
+ * \brief 渲染一个文字
+ * \param c 文字
+ */
+void guiTTFRenderChar(GUIchar *c)
+{
+    // glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, c->texture);      // 绑定纹理
+    glBindVertexArray(c->VAO);                     // 绑定VAO
+    glBindBuffer(GL_ARRAY_BUFFER, c->VBO);         // 绑定VBO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, c->EBO); // 绑定EBO
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // 绘制
+}
+
+/**
+ * \brief 清除TTF缓存
+ */
+void guiTTFDelete(GUIttf *ttf)
+{
+    for (int i = 0; i < ttf->fontCount; i++)
+    {
+        GUIfont *font = &ttf->fontList[i];
+        for (int j = 0; j < font->textCount; j++)
+        {
+            GUIchar *c = &font->textRend[j];
+            glDeleteTextures(1, &c->texture);
+            glDeleteVertexArrays(1, &c->VAO);
+            glDeleteBuffers(1, &c->VBO);
+            glDeleteBuffers(1, &c->EBO);
+        }
+        free(font->textList);
+        free(font->textRend);
+    }
+    free(ttf->fontList);
+    free(ttf);
 }

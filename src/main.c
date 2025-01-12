@@ -1,9 +1,9 @@
 #include "gui.h"
 #include "resource.h"
+#include "config.h"
 #include "stb_image.h"
 #include "stb_image_write.h"
 #include "stb_truetype.h"
-#include "config.h"
 
 #include <cglm/cglm.h>
 
@@ -68,22 +68,50 @@ int main()
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    // 字体
+    // 创建着色器
+    char *vertexShaderSource;
+    char *fragmentShaderSource;
+    resGetFile("font.vert", (void **)&vertexShaderSource, NULL, true);
+    resGetFile("font.frag", (void **)&fragmentShaderSource, NULL, true);
+    GLuint programFont = guiShaderCreateProgram(vertexShaderSource, fragmentShaderSource, NULL);
+    // 设置着色器值
+    mat4 projection = GLM_MAT4_IDENTITY_INIT;
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    mat4 model = GLM_MAT4_IDENTITY_INIT;
+    // 投影操作
+    glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.01f, 3000.0f, projection);
+    // 设置视图矩阵
+    float z = (WINDOW_HEIGHT / 2.0f) / tanf(glm_rad(45.0f) / 2.0f);
+    glm_lookat((vec3){0.0f, 0.0f, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, view);
+    // 旋转操作
+    // glm_translate(model, (vec3){0.0f, 0.0f, -300.0f});
+    // glm_rotate(model, (float)glfwGetTime()*1.5f, (vec3){1.0f, 0.0f, 0.0f});
+    // glm_scale(model, (vec3){0.5f, 0.5f, 0.5f});
+
+    // 设置
+    guiShaderUse(programFont);
+    guiShaderUniformMatrix(programFont, "model", 4fv, (float *)model);
+    guiShaderUniformMatrix(programFont, "view", 4fv, (float *)view);
+    guiShaderUniformMatrix(programFont, "projection", 4fv, (float *)projection);
+    // guiShaderUniform(programFont, "color", 4f, 0.0f, 0.0f, 0.0f, 1.0f);
+    guiShaderUniform(programFont, "Texture", 1i, 0);
+
     unsigned char *fontData;
     size_t size;
     resGetFile("kai.ttf", (void **)&fontData, &size, true);
-    guiTTFInit(fontData);
+    GUIttf *ttf = guiTTFCreate(fontData, 16, 80, 64, 0);
 
-    // 渲染文本
-    GUIchar *c = guiTTFGetChar(L'郑');
 
-    char *vertexShaderSource;
-    char *fragmentShaderSource;
-    resGetFile("vertex.glsl", (void **)&vertexShaderSource, NULL, true);
-    resGetFile("fragment.glsl", (void **)&fragmentShaderSource, NULL, true);
-
-    GLuint program = guiShaderCreateProgram(vertexShaderSource, fragmentShaderSource, NULL);
-    guiShaderUniform(program, "color", 4f, 0.0f, 0.0f, 0.0f, 1.0f);
+    GUIstr *s1 = guiStrCreate(ttf, 80, programFont, model, view, projection);
+    guiStrSetColor(s1, (vec4){1.0f, 0.0f, 0.0f, 1.0f}, true);
+    guiStrCpy(s1, L"我是中国人");
+    guiStrCpy(s1, L"你好");
+    
+    guiStrCat(s1, L"你好");
+    guiStrCatC(s1, L'！');
+    guiStrBack(s1);
+    guiStrBackN(s1, 7);
+    
 
     // 初始化GUI界面
     GUIframe frame;
@@ -96,41 +124,208 @@ int main()
         glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // 渲染
-        mat4 projection = GLM_MAT4_IDENTITY_INIT;
-        mat4 view = GLM_MAT4_IDENTITY_INIT;
-        mat4 model = GLM_MAT4_IDENTITY_INIT;
-
-        // 投影操作
-        glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.01f, 2000.0f, projection);
-
-        // 设置视图矩阵
-        float z = (WINDOW_HEIGHT / 2.0f) / tanf(glm_rad(45.0f) / 2.0f) * 2.0f;
-        glm_lookat((vec3){0.0f, 0.0f, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, view);
-
-        // 旋转操作
-        // glm_translate(model, (vec3){0.0f, 0.0f, -300.0f});
-        // glm_rotate(model, (float)glfwGetTime() * 1.5f, (vec3){1.0f, 0.0f, 0.0f});
-
-        // 设置视图矩阵
-        guiShaderUniformMatrix(program, "model", 4fv, (float *)model);
-        guiShaderUniformMatrix(program, "view", 4fv, (float *)view);
-        guiShaderUniformMatrix(program, "projection", 4fv, (float *)projection);
-
         // 渲染文本
-        guiTTFRenderChar(c);
-        // glBindVertexArray(VAO);
-        // glDrawArrays(GL_TRIANGLE_FAN, 0, count);
-        // glDrawArrays(GL_LINE_STRIP, 0, count);
-        // glDrawArrays(GL_LINE_STRIP, 0, ((int)glfwGetTime() * 25 + 2) % count);
-        // glDrawArrays(GL_TRIANGLES, 0, count/3);
+        mat4 model = GLM_MAT4_IDENTITY_INIT;
+        
+        glm_translate(model, (vec3){0.0f, 100.0f, 0.0f});
+        guiStrRender(s1, model, false, true);
+        // glm_translate(model, (vec3){0.0f, -100.0f, 0.0f});
+        // guiStrRender(s2, model, false, true);
+        // glm_translate(model, (vec3){0.0f, -100.0f, 0.0f});
+        // guiStrRender(s3, model, false, true);
 
         // 控制帧率为30Hz
         guiFrameControl(&frame);
         glfwSwapBuffers(window);
     }
-    glfwDestroyWindow(window);
 
+    guiTTFDelete(ttf);
+#if 0
+    // 创建着色器
+    char *vertexShaderSource;
+    char *fragmentShaderSource;
+    resGetFile("font.vert", (void **)&vertexShaderSource, NULL, true);
+    resGetFile("font.frag", (void **)&fragmentShaderSource, NULL, true);
+    GLuint programFont = guiShaderCreateProgram(vertexShaderSource, fragmentShaderSource, NULL);
+    resGetFile("vertex.glsl", (void **)&vertexShaderSource, NULL, true);
+    resGetFile("fragment.glsl", (void **)&fragmentShaderSource, NULL, true);
+    GLuint programTemp = guiShaderCreateProgram(vertexShaderSource, fragmentShaderSource, NULL);
+    // 设置着色器值
+    {
+
+        mat4 projection = GLM_MAT4_IDENTITY_INIT;
+        mat4 view = GLM_MAT4_IDENTITY_INIT;
+        mat4 model = GLM_MAT4_IDENTITY_INIT;
+        // 投影操作
+        glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.01f, 3000.0f, projection);
+        // 设置视图矩阵
+        float z = (WINDOW_HEIGHT / 2.0f) / tanf(glm_rad(45.0f) / 2.0f) * 2.1;
+        glm_lookat((vec3){0.0f, 0.0f, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, view);
+        // 旋转操作
+        // glm_translate(model, (vec3){0.0f, 0.0f, -300.0f});
+        // glm_rotate(model, (float)glfwGetTime()*1.5f, (vec3){1.0f, 0.0f, 0.0f});
+
+        // 设置
+        guiShaderUse(programFont);
+        guiShaderUniformMatrix(programFont, "model", 4fv, (float *)model);
+        guiShaderUniformMatrix(programFont, "view", 4fv, (float *)view);
+        guiShaderUniformMatrix(programFont, "projection", 4fv, (float *)projection);
+        guiShaderUniform(programFont, "color", 4f, 0.0f, 0.0f, 0.0f, 1.0f);
+        guiShaderUniform(programFont, "Texture", 1i, 0);
+
+        guiShaderUse(programTemp);
+        guiShaderUniformMatrix(programTemp, "model", 4fv, (float *)model);
+        guiShaderUniformMatrix(programTemp, "view", 4fv, (float *)view);
+        guiShaderUniformMatrix(programTemp, "projection", 4fv, (float *)projection);
+        guiShaderUniform(programTemp, "color", 4f, 0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    // 字体
+    unsigned char *fontData;
+    size_t size;
+    resGetFile("kai.ttf", (void **)&fontData, &size, true);
+
+    // 初始化字体
+    wchar_t text = L'我';
+    stbtt_fontinfo font; // 字体信息
+    stbtt_InitFont(&font, fontData, stbtt_GetFontOffsetForIndex(fontData, 0));
+
+    // 获取字体高度
+    int ascent = 0;  // 上升
+    int descent = 0; // 下降
+    int lineGap = 0; // 行间距
+    stbtt_GetFontVMetrics(&font, &ascent, &descent, &lineGap);
+    int high = ascent - descent + lineGap;
+
+    // 获取字体宽度
+    int advance, lsb;
+    stbtt_GetCodepointHMetrics(&font, text, &advance, &lsb);
+
+    /* 计算字体缩放 */
+    float pixels = 300.0;                                   /* 字体大小（字号） */
+    float scale = stbtt_ScaleForPixelHeight(&font, pixels); /* scale = pixels / (ascent - descent) */
+
+    int w, h, x, y;
+    // unsigned char *data = stbtt_GetCodepointBitmapSubpixel(&font, scale, scale, text, 0, 0, &w, &h, &x, &y);
+    unsigned char *data = stbtt_GetCodepointBitmap(&font, scale, scale, text, &w, &h, &x, &y);
+    ascent *= scale;
+    descent *= scale;
+    lineGap *= scale;
+    advance *= scale;
+    lsb *= scale;
+    // printf("字体 顶部: %d, 底部: %d, 行距: %d\n", ascent, descent, lineGap);
+    // printf("字体 宽度: %d, 左边距: %d\n", advance, lsb);
+    // printf("位图 宽度: %d, 高度: %d, x: %d, y: %d\n", w, h, x, y);
+    y = -y;
+
+    // 保存位图
+    stbi_write_bmp("f.bmp", w, h, 1, data);
+
+    // 顶点
+    float vertices[] = {
+        // 位置             // 纹理坐标
+        (float)(x), (float)(y), 0.0f, 0.0f,
+        (float)(x + w), (float)(y), 1.0f, 0.0f,
+        (float)(x + w), (float)(y - h), 1.0f, 1.0f,
+        (float)(x), (float)(y - h), 0.0f, 1.0f};
+    GLuint index[] = {
+        0, 1, 2,
+        0, 2, 3};
+    GLuint VBO, VAO, EBO;
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);                                        // 绑定缓冲区
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // 将顶点数据复制到缓冲区中
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index), index, GL_STATIC_DRAW);
+
+    // 创建纹理
+    GLuint texture;
+    texture = guiTextureCreate(data, w, h, 1, GL_RED);
+
+    // line
+    float line[] = {
+        // 直角坐标系
+        -(float)WINDOW_WIDTH, 0.0f,
+        (float)WINDOW_WIDTH, 0.0f,
+        0.0f, -(float)WINDOW_HEIGHT,
+        0.0f, (float)WINDOW_HEIGHT,
+        
+        0, (float)ascent,
+        (float)WINDOW_WIDTH, (float)ascent,
+        
+        0, (float)descent,
+        (float)WINDOW_WIDTH, (float)descent,
+        
+        0, (float)(descent - lineGap),
+        (float)WINDOW_WIDTH, (float)(descent - lineGap),
+
+        0, (float)(y),
+        (float)WINDOW_WIDTH, (float)(y),
+
+        0, (float)(y - h),
+        (float)WINDOW_WIDTH, (float)(y - h),
+
+        (float)advance, (float)WINDOW_HEIGHT,
+        (float)advance, -(float)WINDOW_HEIGHT
+
+        // (float)lsb, (float)WINDOW_HEIGHT,
+        // (float)lsb, -(float)WINDOW_HEIGHT,
+        
+        // (float)(x + w), (float)WINDOW_HEIGHT,
+        // (float)(x + w), -(float)WINDOW_HEIGHT
+
+        };
+    GLuint VBOline, VAOline;
+    glGenBuffers(1, &VBOline);
+    glGenVertexArrays(1, &VAOline);
+    glBindVertexArray(VAOline);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOline);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(line), line, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+
+    // 初始化GUI界面
+    GUIframe frame;
+    guiFrameInit(&frame, 30);
+    while (0)
+    // while (!glfwWindowShouldClose(window))
+    {
+        // 事件处理
+        glfwPollEvents();
+
+        glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // 渲染
+        guiShaderUse(programFont);
+
+        // 渲染文本
+        guiShaderUse(programFont);
+        glBindVertexArray(VAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        // 绘制线
+        guiShaderUse(programTemp);
+        glBindVertexArray(VAOline);
+        glDrawArrays(GL_LINES, 0, sizeof(line) / sizeof(float) / 2);
+
+        // 控制帧率为30Hz
+        guiFrameControl(&frame);
+        glfwSwapBuffers(window);
+    }
+#endif
+    glfwDestroyWindow(window);
 #if 0
     // 渲染
     // float vertices[] = {
@@ -230,7 +425,6 @@ int main()
         glfwSwapBuffers(window);
     }
 #endif
-    guiTTFInit(fontData);
     Quit();
     return 0;
 }

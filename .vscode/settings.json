@@ -25,6 +25,15 @@
         "wchar.h": "c",
         "gui_texture.h": "c",
         "algorithm": "c",
-        "format": "c"
+        "format": "c",
+        "old_gui_ttf.h": "c",
+        "cmath": "c",
+        "cglm.h": "c",
+        "random": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "span": "c",
+        "text_encoding": "c"
     }
 }

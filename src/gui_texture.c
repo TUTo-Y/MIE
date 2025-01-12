@@ -14,14 +14,14 @@ GLuint guiTextureCreate(const unsigned char *data, int width, int height, int ch
 {
     GLenum format;
 
-    // 输出颜色通道
-    textureFormat = textureFormat == 0 ? GL_RGB : textureFormat;
-
     // 确定颜色通道数
     switch (channels)
     {
     case 1:
         format = GL_RED;
+        break;
+    case 2:
+        format = GL_RG;
         break;
     case 3:
         format = GL_RGB;
@@ -33,6 +33,9 @@ GLuint guiTextureCreate(const unsigned char *data, int width, int height, int ch
         ERROR("无效的颜色通道数:%d\n", channels);
         return 0;
     }
+    
+    // 输出颜色通道
+    textureFormat = textureFormat == 0 ? format : textureFormat;
 
     GLuint texture;
     glGenTextures(1, &texture);
@@ -43,6 +46,8 @@ GLuint guiTextureCreate(const unsigned char *data, int width, int height, int ch
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    // 设置字节对齐方式
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, textureFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 
     glGenerateMipmap(GL_TEXTURE_2D);
