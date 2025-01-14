@@ -53,10 +53,10 @@ typedef struct
     int descent; // 下降
     int lineGap; // 行间距
 
-    wchar_t *textList; // 文本
+    wchar_t *textList; // 文文字列表
     GUIchar *textRend; // 文本渲染列表
-    int textCount;     // 文本数量
-    int textMax;       // 最大文本数量
+    int textCount;     // 文字数量
+    int textMax;       // 最大文字数量
 } GUIfont;
 
 /**
@@ -69,6 +69,14 @@ typedef struct
     GUIfont *fontList; // 字号列表
     int fontCount;     // 字号数量
 } GUIttf;
+
+/**
+ * \brief 查找一个字号
+ * \param ttf TTF字体
+ * \param pixels 字号
+ * \return GUIfont 字号, NULL表示未找到
+ */
+GUIfont *guiTTFGetFont(GUIttf *ttf, int pixels);
 
 /**
  * \brief 初始化TTF字体
@@ -89,13 +97,22 @@ GUIttf *guiTTFCreate(const unsigned char *fontData, ...);
 GUIchar *guiTTFCreateCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text);
 
 /**
- * \brief 创建一个文字
+ * \brief 从Font中获取一个文字
+ * \param ttf TTF字体
+ * \param font 字号列表
+ * \param text 文本内容
+ * \return GUIchar 单个文字
+ */
+GUIchar *guiTTFGetCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text);
+
+/**
+ * \brief 获取一个文字
  * \param ttf TTF字体
  * \param text 文本内容
  * \param pixels 字号
  * \return GUIchar 单个文字
  */
-GUIchar *guiTTFCreateChar(GUIttf *ttf, const wchar_t text, int pixels);
+GUIchar *guiTTFGetChar(GUIttf *ttf, const wchar_t text, int pixels);
 
 /**
  * \brief 渲染一个文字

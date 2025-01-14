@@ -3,13 +3,13 @@ in vec2 pos;
 out vec4 FragColor;
 
 uniform vec4 color;
-uniform sampler2D Texture;
 
 void main()
 {
+    // 检查RED位
     float r=texture(Texture,pos).r;
     if(r < 0.5) discard;
-    FragColor=color;
 
-    // FragColor = texture(Texture, pos);
+    // 字体颜色
+    FragColor=color;
 }

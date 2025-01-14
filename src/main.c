@@ -128,15 +128,7 @@ int main()
     GUIstr *s1 = guiStrCreate(ttf, 80, programFont, model, view, projection, (vec4){1.0f, 0.0f, 0.0f, 1.0f});
     guiStrCpy(s1, L"我是郑德泓");
     guiStrSetMod(s1, GUI_STR_MOD_RIGHT);
-    // GUIstr *s2 = guiStrCreate(ttf, 80, programFont, model, view, projection, (vec4){0.0f, 1.0f, 0.0f, 1.0f});
-    // guiStrCpy(s2, L"我是TUTo");
-
-    // GUIstr *s3 = guiStrCreate(ttf, 80, programFont, model, view, projection, (vec4){0.0f, 0.0f, 1.0f, 1.0f});
-    // guiStrCpy(s3, L"我是中国人");
-
-
     
-
     // 初始化GUI界面
     GUIframe frame;
     guiFrameInit(&frame, 30);

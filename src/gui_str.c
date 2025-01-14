@@ -15,6 +15,11 @@ void guiStrCheck(GUIstr *str, size_t count)
     if (str->count >= str->countMax - size)
     {
         str->countMax += size > GUI_STR_ADD ? size : GUI_STR_ADD;
+        str->strText = (wchar_t *)realloc(str->strText, sizeof(wchar_t) * str->countMax);
+        str->strChar = (GUIchar **)realloc(str->strChar, sizeof(GUIchar *) * str->countMax);
+
+        memset(str->strText + str->count, 0, sizeof(wchar_t) * (str->countMax - str->count));
+        memset(str->strChar + str->count, 0, sizeof(GUIchar *) * (str->countMax - str->count));
     }
 }
 
@@ -120,21 +125,9 @@ GUIstr *guiStrCreate(GUIttf *ttf, int pixels, GLuint program, mat4 model, mat4 v
     str->program = program;
 
     // 找对应的字号
-    bool isFind = false; // 是否找到字号
-
-    /* 查找字 */
-    for (int i = 0; i < ttf->fontCount; i++)
+    str->font = guiTTFGetFont(ttf, pixels);
+    if (str->font == NULL)
     {
-        str->font = &ttf->fontList[i];
-        if (str->font->pixels == pixels)
-        {
-            isFind = true;
-            break;
-        }
-    }
-    if (!isFind)
-    {
-        ERROR("字号 %d 不存在\n", pixels);
         free(str);
         return NULL;
     }
@@ -187,7 +180,7 @@ void guiStrCpy(GUIstr *str, const wchar_t *text)
     for (size_t i = 0; i < textSize; i++)
     {
         str->strText[i] = text[i];
-        str->strChar[i] = guiTTFCreateCharFromFont(str->ttf, str->font, text[i]);
+        str->strChar[i] = guiTTFGetCharFromFont(str->ttf, str->font, text[i]);
     }
 
     str->strText[textSize] = L'\0';
@@ -207,7 +200,7 @@ void guiStrCat(GUIstr *str, const wchar_t *text)
     for (size_t i = 0; i < textSize; i++)
     {
         str->strText[str->count + i] = text[i];
-        str->strChar[str->count + i] = guiTTFCreateCharFromFont(str->ttf, str->font, text[i]);
+        str->strChar[str->count + i] = guiTTFGetCharFromFont(str->ttf, str->font, text[i]);
     }
 
     str->strText[str->count + textSize] = L'\0';
@@ -224,7 +217,7 @@ void guiStrCatC(GUIstr *str, const wchar_t text)
     guiStrCheck(str, 1);
 
     str->strText[str->count] = text;
-    str->strChar[str->count] = guiTTFCreateCharFromFont(str->ttf, str->font, text);
+    str->strChar[str->count] = guiTTFGetCharFromFont(str->ttf, str->font, text);
 
     str->strText[str->count + 1] = L'\0';
     str->count++;

@@ -1,8 +1,29 @@
 #include "gui_ttf.h"
 
-#define GUI_TTF_FONT_R 8     // 文字预留空间
+#define GUI_TTF_FONT_R 8    // 文字预留空间
 #define GUI_TTF_FONT_INIT 32 // 初始化文字数量
 #define GUI_TTF_FONT_ADD 64  // 每次添加文字数量
+
+
+/**
+ * \brief 查找一个字号
+ * \param ttf TTF字体
+ * \param pixels 字号
+ * \return GUIfont 字号, NULL表示未找到
+ */
+GUIfont *guiTTFGetFont(GUIttf *ttf, int pixels)
+{
+    for (int i = 0; i < ttf->fontCount; i++)
+    {
+        GUIfont *font = &ttf->fontList[i];
+        if (font->pixels == pixels)
+        {
+            return font;
+        }
+    }
+    ERROR("字号 %d 不存在\n", pixels);
+    return NULL;
+}
 
 /**
  * \brief 初始化TTF字体
@@ -66,7 +87,6 @@ GUIttf *guiTTFCreate(const unsigned char *fontData, ...)
     return ttf;
 }
 
-
 /**
  * \brief 从Font中创建一个文字
  * \param ttf TTF字体
@@ -76,7 +96,7 @@ GUIttf *guiTTFCreate(const unsigned char *fontData, ...)
  */
 GUIchar *guiTTFCreateCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text)
 {
-    if (!font)
+    if (!font && !ttf)
         return NULL;
 
     /* 添加文字 */
@@ -93,8 +113,8 @@ GUIchar *guiTTFCreateCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text
         font->textRend = (GUIchar *)realloc(font->textRend, sizeof(GUIchar) * font->textMax);
 
         // 清空新扩展的列表
-        memset(font->textList + font->textCount, 0, sizeof(wchar_t) * GUI_TTF_FONT_ADD);
-        memset(font->textRend + font->textCount, 0, sizeof(GUIchar) * GUI_TTF_FONT_ADD);
+        memset(&font->textList[font->textCount], 0, sizeof(wchar_t) * (font->textMax - font->textCount));
+        memset(&font->textRend[font->textCount], 0, sizeof(GUIchar) * (font->textMax - font->textCount));
     }
     font->textList[font->textCount] = L'\0';
 
@@ -145,43 +165,53 @@ GUIchar *guiTTFCreateCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text
 }
 
 /**
+ * \brief 从Font中获取一个文字
+ * \param ttf TTF字体
+ * \param font 字号列表
+ * \param text 文本内容
+ * \return GUIchar 单个文字
+ */
+GUIchar *guiTTFGetCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text)
+{
+    if (!font && !ttf)
+        return NULL;
+
+    /* 查找文字是否存在 */
+    wchar_t *c = wcschr(font->textList, text);
+    if (c)
+    {
+        return &font->textRend[c - font->textList];
+    }
+
+    /* 创建文字 */
+    return guiTTFCreateCharFromFont(ttf, font, text);
+}
+
+/**
  * \brief 创建一个文字
  * \param ttf TTF字体
  * \param text 文本内容
  * \param pixels 字号
  * \return GUIchar 单个文字
  */
-GUIchar *guiTTFCreateChar(GUIttf *ttf, const wchar_t text, int pixels)
+GUIchar *guiTTFGetChar(GUIttf *ttf, const wchar_t text, int pixels)
 {
     GUIfont *font = NULL; // 对应字号的字体
-    bool isFind = false;  // 是否找到字号
 
-    /* 查找字 */
-    for (int i = 0; i < ttf->fontCount; i++)
-    {
-        font = &ttf->fontList[i];
-        if (font->pixels == pixels)
-        {
-            /* 查找文字是否存在 */
-            wchar_t *c = wcschr(font->textList, text);
-            if (c)
-            {
-                return &font->textRend[c - font->textList];
-            }
-
-            isFind = true;
-            break;
-        }
-    }
-
-    /* 没有找到字号 */
-    if (!isFind)
-    {
-        ERROR("字号 %d 不存在\n", pixels);
+    if(!ttf)
         return NULL;
-    }
 
-    /* 创建文字 */
+    /* 查找字号 */
+    font = guiTTFGetFont(ttf, pixels);
+    if (!font)
+        return NULL;
+    
+    /* 根据字号查找字 */
+    wchar_t *c = wcschr(font->textList, text);
+    if (c)
+        return &font->textRend[c - font->textList];
+
+    /* 没有找到字就创建字 */
     return guiTTFCreateCharFromFont(ttf, font, text);
 }
 
