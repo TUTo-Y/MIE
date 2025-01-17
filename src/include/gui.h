@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 #include <glad.h>
+#include <cglm/cglm.h>
 #include <GLFW/glfw3.h>
 
 #include "gui_frame.h"

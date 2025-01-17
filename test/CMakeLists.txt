@@ -1,6 +1,7 @@
 # # 创建测试目标
-# add_executable(test
-#     getchar.c
+# add_executable(demo
+#     demo.c
+#     RDH.c
 # )
 
 # # 测试目标

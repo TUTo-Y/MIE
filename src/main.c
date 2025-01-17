@@ -5,12 +5,83 @@
 #include "stb_image_write.h"
 #include "stb_truetype.h"
 
-#include <cglm/cglm.h>
+#include "rand.h"
+#include "RDH.h"
 
 #include <math.h>
 #include <string.h>
 #include <locale.h>
 
+/**
+ * \brief 嵌入数据
+ */
+void rdhEmbedData(uint8_t *img, int w, int h, uint8_t *str, int size)
+{
+    for (int i = 0; i < w; i += 3)
+    {
+        for (int j = 0; j < h; j += 3)
+        {
+            uint8_t SP1 = img[j * w + i];
+            uint8_t EP1 = img[j * w + i + 1];
+            uint8_t SP2 = img[j * w + i + 2];
+            uint8_t EP2 = img[(j + 1) * w + i];
+            uint8_t EP3 = img[(j + 1) * w + i + 1];
+            uint8_t EP4 = img[(j + 1) * w + i + 2];
+            uint8_t SP3 = img[(j + 2) * w + i];
+            uint8_t EP5 = img[(j + 2) * w + i + 1];
+            uint8_t SP4 = img[(j + 2) * w + i + 2];
+
+            uint16_t dHSB1, dHSB2, dHSB3, dHSB4, dHSB5;
+            dHSB1 = 
+
+            img[j * w + i] = SP1;
+            img[j * w + i + 1] = EP1;
+            img[j * w + i + 2] = SP2;
+            img[(j + 1) * w + i] = EP2;
+            img[(j + 1) * w + i + 1] = EP3;
+            img[(j + 1) * w + i + 2] = EP4;
+            img[(j + 2) * w + i] = SP3;
+            img[(j + 2) * w + i + 1] = EP5;
+            img[(j + 2) * w + i + 2] = SP4;
+        }
+    }
+}
+
+int main(int argc, char *argv[], char *envp[])
+{
+
+    /* 设置中文 */
+    setlocale(LC_ALL, "zh_CN.UTF-8");
+    glfwInit();
+    glfwGetTime();
+
+    int w, h, channels;
+    stbi_uc *data;
+
+    data = stbi_load("image.bmp", &w, &h, &channels, 1);
+
+#if 0 // 切割
+    // uint8_t *data1, *data2;
+    // {
+    //     double start = glfwGetTime();
+    //     rdhSplitImage(data, w * h, &data1, &data2);
+    //     printf("分割时间: %3.2f ms\n", (glfwGetTime() - start) * 1000);
+    // }
+    // stbi_write_bmp("data1.bmp", w, h, 1, data1);
+    // stbi_write_bmp("data2.bmp", w, h, 1, data2);
+
+    // uint8_t *data3;
+    // {
+    //     double start = glfwGetTime();
+    //     rdhCombineImage(data1, data2, w * h, &data3);
+    //     printf("合并时间: %3.2f ms\n", (glfwGetTime() - start) * 1000);
+    // }
+    // stbi_write_bmp("data3.bmp", w, h, 1, data3);
+#endif
+    return 0;
+}
+
+#if 0
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -126,7 +197,7 @@ int main()
 
 
     GUIstr *s1 = guiStrCreate(ttf, 80, programFont, model, view, projection, (vec4){1.0f, 0.0f, 0.0f, 1.0f});
-    guiStrCpy(s1, L"我是郑德泓");
+    guiStrCpy(s1, L"我");
     guiStrSetMod(s1, GUI_STR_MOD_RIGHT);
     
     // 初始化GUI界面
@@ -161,6 +232,8 @@ int main()
     }
 
     guiTTFDelete(ttf);
+    glfwDestroyWindow(window);
+    Quit();
 #if 0
     // 创建着色器
     char *vertexShaderSource;
@@ -346,7 +419,6 @@ int main()
         glfwSwapBuffers(window);
     }
 #endif
-    glfwDestroyWindow(window);
 #if 0
     // 渲染
     // float vertices[] = {
@@ -446,6 +518,7 @@ int main()
         glfwSwapBuffers(window);
     }
 #endif
-    Quit();
     return 0;
 }
+
+#endif
