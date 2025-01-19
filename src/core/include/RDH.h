@@ -32,7 +32,6 @@ void rdhUnshuffleImage(uint8_t *data, int size, uint64_t key);
 void rdhSplitImage(const uint8_t *data, int size, uint8_t **data1, uint8_t **data2);
 void rdhCombineImage(const uint8_t *data1, const uint8_t *data2, int size, uint8_t **data);
 
-
 /**
  * \brief 分配空间
  * \param 大小

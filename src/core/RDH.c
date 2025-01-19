@@ -3,7 +3,7 @@
 #define RDH_SPLIT_MALLOC_SIZE(size) (((size) + 7) & ~7)
 #define RDH_SPLIT_MASK_H 0xF8
 #define RDH_SPLIT_MASK_L (~(RDH_SPLIT_MASK_H))
-#define RDH_SPLIT_SET_MASK(x, mask) ((x) & (mask))
+#define RDH_SPLIT_MASK_SET(x, mask) ((x) & (mask))
 
 void rdhShuffleImage(uint8_t *data, int size, uint64_t key)
 {
@@ -71,15 +71,21 @@ void rdhSplitImage(const uint8_t *data, int size, uint8_t **data1, uint8_t **dat
     while (size--)
     {
         uint8_t r = xRand8();
-        uint8_t high_masked_t = RDH_SPLIT_SET_MASK(*t, RDH_SPLIT_MASK_H);
-        uint8_t low_masked_t = RDH_SPLIT_SET_MASK(*t, RDH_SPLIT_MASK_L);
-        uint8_t high_masked_r = RDH_SPLIT_SET_MASK(r, RDH_SPLIT_MASK_H);
-        uint8_t low_masked_r = RDH_SPLIT_SET_MASK(r, RDH_SPLIT_MASK_L);
+        uint8_t high_masked_t = RDH_SPLIT_MASK_SET(*t, RDH_SPLIT_MASK_H);
+        uint8_t low_masked_t = RDH_SPLIT_MASK_SET(*t, RDH_SPLIT_MASK_L);
+        uint8_t high_masked_r = RDH_SPLIT_MASK_SET(r, RDH_SPLIT_MASK_H);
+        uint8_t low_masked_r = RDH_SPLIT_MASK_SET(r, RDH_SPLIT_MASK_L);
 
-        *t1 = (high_masked_t - (high_masked_t ? (high_masked_r % high_masked_t) : 0)) |
-              (low_masked_t - (low_masked_t ? (low_masked_r % low_masked_t) : 0));
-        *t2 = (high_masked_t - RDH_SPLIT_SET_MASK(*t1, RDH_SPLIT_MASK_H)) |
-              (low_masked_t - RDH_SPLIT_SET_MASK(*t1, RDH_SPLIT_MASK_L));
+        // 随机分割
+        // *t1 = (high_masked_t - (high_masked_t ? (high_masked_r % high_masked_t) : 0)) |
+        //       (low_masked_t - (low_masked_t ? (low_masked_r % low_masked_t) : 0));
+
+        // 快速随机分割
+        *t1 = (high_masked_t - RDH_SPLIT_MASK_SET(high_masked_r, high_masked_t)) |
+              (low_masked_t - RDH_SPLIT_MASK_SET(low_masked_r, low_masked_t));
+
+        *t2 = (high_masked_t - RDH_SPLIT_MASK_SET(*t1, RDH_SPLIT_MASK_H)) |
+              (low_masked_t - RDH_SPLIT_MASK_SET(*t1, RDH_SPLIT_MASK_L));
 
         t++;
         t1++;

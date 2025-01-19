@@ -32,7 +32,7 @@ void rdhEmbedData(uint8_t *img, int w, int h, uint8_t *str, int size)
             uint8_t SP4 = img[(j + 2) * w + i + 2];
 
             uint16_t dHSB1, dHSB2, dHSB3, dHSB4, dHSB5;
-            dHSB1 = 
+            // dHSB1 = 
 
             img[j * w + i] = SP1;
             img[j * w + i + 1] = EP1;
@@ -58,25 +58,25 @@ int main(int argc, char *argv[], char *envp[])
     int w, h, channels;
     stbi_uc *data;
 
-    data = stbi_load("image.bmp", &w, &h, &channels, 1);
+    data = stbi_load("girl.jpeg", &w, &h, &channels, 1);
 
-#if 0 // 切割
-    // uint8_t *data1, *data2;
-    // {
-    //     double start = glfwGetTime();
-    //     rdhSplitImage(data, w * h, &data1, &data2);
-    //     printf("分割时间: %3.2f ms\n", (glfwGetTime() - start) * 1000);
-    // }
-    // stbi_write_bmp("data1.bmp", w, h, 1, data1);
-    // stbi_write_bmp("data2.bmp", w, h, 1, data2);
+#if 1 // 切割
+    uint8_t *data1, *data2;
+    {
+        double start = glfwGetTime();
+        rdhSplitImage(data, w * h, &data1, &data2);
+        printf("分割时间: %3.2f ms\n", (glfwGetTime() - start) * 1000);
+    }
+    stbi_write_bmp("data1.bmp", w, h, 1, data1);
+    stbi_write_bmp("data2.bmp", w, h, 1, data2);
 
-    // uint8_t *data3;
-    // {
-    //     double start = glfwGetTime();
-    //     rdhCombineImage(data1, data2, w * h, &data3);
-    //     printf("合并时间: %3.2f ms\n", (glfwGetTime() - start) * 1000);
-    // }
-    // stbi_write_bmp("data3.bmp", w, h, 1, data3);
+    uint8_t *data3;
+    {
+        double start = glfwGetTime();
+        rdhCombineImage(data1, data2, w * h, &data3);
+        printf("合并时间: %3.2f ms\n", (glfwGetTime() - start) * 1000);
+    }
+    stbi_write_bmp("data3.bmp", w, h, 1, data3);
 #endif
     return 0;
 }
