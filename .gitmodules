@@ -10,3 +10,6 @@
 [submodule "external/GmSSL"]
 	path = external/GmSSL
 	url = git@github.com:guanzhi/GmSSL.git
+[submodule "external/zlib"]
+	path = external/zlib
+	url = git@github.com:madler/zlib.git

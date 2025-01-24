@@ -43,6 +43,14 @@
         "stdint.h": "c",
         "compare": "c",
         "cstdint": "c",
-        "initializer_list": "c"
+        "initializer_list": "c",
+        "math.h": "c",
+        "charconv": "c",
+        "optional": "c",
+        "system_error": "c",
+        "functional": "c",
+        "tuple": "c",
+        "utility": "c",
+        "cstddef": "c"
     }
 }

@@ -19,7 +19,7 @@
  * @param width 图像宽度
  * @param height 图像高度
  * @param channels 图像通道数
- * @param textureFormat 输出格式(GL_RGB, GL_RGBA等)
+ * @param textureFormat 输出格式(GL_RGB, GL_RGBA等), 默认为0
  * @return GLuint 纹理ID
  * @note 该函数会创建一个纹理并返回纹理ID
  */

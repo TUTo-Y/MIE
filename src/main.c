@@ -12,41 +12,31 @@
 #include <string.h>
 #include <locale.h>
 
-/**
- * \brief 嵌入数据
- */
-void rdhEmbedData(uint8_t *img, int w, int h, uint8_t *str, int size)
+#define RDH_IMG_POS(img, w, x, y) ((img)[(y) * (w) + (x)]) // 图像数据位置
+
+#define RDH_SPLIT_MALLOC_SIZE(size) (((size) + 7) & ~7)
+#define RDH_SPLIT_MASK_H 0xF8
+#define RDH_SPLIT_MASK_L (~(RDH_SPLIT_MASK_H))
+#define RDH_SPLIT_MASK_SET(x, mask) ((x) & (mask))
+
+int main()
 {
-    for (int i = 0; i < w; i += 3)
-    {
-        for (int j = 0; j < h; j += 3)
-        {
-            uint8_t SP1 = img[j * w + i];
-            uint8_t EP1 = img[j * w + i + 1];
-            uint8_t SP2 = img[j * w + i + 2];
-            uint8_t EP2 = img[(j + 1) * w + i];
-            uint8_t EP3 = img[(j + 1) * w + i + 1];
-            uint8_t EP4 = img[(j + 1) * w + i + 2];
-            uint8_t SP3 = img[(j + 2) * w + i];
-            uint8_t EP5 = img[(j + 2) * w + i + 1];
-            uint8_t SP4 = img[(j + 2) * w + i + 2];
-
-            uint16_t dHSB1, dHSB2, dHSB3, dHSB4, dHSB5;
-            // dHSB1 = 
-
-            img[j * w + i] = SP1;
-            img[j * w + i + 1] = EP1;
-            img[j * w + i + 2] = SP2;
-            img[(j + 1) * w + i] = EP2;
-            img[(j + 1) * w + i + 1] = EP3;
-            img[(j + 1) * w + i + 2] = EP4;
-            img[(j + 2) * w + i] = SP3;
-            img[(j + 2) * w + i + 1] = EP5;
-            img[(j + 2) * w + i + 2] = SP4;
-        }
-    }
+    uint8_t img1line1[3] = {123, 124, 234};
+    uint8_t img1line2[3] = {123, 124, 234};
+    uint8_t img1line3[3] = {123, 124, 234};
+    uint8_t img2line1[3] = {123, 124, 234};
+    uint8_t img2line2[3] = {123, 124, 234};
+    uint8_t img2line3[3] = {123, 124, 234};
+    uint64_t byte = 0x12345678;
+    int total;
+    int now;
+    int size;
+    rdhEmbedDataByte(img1line1, img1line2, img1line3, img2line1, img2line2, img2line3, (uint8_t*)&byte, sizeof(byte), 0, &size);
+    // printf("size: %x\n", 0xE0 );
+    return 0;
 }
 
+#if 0
 int main(int argc, char *argv[], char *envp[])
 {
 
@@ -54,13 +44,19 @@ int main(int argc, char *argv[], char *envp[])
     setlocale(LC_ALL, "zh_CN.UTF-8");
     glfwInit();
     glfwGetTime();
+    srand((unsigned int)time(NULL));
 
     int w, h, channels;
     stbi_uc *data;
 
-    data = stbi_load("girl.jpeg", &w, &h, &channels, 1);
+    // data = stbi_load("girl.jpeg", &w, &h, &channels, 1);
+    data = stbi_load("image.bmp", &w, &h, &channels, 1);
 
-#if 1 // 切割
+#if 1 // 嵌入
+    // rdhEmbedData(data, w, h, NULL, 0);
+#endif
+
+#if 0 // 切割
     uint8_t *data1, *data2;
     {
         double start = glfwGetTime();
@@ -78,8 +74,10 @@ int main(int argc, char *argv[], char *envp[])
     }
     stbi_write_bmp("data3.bmp", w, h, 1, data3);
 #endif
+    stbi_image_free(data);
     return 0;
 }
+#endif
 
 #if 0
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
