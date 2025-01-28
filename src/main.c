@@ -12,33 +12,33 @@
 #include <string.h>
 #include <locale.h>
 
-#define RDH_IMG_POS(img, w, x, y) ((img)[(y) * (w) + (x)]) // 图像数据位置
-
-#define RDH_SPLIT_MALLOC_SIZE(size) (((size) + 7) & ~7)
-#define RDH_SPLIT_MASK_H 0xF8
-#define RDH_SPLIT_MASK_L (~(RDH_SPLIT_MASK_H))
-#define RDH_SPLIT_MASK_SET(x, mask) ((x) & (mask))
-
+#if 0
 int main()
 {
-    uint8_t img1line1[3] = {123, 124, 234};
-    uint8_t img1line2[3] = {123, 124, 234};
-    uint8_t img1line3[3] = {123, 124, 234};
-    uint8_t img2line1[3] = {123, 124, 234};
-    uint8_t img2line2[3] = {123, 124, 234};
-    uint8_t img2line3[3] = {123, 124, 234};
-    uint64_t byte = 0x12345678;
-    int total;
-    int now;
-    int size;
-    rdhEmbedDataByte(img1line1, img1line2, img1line3, img2line1, img2line2, img2line3, (uint8_t*)&byte, sizeof(byte), 0, &size);
-    // printf("size: %x\n", 0xE0 );
+    setlocale(LC_ALL, "zh_CN.UTF-8");
+    char s[] = {
+        0b01001000,
+0b01100101,
+0b01101100,
+0b01101100,
+0b01101111,
+0b00101100,
+0b00100000,
+0b01010111,
+0b01101111,
+0b01110010,
+0b11101100,
+0b01100100,
+0b00100001,
+0b00000000};
+printf("%s\n", s);
     return 0;
 }
-
-#if 0
+#endif
+#if 1
 int main(int argc, char *argv[], char *envp[])
 {
+    char *str = "Hello, World!";
 
     /* 设置中文 */
     setlocale(LC_ALL, "zh_CN.UTF-8");
@@ -52,11 +52,7 @@ int main(int argc, char *argv[], char *envp[])
     // data = stbi_load("girl.jpeg", &w, &h, &channels, 1);
     data = stbi_load("image.bmp", &w, &h, &channels, 1);
 
-#if 1 // 嵌入
-    // rdhEmbedData(data, w, h, NULL, 0);
-#endif
-
-#if 0 // 切割
+#if 1 // 切割
     uint8_t *data1, *data2;
     {
         double start = glfwGetTime();
@@ -65,14 +61,25 @@ int main(int argc, char *argv[], char *envp[])
     }
     stbi_write_bmp("data1.bmp", w, h, 1, data1);
     stbi_write_bmp("data2.bmp", w, h, 1, data2);
+#endif
 
-    uint8_t *data3;
-    {
-        double start = glfwGetTime();
-        rdhCombineImage(data1, data2, w * h, &data3);
-        printf("合并时间: %3.2f ms\n", (glfwGetTime() - start) * 1000);
-    }
-    stbi_write_bmp("data3.bmp", w, h, 1, data3);
+#if 1 // 嵌入
+    uint8_t *m;
+    int mSize;
+    char *out;
+    rdhEmbedData(data1, data2, w, h, &m, &mSize, (const uint8_t *)str, strlen(str) + 1);
+    rdhExtractData(data1, data2, w, h, m, mSize, (uint8_t **)&out);
+    printf("out: %s\n", out);
+#endif
+
+#if 0 // 合并
+    // uint8_t *data3;
+    // {
+    //     double start = glfwGetTime();
+    //     rdhCombineImage(data1, data2, w * h, &data3);
+    //     printf("合并时间: %3.2f ms\n", (glfwGetTime() - start) * 1000);
+    // }
+    // stbi_write_bmp("data3.bmp", w, h, 1, data3);
 #endif
     stbi_image_free(data);
     return 0;

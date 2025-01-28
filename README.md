@@ -18,11 +18,6 @@
 
 ```sh
 git init
-git submodule add git@github.com:glfw/glfw.git external/glfw
-git submodule add git@github.com:recp/cglm.git external/cglm
-git submodule add git@github.com:nothings/stb.git external/stb
-git submodule add git@github.com:guanzhi/GmSSL.git external/GmSSL
-git submodule add git@github.com:madler/zlib.git external/zlib
 git submodule update --init --recursive
 ```
 

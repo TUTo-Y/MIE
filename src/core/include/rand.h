@@ -10,8 +10,8 @@
 #include <string.h>
 #include <stdint.h>
 
-#define Random(x) (rand() << 16 | rand())
-#define Random64(x) (Random(x) << 32 | Random(x))
+#define Random(x) (rand() << 0x10 | rand())
+#define Random64(x) (Random(x) << 0x20 | Random(x))
 
 /**
  * \brief 设置Xorshift随机数种子
