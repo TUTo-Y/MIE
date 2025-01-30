@@ -104,7 +104,7 @@ rdhStatus rdhEmbedData(uint8_t *img1, uint8_t *img2,
  */
 rdhStatus rdhExtractData(uint8_t *img1, uint8_t *img2,
                          int w, int h,
-                         uint8_t *m, int mSize,
+                         const uint8_t *m, int mSize,
                          uint8_t **data);
 
 /**

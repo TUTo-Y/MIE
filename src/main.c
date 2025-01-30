@@ -12,33 +12,92 @@
 #include <string.h>
 #include <locale.h>
 
+// #define divide_by_2_floor(num) (((num) - ((num) < 0)) >> 1)
+// #define divide_by_4_floor(num) (((num) - ((num) < 0 ? 3 : 0)) >> 2)
+
+// #define divide_by_2_floor(num) (((num) - ((num) < 0 ? 0 : 0)) >> 1)
+// #define divide_by_4_floor(num) (((num) - ((num) < 0 ? 0 : 0)) >> 2)
+
+#define divide_by_2_floor(num) ((num) >> 1)
+#define divide_by_4_floor(num) ((num) >> 2)
+
+int main()
+{
+    for(int i = 0; i < 0x100; i++)
+    {
+        printf("i = %d &3 = %d\n", i, i & 3);
+    }
+    return 0;
+}
+
 #if 0
 int main()
 {
+    /* 设置中文 */
     setlocale(LC_ALL, "zh_CN.UTF-8");
-    char s[] = {
-        0b01001000,
-0b01100101,
-0b01101100,
-0b01101100,
-0b01101111,
-0b00101100,
-0b00100000,
-0b01010111,
-0b01101111,
-0b01110010,
-0b11101100,
-0b01100100,
-0b00100001,
-0b00000000};
-printf("%s\n", s);
+
+    DEBUG("测试除2\n");
+    for (int i = ((-31) * 2) + ((-31) * 2); i <= ((31) * 2) + ((31) * 2); i++)
+    {
+        int out = divide_by_2_floor(i);
+        if (i >= 0)
+        {
+            if (out == i / 2)
+            {
+                DEBUG("计算值 = %4d\tdHSB = %4d\tyes\n", i, divide_by_2_floor(i));
+            }
+            else
+            {
+                DEBUG("计算值 = %4d\tdHSB = %4d\tno\n", i, divide_by_2_floor(i));
+            }
+        }
+        else
+        {
+            if (out == (i - 1) / 2)
+            {
+                DEBUG("计算值 = %4d\tdHSB = %4d\tyes\n", i, divide_by_2_floor(i));
+            }
+            else
+            {
+                DEBUG("计算值 = %4d\tdHSB = %4d\tno\n", i, divide_by_2_floor(i));
+            }
+        }
+    }
+    DEBUG("\n\n测试除4\n");
+    for (int i = ((-31) * 4) + ((-31) * 4); i <= ((31) * 4) + ((31) * 4); i++)
+    {
+        int out = divide_by_4_floor(i);
+        if (i >= 0)
+        {
+            if (out == i / 4)
+            {
+                DEBUG("计算值 = %4d\tdHSB = %4d\tyes\n", i, divide_by_4_floor(i));
+            }
+            else
+            {
+                DEBUG("计算值 = %4d\tdHSB = %4d\tno\n", i, divide_by_4_floor(i));
+            }
+        }
+        else
+        {
+            if (out == (i - 3) / 4)
+            {
+                DEBUG("计算值 = %4d\tdHSB = %4d\tyes\n", i, divide_by_4_floor(i));
+            }
+            else
+            {
+                DEBUG("计算值 = %4d\tdHSB = %4d\tno\n", i, divide_by_4_floor(i));
+            }
+        }
+    }
     return 0;
 }
 #endif
-#if 1
+
+#if 0
 int main(int argc, char *argv[], char *envp[])
 {
-    char *str = "Hello, World!";
+    char *str = "HelloWOrld!\n123456789987978978986666666666";
 
     /* 设置中文 */
     setlocale(LC_ALL, "zh_CN.UTF-8");
@@ -64,12 +123,25 @@ int main(int argc, char *argv[], char *envp[])
 #endif
 
 #if 1 // 嵌入
+    uint8_t *data1Copy, *data2Copy;
+    data1Copy = (uint8_t *)malloc(w * h);
+    data2Copy = (uint8_t *)malloc(w * h);
+    memcpy(data1Copy, data1, w * h);
+    memcpy(data2Copy, data2, w * h);
+
     uint8_t *m;
     int mSize;
     char *out;
     rdhEmbedData(data1, data2, w, h, &m, &mSize, (const uint8_t *)str, strlen(str) + 1);
     rdhExtractData(data1, data2, w, h, m, mSize, (uint8_t **)&out);
     printf("out: %s\n", out);
+
+    // 检查解码结果
+    if(memcmp(data1, data1Copy, w * h) != 0 || memcmp(data2, data2Copy, w * h) != 0)
+    {
+        printf("图像与原数据不吻合\n");
+    }
+    printf("检查完毕\n");
 #endif
 
 #if 0 // 合并

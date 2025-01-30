@@ -6,19 +6,24 @@
 // 高低位掩码
 #define RDH_IMG_MASK_HIGH 0xF8
 #define RDH_IMG_MASK_LOW (~(RDH_IMG_MASK_HIGH))
-#define RDH_IMG_MASK_SET(x, mask) ((x) & (mask))
+#define RDH_IMG_MASK(x, mask) ((x) & (mask))
 
-// 获取高位的值
-#define RDH_IMG_GET_HIGH(x) (RDH_IMG_MASK_SET((x), RDH_IMG_MASK_HIGH) >> 3)
+// 获取高低位的值
+#define RDH_IMG_GET_HIGH(x) (RDH_IMG_MASK((x), RDH_IMG_MASK_HIGH) >> 3)
+#define RDH_IMG_GET_LOW(x) (RDH_IMG_MASK((x), RDH_IMG_MASK_LOW))
 
 // 图像数据位置
 #define RDH_IMG_POS(img, w, x, y) ((img)[(y) * (w) + (x)])
 
 // 图像哈希表
-static uint8_t hash[4 * (RDH_IMG_GET_HIGH(RDH_IMG_MASK_HIGH) + 1)];
+static uint8_t hash[4 * RDH_IMG_GET_HIGH(RDH_IMG_MASK_HIGH) + 1];
 #define RDH_HASH_INIT() memset(hash, 0, sizeof(hash))
-#define RDH_HASH_GET(x) (hash)[2 * (RDH_IMG_GET_HIGH(RDH_IMG_MASK_HIGH) + 1) + (x)]
+#define RDH_HASH_GET(x) (hash)[2 * RDH_IMG_GET_HIGH(RDH_IMG_MASK_HIGH) + (x)]
 #define RDH_HASH_SET(x) (RDH_HASH_GET(x)++)
+// static uint8_t hash[4 * (RDH_IMG_GET_HIGH(RDH_IMG_MASK_HIGH) + 1)];
+// #define RDH_HASH_INIT() memset(hash, 0, sizeof(hash))
+// #define RDH_HASH_GET(x) (hash)[2 * (RDH_IMG_GET_HIGH(RDH_IMG_MASK_HIGH) + 1) + (x)]
+// #define RDH_HASH_SET(x) (RDH_HASH_GET(x)++)
 
 void rdhShuffleImage(uint8_t *img, int size, uint64_t key)
 {
@@ -79,28 +84,28 @@ void rdhSplitImage(const uint8_t *img, int size, uint8_t **img1, uint8_t **img2)
     uint8_t *t1 = *img1;
     uint8_t *t2 = *img2;
 
-    srand((unsigned int)time(NULL));
+    // srand((unsigned int)time(NULL));
     xSrand8(rand());
 
     // 随机分割
     while (size--)
     {
         uint8_t r = xRand8();
-        uint8_t high_masked_t = RDH_IMG_MASK_SET(*t, RDH_IMG_MASK_HIGH);
-        uint8_t low_masked_t = RDH_IMG_MASK_SET(*t, RDH_IMG_MASK_LOW);
-        uint8_t high_masked_r = RDH_IMG_MASK_SET(r, RDH_IMG_MASK_HIGH);
-        uint8_t low_masked_r = RDH_IMG_MASK_SET(r, RDH_IMG_MASK_LOW);
+        uint8_t high_masked_t = RDH_IMG_MASK(*t, RDH_IMG_MASK_HIGH);
+        uint8_t low_masked_t = RDH_IMG_MASK(*t, RDH_IMG_MASK_LOW);
+        uint8_t high_masked_r = RDH_IMG_MASK(r, RDH_IMG_MASK_HIGH);
+        uint8_t low_masked_r = RDH_IMG_MASK(r, RDH_IMG_MASK_LOW);
 
         // 随机分割
         // *t1 = (high_masked_t - (high_masked_t ? (high_masked_r % high_masked_t) : 0)) |
         //       (low_masked_t - (low_masked_t ? (low_masked_r % low_masked_t) : 0));
 
         // 快速随机分割
-        *t1 = (high_masked_t - RDH_IMG_MASK_SET(high_masked_r, high_masked_t)) |
-              (low_masked_t - RDH_IMG_MASK_SET(low_masked_r, low_masked_t));
+        *t1 = (high_masked_t - RDH_IMG_MASK(high_masked_r, high_masked_t)) |
+              (low_masked_t - RDH_IMG_MASK(low_masked_r, low_masked_t));
 
-        *t2 = (high_masked_t - RDH_IMG_MASK_SET(*t1, RDH_IMG_MASK_HIGH)) |
-              (low_masked_t - RDH_IMG_MASK_SET(*t1, RDH_IMG_MASK_LOW));
+        *t2 = (high_masked_t - RDH_IMG_MASK(*t1, RDH_IMG_MASK_HIGH)) |
+              (low_masked_t - RDH_IMG_MASK(*t1, RDH_IMG_MASK_LOW));
 
         t++;
         t1++;
@@ -127,43 +132,53 @@ void rdhCombineImage(const uint8_t *img1, const uint8_t *img2, int size, uint8_t
     }
 }
 
-#define RDH_ME_MASK_COUNT_EP 0xE0
-#define RDH_ME_MASK_COUNT_SP 0x0C
-#define RDH_ME_MASK_RDU_EP 0x10
-#define RDH_ME_MASK_RDU_SP 0x02
-#define RDH_ME_MASK_INUSE 0x01
-#define RDH_ME_OFFSET_COUNT_EP 5
-#define RDH_ME_OFFSET_COUNT_SP 2
-#define RDH_ME_OFFSET_RDU_EP 4
-#define RDH_ME_OFFSET_RDU_SP 1
-#define RDH_ME_OFFSET_INUSE 0
+// M的掩码
+#define RDH_M_MASK_COUNT_EP 0xE0
+#define RDH_M_MASK_COUNT_SP 0x0C
+#define RDH_M_MASK_RDU_EP 0x10
+#define RDH_M_MASK_RDU_SP 0x02
+#define RDH_M_MASK_INUSE 0x01
+#define RDH_M_MASK(x, mask) ((x) & (mask))
 
-#define RDH_ME_MASK_SET(x, mask) ((x) & (mask))
-#define RDH_ME_OFFSET_SET(x, offset) ((x) << (offset))
-#define RDH_ME_OFFSET_GET(x, offset) ((x) >> (offset))
+// M的偏移
+#define RDH_M_OFFSET_COUNT_EP 5
+#define RDH_M_OFFSET_COUNT_SP 2
+#define RDH_M_OFFSET_RDU_EP 4
+#define RDH_M_OFFSET_RDU_SP 1
+#define RDH_M_OFFSET_INUSE 0
+#define RDH_M_OFFSET_SET(x, offset) ((x) << (offset))
+#define RDH_M_OFFSET_GET(x, offset) ((x) >> (offset))
 
-#define RDH_ME_GET(me, field) \
-    RDH_ME_OFFSET_GET(RDH_ME_MASK_SET((me), RDH_ME_MASK_##field), RDH_ME_OFFSET_##field)
+// 对M的操作
+#define RDH_M_GET(me, field) \
+    RDH_M_OFFSET_GET(RDH_M_MASK((me), RDH_M_MASK_##field), RDH_M_OFFSET_##field)
+#define RDH_M_SET(me, value, field) \
+    (me) |= RDH_M_MASK(RDH_M_OFFSET_SET((value), RDH_M_OFFSET_##field), RDH_M_MASK_##field)
 
-#define RDH_ME_SET(value, field) \
-    RDH_ME_MASK_SET(RDH_ME_OFFSET_SET((value), RDH_ME_OFFSET_##field), RDH_ME_MASK_##field)
-
+// EP和SP的操作值
 #define RDH_EP_VALUE_ADD 0x08
 #define RDH_EP_VALUE_MAX (0xFF - RDH_EP_VALUE_ADD)
 #define RDH_SP_VALUE_ADD 0x08
 #define RDH_SP_VALUE_MAX (0xFF - RDH_SP_VALUE_ADD)
 
+// 对数据的操作
 #define RDH_DATA_BYTE_2_BIT(byte) ((byte) << 3)
 #define RDH_DATA_BIT_2_BYTE(bit) ((bit) >> 3)
 
-#define RDH_DATA_INDEX(size) ((size) >> 3)
+#define RDH_DATA_INDEX(size) RDH_DATA_BIT_2_BYTE(size)
 #define RDH_DATA_BIT(size) ((size) & 7)
-#define RDG_DATA_GET_BYTE(byte, size) (((byte) & (1 << RDH_DATA_BIT(size))) >> RDH_DATA_BIT(size)) // 获取这个字节的size位
-#define RDH_DATA_GET(data, now) (RDG_DATA_GET_BYTE(((const uint8_t *)data)[RDH_DATA_INDEX(now)], now))
+#define RDG_DATA_GET_BIT(byte, bitIndex) (((byte) & (1 << RDH_DATA_BIT(bitIndex))) >> RDH_DATA_BIT(bitIndex)) // 获取这个字节的bitIndex位的bit
+#define RDH_DATA_GET(data, now) (RDG_DATA_GET_BIT(((const uint8_t *)data)[RDH_DATA_INDEX(now)], now))
 #define RDH_DATA_SET(data, now, value) (((uint8_t *)data)[RDH_DATA_INDEX(now)] |= ((value) << RDH_DATA_BIT(now)))
 
-#define divide_by_2_floor(num) (((num) - ((num) < 0)) >> 1)
-#define divide_by_4_floor(num) (((num) - ((num) < 0 ? 3 : 0)) >> 2)
+// 数据的内存操作
+#define RDH_DATA_SIZE_INIT 0x10
+#define RDH_DATA_SIZE_TSD 0x08
+#define RDH_DATA_SIZE_ADD 0x10
+
+// 向下取整的除法
+#define RDH_DIVIDE_BY_2_FLOOR(num) ((num) >> 1)
+#define RDH_DIVIDE_BY_4_FLOOR(num) ((num) >> 2)
 
 typedef struct
 {
@@ -171,7 +186,7 @@ typedef struct
     uint8_t SP[4];
 } rdhChunk;
 #define RDH_CHUNK_EP(chunk, i) ((chunk).EP[(i) - 1])
-#define RDH_CHUNK_SP(chunk, i) ((chunk).SP[(i) - 1])
+#define RDH_CHUNK_SP(chunk, i) ((chunk).SP[((i) - 1) & 3]) // &3是为了防止在SP和EP同时操作时出现数组越界，不会影响结果
 
 /**
  * \brief 嵌入数据
@@ -215,23 +230,24 @@ uint8_t rdhEmbedDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Li
     RDH_CHUNK_EP(imgChunk2, 5) = img2Line3[1];
     RDH_CHUNK_SP(imgChunk2, 4) = img2Line3[2];
 
-    // 检查是否存在溢出
+    // 检查img1的EP是否存在溢出
     for (int i = 0; i < 5; i++)
-        if (RDH_CHUNK_EP(imgChunk1, i + 1) > RDH_EP_VALUE_MAX)
+        if (RDH_CHUNK_EP(imgChunk1, i + 1) > RDH_EP_VALUE_MAX ||
+            RDH_CHUNK_SP(imgChunk1, i + 1) > RDH_SP_VALUE_MAX)
         {
             return 0;
         }
 
-    {
-        // DEBUG("|------img1------|\n");
-        // DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunk1, 1), RDH_CHUNK_EP(imgChunk1, 1), RDH_CHUNK_SP(imgChunk1, 2));
-        // DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunk1, 2), RDH_CHUNK_EP(imgChunk1, 3), RDH_CHUNK_EP(imgChunk1, 4));
-        // DEBUG("%2d %2d %2d\n\n", RDH_CHUNK_SP(imgChunk1, 3), RDH_CHUNK_EP(imgChunk1, 5), RDH_CHUNK_SP(imgChunk1, 4));
-        // DEBUG("|------img2------|\n");
-        // DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunk2, 1), RDH_CHUNK_EP(imgChunk2, 1), RDH_CHUNK_SP(imgChunk2, 2));
-        // DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunk2, 2), RDH_CHUNK_EP(imgChunk2, 3), RDH_CHUNK_EP(imgChunk2, 4));
-        // DEBUG("%2d %2d %2d\n\n", RDH_CHUNK_SP(imgChunk2, 3), RDH_CHUNK_EP(imgChunk2, 5), RDH_CHUNK_SP(imgChunk2, 4));
-    }
+    // {
+    //     DEBUG("|------img1------|\n");
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunk1, 1), RDH_CHUNK_EP(imgChunk1, 1), RDH_CHUNK_SP(imgChunk1, 2));
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunk1, 2), RDH_CHUNK_EP(imgChunk1, 3), RDH_CHUNK_EP(imgChunk1, 4));
+    //     DEBUG("%2d %2d %2d\n\n", RDH_CHUNK_SP(imgChunk1, 3), RDH_CHUNK_EP(imgChunk1, 5), RDH_CHUNK_SP(imgChunk1, 4));
+    //     DEBUG("|------img2------|\n");
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunk2, 1), RDH_CHUNK_EP(imgChunk2, 1), RDH_CHUNK_SP(imgChunk2, 2));
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunk2, 2), RDH_CHUNK_EP(imgChunk2, 3), RDH_CHUNK_EP(imgChunk2, 4));
+    //     DEBUG("%2d %2d %2d\n\n", RDH_CHUNK_SP(imgChunk2, 3), RDH_CHUNK_EP(imgChunk2, 5), RDH_CHUNK_SP(imgChunk2, 4));
+    // }
 
     // 获取采样像素采样像素 SPs 和可嵌入像素 EPs的HSB值
     rdhChunk imgChunkHSB1;
@@ -269,16 +285,16 @@ uint8_t rdhEmbedDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Li
 
     // 计算dHSB
     int16_t dHSB[5];
-    dHSB[0] = divide_by_2_floor(2 * RDH_CHUNK_EP(imgChunkHSB1, 1) - (RDH_CHUNK_SP(imgChunkHSB1, 1) + RDH_CHUNK_SP(imgChunkHSB1, 2)) +
-                                2 * RDH_CHUNK_EP(imgChunkHSB2, 1) - (RDH_CHUNK_SP(imgChunkHSB2, 1) + RDH_CHUNK_SP(imgChunkHSB2, 2)));
-    dHSB[1] = divide_by_2_floor(2 * RDH_CHUNK_EP(imgChunkHSB1, 2) - (RDH_CHUNK_SP(imgChunkHSB1, 1) + RDH_CHUNK_SP(imgChunkHSB1, 3)) +
-                                2 * RDH_CHUNK_EP(imgChunkHSB2, 2) - (RDH_CHUNK_SP(imgChunkHSB2, 1) + RDH_CHUNK_SP(imgChunkHSB2, 3)));
-    dHSB[2] = divide_by_4_floor(4 * RDH_CHUNK_EP(imgChunkHSB1, 3) - (RDH_CHUNK_SP(imgChunkHSB1, 1) + RDH_CHUNK_SP(imgChunkHSB1, 2) + RDH_CHUNK_SP(imgChunkHSB1, 3) + RDH_CHUNK_SP(imgChunkHSB1, 4)) +
-                                4 * RDH_CHUNK_EP(imgChunkHSB2, 3) - (RDH_CHUNK_SP(imgChunkHSB2, 1) + RDH_CHUNK_SP(imgChunkHSB2, 2) + RDH_CHUNK_SP(imgChunkHSB2, 3) + RDH_CHUNK_SP(imgChunkHSB2, 4)));
-    dHSB[3] = divide_by_2_floor(2 * RDH_CHUNK_EP(imgChunkHSB1, 4) - (RDH_CHUNK_SP(imgChunkHSB1, 2) + RDH_CHUNK_SP(imgChunkHSB1, 4)) +
-                                2 * RDH_CHUNK_EP(imgChunkHSB2, 4) - (RDH_CHUNK_SP(imgChunkHSB2, 2) + RDH_CHUNK_SP(imgChunkHSB2, 4)));
-    dHSB[4] = divide_by_2_floor(2 * RDH_CHUNK_EP(imgChunkHSB1, 5) - (RDH_CHUNK_SP(imgChunkHSB1, 3) + RDH_CHUNK_SP(imgChunkHSB1, 4)) +
-                                2 * RDH_CHUNK_EP(imgChunkHSB2, 5) - (RDH_CHUNK_SP(imgChunkHSB2, 3) + RDH_CHUNK_SP(imgChunkHSB2, 4)));
+    dHSB[0] = RDH_DIVIDE_BY_2_FLOOR(2 * RDH_CHUNK_EP(imgChunkHSB1, 1) - (RDH_CHUNK_SP(imgChunkHSB1, 1) + RDH_CHUNK_SP(imgChunkHSB1, 2)) +
+                                    2 * RDH_CHUNK_EP(imgChunkHSB2, 1) - (RDH_CHUNK_SP(imgChunkHSB2, 1) + RDH_CHUNK_SP(imgChunkHSB2, 2)));
+    dHSB[1] = RDH_DIVIDE_BY_2_FLOOR(2 * RDH_CHUNK_EP(imgChunkHSB1, 2) - (RDH_CHUNK_SP(imgChunkHSB1, 1) + RDH_CHUNK_SP(imgChunkHSB1, 3)) +
+                                    2 * RDH_CHUNK_EP(imgChunkHSB2, 2) - (RDH_CHUNK_SP(imgChunkHSB2, 1) + RDH_CHUNK_SP(imgChunkHSB2, 3)));
+    dHSB[2] = RDH_DIVIDE_BY_4_FLOOR(4 * RDH_CHUNK_EP(imgChunkHSB1, 3) - (RDH_CHUNK_SP(imgChunkHSB1, 1) + RDH_CHUNK_SP(imgChunkHSB1, 2) + RDH_CHUNK_SP(imgChunkHSB1, 3) + RDH_CHUNK_SP(imgChunkHSB1, 4)) +
+                                    4 * RDH_CHUNK_EP(imgChunkHSB2, 3) - (RDH_CHUNK_SP(imgChunkHSB2, 1) + RDH_CHUNK_SP(imgChunkHSB2, 2) + RDH_CHUNK_SP(imgChunkHSB2, 3) + RDH_CHUNK_SP(imgChunkHSB2, 4)));
+    dHSB[3] = RDH_DIVIDE_BY_2_FLOOR(2 * RDH_CHUNK_EP(imgChunkHSB1, 4) - (RDH_CHUNK_SP(imgChunkHSB1, 2) + RDH_CHUNK_SP(imgChunkHSB1, 4)) +
+                                    2 * RDH_CHUNK_EP(imgChunkHSB2, 4) - (RDH_CHUNK_SP(imgChunkHSB2, 2) + RDH_CHUNK_SP(imgChunkHSB2, 4)));
+    dHSB[4] = RDH_DIVIDE_BY_2_FLOOR(2 * RDH_CHUNK_EP(imgChunkHSB1, 5) - (RDH_CHUNK_SP(imgChunkHSB1, 3) + RDH_CHUNK_SP(imgChunkHSB1, 4)) +
+                                    2 * RDH_CHUNK_EP(imgChunkHSB2, 5) - (RDH_CHUNK_SP(imgChunkHSB2, 3) + RDH_CHUNK_SP(imgChunkHSB2, 4)));
 
     // 计算Me1
     int16_t Me1 = dHSB[0];
@@ -322,14 +338,14 @@ uint8_t rdhEmbedDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Li
             // 嵌入bit
             RDH_CHUNK_EP(imgChunk1, i + 1) += RDH_EP_VALUE_ADD * value;
 
-            DEBUG("%d", value);
+            // DEBUG("%d", value);
+
             // 设置m
             if (first == false)
             {
                 first = true;
-                m |= RDH_ME_SET(i, COUNT_EP);
-                m |= value ? RDH_ME_SET(1, RDU_EP)
-                           : RDH_ME_SET(0, RDU_EP);
+                RDH_M_SET(m, i, COUNT_EP);   // 记录ME1的位置
+                RDH_M_SET(m, value, RDU_EP); // 记录矫正值
             }
         }
         else if (dHSB[i] > Me1) // 大于峰值，直方图平移
@@ -364,7 +380,7 @@ uint8_t rdhEmbedDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Li
     img2Line3[2] = RDH_CHUNK_SP(imgChunk2, 4);
 
     // 设置m
-    m |= RDH_ME_SET(1, INUSE);
+    RDH_M_SET(m, 1, INUSE);
 
     return m;
 }
@@ -387,7 +403,7 @@ void rdhExtractDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Lin
                         uint8_t m)
 {
     // 检查m是否跳过
-    if (RDH_ME_GET(m, INUSE) == 0)
+    if (RDH_M_GET(m, INUSE) == 0)
     {
         return;
     }
@@ -415,16 +431,16 @@ void rdhExtractDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Lin
     RDH_CHUNK_EP(imgChunk2, 5) = img2Line3[1];
     RDH_CHUNK_SP(imgChunk2, 4) = img2Line3[2];
 
-    {
-        // DEBUG("|------img1------|\n");
-        // DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunk1, 1), RDH_CHUNK_EP(imgChunk1, 1), RDH_CHUNK_SP(imgChunk1, 2));
-        // DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunk1, 2), RDH_CHUNK_EP(imgChunk1, 3), RDH_CHUNK_EP(imgChunk1, 4));
-        // DEBUG("%2d %2d %2d\n\n", RDH_CHUNK_SP(imgChunk1, 3), RDH_CHUNK_EP(imgChunk1, 5), RDH_CHUNK_SP(imgChunk1, 4));
-        // DEBUG("|------img2------|\n");
-        // DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunk2, 1), RDH_CHUNK_EP(imgChunk2, 1), RDH_CHUNK_SP(imgChunk2, 2));
-        // DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunk2, 2), RDH_CHUNK_EP(imgChunk2, 3), RDH_CHUNK_EP(imgChunk2, 4));
-        // DEBUG("%2d %2d %2d\n\n", RDH_CHUNK_SP(imgChunk2, 3), RDH_CHUNK_EP(imgChunk2, 5), RDH_CHUNK_SP(imgChunk2, 4));
-    }
+    // {
+    //     DEBUG("|------img1------|\n");
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunk1, 1), RDH_CHUNK_EP(imgChunk1, 1), RDH_CHUNK_SP(imgChunk1, 2));
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunk1, 2), RDH_CHUNK_EP(imgChunk1, 3), RDH_CHUNK_EP(imgChunk1, 4));
+    //     DEBUG("%2d %2d %2d\n\n", RDH_CHUNK_SP(imgChunk1, 3), RDH_CHUNK_EP(imgChunk1, 5), RDH_CHUNK_SP(imgChunk1, 4));
+    //     DEBUG("|------img2------|\n");
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunk2, 1), RDH_CHUNK_EP(imgChunk2, 1), RDH_CHUNK_SP(imgChunk2, 2));
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunk2, 2), RDH_CHUNK_EP(imgChunk2, 3), RDH_CHUNK_EP(imgChunk2, 4));
+    //     DEBUG("%2d %2d %2d\n\n", RDH_CHUNK_SP(imgChunk2, 3), RDH_CHUNK_EP(imgChunk2, 5), RDH_CHUNK_SP(imgChunk2, 4));
+    // }
 
     // 获取采样像素采样像素 SPs 和可嵌入像素 EPs的HSB值
     rdhChunk imgChunkHSB1;
@@ -462,19 +478,19 @@ void rdhExtractDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Lin
 
     // 计算dHSB
     int16_t dHSB[5];
-    dHSB[0] = divide_by_2_floor(2 * RDH_CHUNK_EP(imgChunkHSB1, 1) - (RDH_CHUNK_SP(imgChunkHSB1, 1) + RDH_CHUNK_SP(imgChunkHSB1, 2)) +
-                                2 * RDH_CHUNK_EP(imgChunkHSB2, 1) - (RDH_CHUNK_SP(imgChunkHSB2, 1) + RDH_CHUNK_SP(imgChunkHSB2, 2)));
-    dHSB[1] = divide_by_2_floor(2 * RDH_CHUNK_EP(imgChunkHSB1, 2) - (RDH_CHUNK_SP(imgChunkHSB1, 1) + RDH_CHUNK_SP(imgChunkHSB1, 3)) +
-                                2 * RDH_CHUNK_EP(imgChunkHSB2, 2) - (RDH_CHUNK_SP(imgChunkHSB2, 1) + RDH_CHUNK_SP(imgChunkHSB2, 3)));
-    dHSB[2] = divide_by_4_floor(4 * RDH_CHUNK_EP(imgChunkHSB1, 3) - (RDH_CHUNK_SP(imgChunkHSB1, 1) + RDH_CHUNK_SP(imgChunkHSB1, 2) + RDH_CHUNK_SP(imgChunkHSB1, 3) + RDH_CHUNK_SP(imgChunkHSB1, 4)) +
-                                4 * RDH_CHUNK_EP(imgChunkHSB2, 3) - (RDH_CHUNK_SP(imgChunkHSB2, 1) + RDH_CHUNK_SP(imgChunkHSB2, 2) + RDH_CHUNK_SP(imgChunkHSB2, 3) + RDH_CHUNK_SP(imgChunkHSB2, 4)));
-    dHSB[3] = divide_by_2_floor(2 * RDH_CHUNK_EP(imgChunkHSB1, 4) - (RDH_CHUNK_SP(imgChunkHSB1, 2) + RDH_CHUNK_SP(imgChunkHSB1, 4)) +
-                                2 * RDH_CHUNK_EP(imgChunkHSB2, 4) - (RDH_CHUNK_SP(imgChunkHSB2, 2) + RDH_CHUNK_SP(imgChunkHSB2, 4)));
-    dHSB[4] = divide_by_2_floor(2 * RDH_CHUNK_EP(imgChunkHSB1, 5) - (RDH_CHUNK_SP(imgChunkHSB1, 3) + RDH_CHUNK_SP(imgChunkHSB1, 4)) +
-                                2 * RDH_CHUNK_EP(imgChunkHSB2, 5) - (RDH_CHUNK_SP(imgChunkHSB2, 3) + RDH_CHUNK_SP(imgChunkHSB2, 4)));
+    dHSB[0] = RDH_DIVIDE_BY_2_FLOOR(2 * RDH_CHUNK_EP(imgChunkHSB1, 1) - (RDH_CHUNK_SP(imgChunkHSB1, 1) + RDH_CHUNK_SP(imgChunkHSB1, 2)) +
+                                    2 * RDH_CHUNK_EP(imgChunkHSB2, 1) - (RDH_CHUNK_SP(imgChunkHSB2, 1) + RDH_CHUNK_SP(imgChunkHSB2, 2)));
+    dHSB[1] = RDH_DIVIDE_BY_2_FLOOR(2 * RDH_CHUNK_EP(imgChunkHSB1, 2) - (RDH_CHUNK_SP(imgChunkHSB1, 1) + RDH_CHUNK_SP(imgChunkHSB1, 3)) +
+                                    2 * RDH_CHUNK_EP(imgChunkHSB2, 2) - (RDH_CHUNK_SP(imgChunkHSB2, 1) + RDH_CHUNK_SP(imgChunkHSB2, 3)));
+    dHSB[2] = RDH_DIVIDE_BY_4_FLOOR(4 * RDH_CHUNK_EP(imgChunkHSB1, 3) - (RDH_CHUNK_SP(imgChunkHSB1, 1) + RDH_CHUNK_SP(imgChunkHSB1, 2) + RDH_CHUNK_SP(imgChunkHSB1, 3) + RDH_CHUNK_SP(imgChunkHSB1, 4)) +
+                                    4 * RDH_CHUNK_EP(imgChunkHSB2, 3) - (RDH_CHUNK_SP(imgChunkHSB2, 1) + RDH_CHUNK_SP(imgChunkHSB2, 2) + RDH_CHUNK_SP(imgChunkHSB2, 3) + RDH_CHUNK_SP(imgChunkHSB2, 4)));
+    dHSB[3] = RDH_DIVIDE_BY_2_FLOOR(2 * RDH_CHUNK_EP(imgChunkHSB1, 4) - (RDH_CHUNK_SP(imgChunkHSB1, 2) + RDH_CHUNK_SP(imgChunkHSB1, 4)) +
+                                    2 * RDH_CHUNK_EP(imgChunkHSB2, 4) - (RDH_CHUNK_SP(imgChunkHSB2, 2) + RDH_CHUNK_SP(imgChunkHSB2, 4)));
+    dHSB[4] = RDH_DIVIDE_BY_2_FLOOR(2 * RDH_CHUNK_EP(imgChunkHSB1, 5) - (RDH_CHUNK_SP(imgChunkHSB1, 3) + RDH_CHUNK_SP(imgChunkHSB1, 4)) +
+                                    2 * RDH_CHUNK_EP(imgChunkHSB2, 5) - (RDH_CHUNK_SP(imgChunkHSB2, 3) + RDH_CHUNK_SP(imgChunkHSB2, 4)));
 
     // 获取Me1
-    int16_t Me1 = dHSB[RDH_ME_GET(m, COUNT_EP)] - RDH_ME_GET(m, RDU_EP);
+    int16_t Me1 = dHSB[RDH_M_GET(m, COUNT_EP)] - RDH_M_GET(m, RDU_EP);
 
     // {
     //     DEBUG("|------dHSB------|\n");
@@ -486,7 +502,7 @@ void rdhExtractDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Lin
     //     DEBUG("Me1:%2d\n", Me1);
     // }
 
-    // 提取EP中的数据
+    // 提取EP中的数据，并恢复图像
     // DEBUG("|------提取------|\n");
     for (int i = 0; i < 5; i++)
     {
@@ -496,12 +512,14 @@ void rdhExtractDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Lin
             // 0
             RDH_DATA_SET(byte, *now, 0);
             *now += 1;
+            // DEBUG("0");
         }
         else if (dHSB[i] == Me1 + 1)
         {
             // 1
             RDH_DATA_SET(byte, *now, 1);
             *now += 1;
+            // DEBUG("1");
         }
 
         // 恢复图像
@@ -511,10 +529,9 @@ void rdhExtractDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Lin
         }
         else
         {
-            continue;
         }
     }
-    // DEBUG("\n\n\n");
+    // DEBUG("\n");
 
     // 复制EP和SP
     img1Line1[0] = RDH_CHUNK_SP(imgChunk1, 1);
@@ -558,10 +575,9 @@ rdhStatus rdhEmbedData(uint8_t *img1, uint8_t *img2,
 
     // 嵌入数据
     int now = 0;
-    int i, j;
-    for (i = 0; i < w; i += 3)
+    for (int i = 0; i < w - 2; i += 3)
     {
-        for (int j = 0; j < h; j += 3)
+        for (int j = 0; j < h - 2; j += 3)
         {
             (*m)[(*mSize)++] = rdhEmbedDataByte(&RDH_IMG_POS(img1Copy, w, i, j), &RDH_IMG_POS(img1Copy, w, i, j + 1), &RDH_IMG_POS(img1Copy, w, i, j + 2),
                                                 &RDH_IMG_POS(img2Copy, w, i, j), &RDH_IMG_POS(img2Copy, w, i, j + 1), &RDH_IMG_POS(img2Copy, w, i, j + 2),
@@ -574,35 +590,36 @@ rdhStatus rdhEmbedData(uint8_t *img1, uint8_t *img2,
         }
     }
 
-    // 检查是否嵌入完毕
-    if (now < size)
-    {
-        ERROR("嵌入数据失败 : 数据过大\n");
-        return RDH_ERROR;
-    }
+    ERROR("嵌入数据失败 : 数据过大\n");
+
+    // 释放内存
+    rdhFree(img1Copy);
+    rdhFree(img2Copy);
+    rdhFree(*m);
+    *mSize = 0;
+
+    return RDH_ERROR;
 
 SUCESS:
     // 复制图像数据
     memcpy(img1, img1Copy, w * h);
     memcpy(img2, img2Copy, w * h);
+
     // 释放内存
     rdhFree(img1Copy);
     rdhFree(img2Copy);
 
-    DEBUG("\n嵌入结束now : %d size : %d 原size : %d\n", now, size, RDH_DATA_BIT_2_BYTE(size));
+    // 调整m大小
+    *m = (uint8_t *)realloc(*m, *mSize);
+
     return RDH_SUCESS;
 }
 
 rdhStatus rdhExtractData(uint8_t *img1, uint8_t *img2,
                          int w, int h,
-                         uint8_t *m, int mSize,
+                         const uint8_t *m, int mSize,
                          uint8_t **data)
 {
-    // 为data分配初始内存
-    int size = 0x10;
-    *data = (uint8_t *)rdhMalloc(size);
-    memset(*data, 0, size);
-
     // 安全检查
     if (mSize > (w / 3) * (h / 3))
     {
@@ -610,25 +627,29 @@ rdhStatus rdhExtractData(uint8_t *img1, uint8_t *img2,
         return RDH_ERROR;
     }
 
+    // 为data分配初始内存
+    int size = RDH_DATA_SIZE_INIT;
+    *data = (uint8_t *)rdhMalloc(size);
+    memset(*data, 0, size);
+
     // 提取数据
     int now = 0;
     int mindex = 0;
-    for (int i = 0; i < w; i += 3)
+    for (int i = 0; i < w - 2; i += 3)
     {
-        for (int j = 0; j < h; j += 3)
+        for (int j = 0; j < h - 2; j += 3)
         {
             // 检查是否结束
             if (mindex >= mSize)
             {
-                DEBUG("提取数据结束 : now : %d\n", now);
                 return RDH_SUCESS;
             }
             // 检查空间是否足够
-            if (RDH_DATA_BIT_2_BYTE(now) >= size - 0x8)
+            if (RDH_DATA_BIT_2_BYTE(now) >= size - RDH_DATA_SIZE_TSD)
             {
-                size += 0x10;
+                size += RDH_DATA_SIZE_ADD;
                 *data = (uint8_t *)realloc(*data, size);
-                memset(*data + size - 0x10, 0, 0x10);
+                memset(*data + size - RDH_DATA_SIZE_ADD, 0, RDH_DATA_SIZE_ADD);
             }
             rdhExtractDataByte(&RDH_IMG_POS(img1, w, i, j), &RDH_IMG_POS(img1, w, i, j + 1), &RDH_IMG_POS(img1, w, i, j + 2),
                                &RDH_IMG_POS(img2, w, i, j), &RDH_IMG_POS(img2, w, i, j + 1), &RDH_IMG_POS(img2, w, i, j + 2),
@@ -643,7 +664,12 @@ rdhStatus rdhExtractData(uint8_t *img1, uint8_t *img2,
     }
     else
     {
-        ERROR("提取数据失败 : mindex<mSize???\n");
+        ERROR("提取数据失败 : mindex < mSize ??? \n");
+
+        // 释放内存
+        rdhFree(*data);
+        *data = NULL;
+
         return RDH_ERROR;
     }
 }
