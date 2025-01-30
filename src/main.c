@@ -12,24 +12,6 @@
 #include <string.h>
 #include <locale.h>
 
-// #define divide_by_2_floor(num) (((num) - ((num) < 0)) >> 1)
-// #define divide_by_4_floor(num) (((num) - ((num) < 0 ? 3 : 0)) >> 2)
-
-// #define divide_by_2_floor(num) (((num) - ((num) < 0 ? 0 : 0)) >> 1)
-// #define divide_by_4_floor(num) (((num) - ((num) < 0 ? 0 : 0)) >> 2)
-
-#define divide_by_2_floor(num) ((num) >> 1)
-#define divide_by_4_floor(num) ((num) >> 2)
-
-int main()
-{
-    for(int i = 0; i < 0x100; i++)
-    {
-        printf("i = %d &3 = %d\n", i, i & 3);
-    }
-    return 0;
-}
-
 #if 0
 int main()
 {
@@ -94,7 +76,7 @@ int main()
 }
 #endif
 
-#if 0
+#if 1
 int main(int argc, char *argv[], char *envp[])
 {
     char *str = "HelloWOrld!\n123456789987978978986666666666";
@@ -133,7 +115,9 @@ int main(int argc, char *argv[], char *envp[])
     int mSize;
     char *out;
     rdhEmbedData(data1, data2, w, h, &m, &mSize, (const uint8_t *)str, strlen(str) + 1);
+    DEBUG("\n\n\n嵌入完成 m = %d\n\n\n", mSize);
     rdhExtractData(data1, data2, w, h, m, mSize, (uint8_t **)&out);
+    DEBUG("提取完成\n");
     printf("out: %s\n", out);
 
     // 检查解码结果

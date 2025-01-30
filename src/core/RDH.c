@@ -157,8 +157,10 @@ void rdhCombineImage(const uint8_t *img1, const uint8_t *img2, int size, uint8_t
 
 // EP和SP的操作值
 #define RDH_EP_VALUE_ADD 0x08
+#define RDH_EP_VALUE_ADD_HSB 0x01
 #define RDH_EP_VALUE_MAX (0xFF - RDH_EP_VALUE_ADD)
 #define RDH_SP_VALUE_ADD 0x08
+#define RDH_SP_VALUE_ADD_HSB 0x01
 #define RDH_SP_VALUE_MAX (0xFF - RDH_SP_VALUE_ADD)
 
 // 对数据的操作
@@ -230,7 +232,7 @@ uint8_t rdhEmbedDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Li
     RDH_CHUNK_EP(imgChunk2, 5) = img2Line3[1];
     RDH_CHUNK_SP(imgChunk2, 4) = img2Line3[2];
 
-    // 检查img1的EP是否存在溢出
+    // 检查img1的EP和SP是否存在溢出
     for (int i = 0; i < 5; i++)
         if (RDH_CHUNK_EP(imgChunk1, i + 1) > RDH_EP_VALUE_MAX ||
             RDH_CHUNK_SP(imgChunk1, i + 1) > RDH_SP_VALUE_MAX)
@@ -238,15 +240,12 @@ uint8_t rdhEmbedDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Li
             return 0;
         }
 
+
     // {
     //     DEBUG("|------img1------|\n");
     //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunk1, 1), RDH_CHUNK_EP(imgChunk1, 1), RDH_CHUNK_SP(imgChunk1, 2));
     //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunk1, 2), RDH_CHUNK_EP(imgChunk1, 3), RDH_CHUNK_EP(imgChunk1, 4));
     //     DEBUG("%2d %2d %2d\n\n", RDH_CHUNK_SP(imgChunk1, 3), RDH_CHUNK_EP(imgChunk1, 5), RDH_CHUNK_SP(imgChunk1, 4));
-    //     DEBUG("|------img2------|\n");
-    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunk2, 1), RDH_CHUNK_EP(imgChunk2, 1), RDH_CHUNK_SP(imgChunk2, 2));
-    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunk2, 2), RDH_CHUNK_EP(imgChunk2, 3), RDH_CHUNK_EP(imgChunk2, 4));
-    //     DEBUG("%2d %2d %2d\n\n", RDH_CHUNK_SP(imgChunk2, 3), RDH_CHUNK_EP(imgChunk2, 5), RDH_CHUNK_SP(imgChunk2, 4));
     // }
 
     // 获取采样像素采样像素 SPs 和可嵌入像素 EPs的HSB值
@@ -321,7 +320,8 @@ uint8_t rdhEmbedDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Li
     // }
 
     // 嵌入数据
-    // DEBUG("|------嵌入------|\n");
+    // DEBUG("|------EP嵌入------|\n");
+    // DEBUG("value ----------------------------- : ");
     bool first = false;
     for (int i = 0; i < 5; i++)
     {
@@ -337,6 +337,7 @@ uint8_t rdhEmbedDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Li
 
             // 嵌入bit
             RDH_CHUNK_EP(imgChunk1, i + 1) += RDH_EP_VALUE_ADD * value;
+            RDH_CHUNK_EP(imgChunkHSB1, i + 1) += RDH_EP_VALUE_ADD_HSB * value;
 
             // DEBUG("%d", value);
 
@@ -351,12 +352,97 @@ uint8_t rdhEmbedDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Li
         else if (dHSB[i] > Me1) // 大于峰值，直方图平移
         {
             RDH_CHUNK_EP(imgChunk1, i + 1) += RDH_EP_VALUE_ADD;
+            RDH_CHUNK_EP(imgChunkHSB1, i + 1) += RDH_EP_VALUE_ADD_HSB;
         }
         else // 小于峰值不变
         {
         }
     }
     // DEBUG("\n");
+
+    // {
+    //     DEBUG("|------img1HSB------|\n");
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunkHSB1, 1), RDH_CHUNK_EP(imgChunkHSB1, 1), RDH_CHUNK_SP(imgChunkHSB1, 2));
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunkHSB1, 2), RDH_CHUNK_EP(imgChunkHSB1, 3), RDH_CHUNK_EP(imgChunkHSB1, 4));
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunkHSB1, 3), RDH_CHUNK_EP(imgChunkHSB1, 5), RDH_CHUNK_SP(imgChunkHSB1, 4));
+    //     DEBUG("|------img2HSB------|\n");
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunkHSB2, 1), RDH_CHUNK_EP(imgChunkHSB2, 1), RDH_CHUNK_SP(imgChunkHSB2, 2));
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunkHSB2, 2), RDH_CHUNK_EP(imgChunkHSB2, 3), RDH_CHUNK_EP(imgChunkHSB2, 4));
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunkHSB2, 3), RDH_CHUNK_EP(imgChunkHSB2, 5), RDH_CHUNK_SP(imgChunkHSB2, 4));
+    // }
+
+    // 计算sdHSB
+    int16_t sdHSB[4];
+    sdHSB[0] = (RDH_CHUNK_SP(imgChunkHSB1, 1) - RDH_CHUNK_EP(imgChunkHSB1, 1)) +
+               (RDH_CHUNK_SP(imgChunkHSB2, 1) - RDH_CHUNK_EP(imgChunkHSB2, 1));
+    sdHSB[1] = (RDH_CHUNK_SP(imgChunkHSB1, 2) - RDH_CHUNK_EP(imgChunkHSB1, 4)) +
+               (RDH_CHUNK_SP(imgChunkHSB2, 2) - RDH_CHUNK_EP(imgChunkHSB2, 4));
+    sdHSB[2] = (RDH_CHUNK_SP(imgChunkHSB1, 3) - RDH_CHUNK_EP(imgChunkHSB1, 5)) +
+               (RDH_CHUNK_SP(imgChunkHSB2, 3) - RDH_CHUNK_EP(imgChunkHSB2, 5));
+    sdHSB[3] = (RDH_CHUNK_SP(imgChunkHSB1, 4) - RDH_CHUNK_EP(imgChunkHSB1, 2)) +
+               (RDH_CHUNK_SP(imgChunkHSB2, 4) - RDH_CHUNK_EP(imgChunkHSB2, 2));
+
+    // 计算Me2
+    int16_t Me2 = sdHSB[0];
+    RDH_HASH_INIT();
+    for (int i = 0; i < 4; i++) // 计算哈希表
+    {
+        RDH_HASH_SET(sdHSB[i]);
+    }
+    for (int i = 1; i < 4; i++) // 计算出现最多次的值，如果出现次数相同则取最大值
+    {
+        if (RDH_HASH_GET(Me2) < RDH_HASH_GET(sdHSB[i]) ||
+            (RDH_HASH_GET(Me2) == RDH_HASH_GET(sdHSB[i]) && Me2 < sdHSB[i]))
+            Me2 = sdHSB[i];
+    }
+
+    // {
+    //     DEBUG("|------sdHSB------|\n");
+    //     DEBUG("sdHSB1:%2d\n", sdHSB[0]);
+    //     DEBUG("sdHSB2:%2d\n", sdHSB[1]);
+    //     DEBUG("sdHSB3:%2d\n", sdHSB[2]);
+    //     DEBUG("sdHSB4:%2d\n", sdHSB[3]);
+    //     DEBUG("Me2:%2d\n", Me2);
+    // }
+
+    // 嵌入数据
+    // DEBUG("|------SP嵌入------|\n");
+    // DEBUG("value ----------------------------- : ");
+    first = false;
+    for (int i = 0; i < 4; i++)
+    {
+        if (sdHSB[i] == Me2) // 峰值，嵌入
+        {
+            // 获取要嵌入的bit
+            uint8_t value = 0;
+            if (*now < total)
+            {
+                value = RDH_DATA_GET(byte, *now);
+                *now += 1;
+            }
+
+            // 嵌入bit
+            RDH_CHUNK_SP(imgChunk1, i + 1) += RDH_SP_VALUE_ADD * value;
+
+            // DEBUG("%d", value);
+
+            // 设置m
+            if (first == false)
+            {
+                first = true;
+                RDH_M_SET(m, i, COUNT_SP);   // 记录ME2的位置
+                RDH_M_SET(m, value, RDU_SP); // 记录矫正值
+            }
+        }
+        else if (sdHSB[i] > Me2) // 大于峰值，直方图平移
+        {
+            RDH_CHUNK_SP(imgChunk1, i + 1) += RDH_SP_VALUE_ADD;
+        }
+        else // 小于峰值不变
+        {
+        }
+    }
+    // DEBUG("\n\n");
 
     // 复制EP和SP
     img1Line1[0] = RDH_CHUNK_SP(imgChunk1, 1);
@@ -436,10 +522,6 @@ void rdhExtractDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Lin
     //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunk1, 1), RDH_CHUNK_EP(imgChunk1, 1), RDH_CHUNK_SP(imgChunk1, 2));
     //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunk1, 2), RDH_CHUNK_EP(imgChunk1, 3), RDH_CHUNK_EP(imgChunk1, 4));
     //     DEBUG("%2d %2d %2d\n\n", RDH_CHUNK_SP(imgChunk1, 3), RDH_CHUNK_EP(imgChunk1, 5), RDH_CHUNK_SP(imgChunk1, 4));
-    //     DEBUG("|------img2------|\n");
-    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunk2, 1), RDH_CHUNK_EP(imgChunk2, 1), RDH_CHUNK_SP(imgChunk2, 2));
-    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunk2, 2), RDH_CHUNK_EP(imgChunk2, 3), RDH_CHUNK_EP(imgChunk2, 4));
-    //     DEBUG("%2d %2d %2d\n\n", RDH_CHUNK_SP(imgChunk2, 3), RDH_CHUNK_EP(imgChunk2, 5), RDH_CHUNK_SP(imgChunk2, 4));
     // }
 
     // 获取采样像素采样像素 SPs 和可嵌入像素 EPs的HSB值
@@ -464,6 +546,75 @@ void rdhExtractDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Lin
     RDH_CHUNK_SP(imgChunkHSB2, 3) = RDH_IMG_GET_HIGH(RDH_CHUNK_SP(imgChunk2, 3));
     RDH_CHUNK_EP(imgChunkHSB2, 5) = RDH_IMG_GET_HIGH(RDH_CHUNK_EP(imgChunk2, 5));
     RDH_CHUNK_SP(imgChunkHSB2, 4) = RDH_IMG_GET_HIGH(RDH_CHUNK_SP(imgChunk2, 4));
+
+    // {
+    //     DEBUG("|------img1HSB------|\n");
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunkHSB1, 1), RDH_CHUNK_EP(imgChunkHSB1, 1), RDH_CHUNK_SP(imgChunkHSB1, 2));
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunkHSB1, 2), RDH_CHUNK_EP(imgChunkHSB1, 3), RDH_CHUNK_EP(imgChunkHSB1, 4));
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunkHSB1, 3), RDH_CHUNK_EP(imgChunkHSB1, 5), RDH_CHUNK_SP(imgChunkHSB1, 4));
+    //     DEBUG("|------img2HSB------|\n");
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunkHSB2, 1), RDH_CHUNK_EP(imgChunkHSB2, 1), RDH_CHUNK_SP(imgChunkHSB2, 2));
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_EP(imgChunkHSB2, 2), RDH_CHUNK_EP(imgChunkHSB2, 3), RDH_CHUNK_EP(imgChunkHSB2, 4));
+    //     DEBUG("%2d %2d %2d\n", RDH_CHUNK_SP(imgChunkHSB2, 3), RDH_CHUNK_EP(imgChunkHSB2, 5), RDH_CHUNK_SP(imgChunkHSB2, 4));
+    // }
+
+    // 计算sdHSB
+    int16_t sdHSB[4];
+    sdHSB[0] = (RDH_CHUNK_SP(imgChunkHSB1, 1) - RDH_CHUNK_EP(imgChunkHSB1, 1)) +
+               (RDH_CHUNK_SP(imgChunkHSB2, 1) - RDH_CHUNK_EP(imgChunkHSB2, 1));
+    sdHSB[1] = (RDH_CHUNK_SP(imgChunkHSB1, 2) - RDH_CHUNK_EP(imgChunkHSB1, 4)) +
+               (RDH_CHUNK_SP(imgChunkHSB2, 2) - RDH_CHUNK_EP(imgChunkHSB2, 4));
+    sdHSB[2] = (RDH_CHUNK_SP(imgChunkHSB1, 3) - RDH_CHUNK_EP(imgChunkHSB1, 5)) +
+               (RDH_CHUNK_SP(imgChunkHSB2, 3) - RDH_CHUNK_EP(imgChunkHSB2, 5));
+    sdHSB[3] = (RDH_CHUNK_SP(imgChunkHSB1, 4) - RDH_CHUNK_EP(imgChunkHSB1, 2)) +
+               (RDH_CHUNK_SP(imgChunkHSB2, 4) - RDH_CHUNK_EP(imgChunkHSB2, 2));
+
+    // 获取Me2
+    int16_t Me2 = sdHSB[RDH_M_GET(m, COUNT_SP)] - RDH_M_GET(m, RDU_SP);
+
+    // {
+    //     DEBUG("|------sdHSB------|\n");
+    //     DEBUG("sdHSB1:%2d\n", sdHSB[0]);
+    //     DEBUG("sdHSB2:%2d\n", sdHSB[1]);
+    //     DEBUG("sdHSB3:%2d\n", sdHSB[2]);
+    //     DEBUG("sdHSB4:%2d\n", sdHSB[3]);
+    //     DEBUG("Me2:%2d\n", Me2);
+    // }
+
+    // 提取SP中的数据，并恢复图像
+    // DEBUG("|------SP提取------|\n");
+    // DEBUG("value ----------------------------- : ");
+    uint8_t buf = 0;
+    int bufIndex = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        // 提取数据
+        if (sdHSB[i] == Me2)
+        {
+            // 0
+            RDH_DATA_SET(&buf, bufIndex, 0);
+            bufIndex += 1;
+            // DEBUG("0");
+        }
+        else if (sdHSB[i] == Me2 + 1)
+        {
+            // 1
+            RDH_DATA_SET(&buf, bufIndex, 1);
+            bufIndex += 1;
+            // DEBUG("1");
+        }
+
+        // 恢复图像
+        if (sdHSB[i] > Me2)
+        {
+            RDH_CHUNK_SP(imgChunk1, i + 1) -= RDH_SP_VALUE_ADD;
+            RDH_CHUNK_SP(imgChunkHSB1, i + 1) -= RDH_SP_VALUE_ADD_HSB;
+        }
+        else
+        {
+        }
+    }
+    // DEBUG("\n");
 
     // {
     //     DEBUG("|------img1HSB------|\n");
@@ -503,7 +654,8 @@ void rdhExtractDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Lin
     // }
 
     // 提取EP中的数据，并恢复图像
-    // DEBUG("|------提取------|\n");
+    // DEBUG("|------EP提取------|\n");
+    // DEBUG("value ----------------------------- : ");
     for (int i = 0; i < 5; i++)
     {
         // 提取数据
@@ -531,7 +683,14 @@ void rdhExtractDataByte(uint8_t *img1Line1, uint8_t *img1Line2, uint8_t *img1Lin
         {
         }
     }
-    // DEBUG("\n");
+    // DEBUG("\n\n");
+
+    // 从缓冲区恢复
+    for (int i = 0; i < bufIndex; i++)
+    {
+        RDH_DATA_SET(byte, *now, RDH_DATA_GET(&buf, i));
+        *now += 1;
+    }
 
     // 复制EP和SP
     img1Line1[0] = RDH_CHUNK_SP(imgChunk1, 1);
