@@ -18,6 +18,10 @@ GLuint guiShaderCreate(GLenum shaderType, const char *shaderSource)
         glGetShaderInfoLog(shader, 512, NULL, infoLog);
         // 顶点，片段，几何
         ERROR("%s着色器编译失败:%s\n", shaderType == GL_VERTEX_SHADER ? "顶点" : (shaderType == GL_FRAGMENT_SHADER ? "片段" : "几何"), infoLog);
+
+        // 删除着色器
+        glDeleteShader(shader);
+
         return 0;
     }
 
@@ -52,6 +56,8 @@ GLuint guiShaderCreateProgram(const char *vertexShaderSource, const char *fragme
     if (fragmentShader == 0)
     {
         ERROR("片段着色器创建失败");
+        // 删除顶点着色器
+        glDeleteShader(vertexShader);
         return 0;
     }
 
@@ -65,6 +71,12 @@ GLuint guiShaderCreateProgram(const char *vertexShaderSource, const char *fragme
         glAttachShader(program, geometryShader);
     glLinkProgram(program);
 
+    // 删除着色器
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+    if (geometryShader != 0)
+        glDeleteShader(geometryShader);
+
     // 检查链接错误
     int success;
     glGetProgramiv(program, GL_LINK_STATUS, &success);
@@ -73,14 +85,12 @@ GLuint guiShaderCreateProgram(const char *vertexShaderSource, const char *fragme
         char infoLog[512];
         glGetProgramInfoLog(program, 512, NULL, infoLog);
         ERROR("着色器程序链接失败:%s\n", infoLog);
+
+        // 删除着色器程序
+        glDeleteProgram(program);
+
         return 0;
     }
-
-    // 删除着色器
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-    if (geometryShader != 0)
-        glDeleteShader(geometryShader);
 
     guiShaderUse(program);
     return program;

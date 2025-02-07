@@ -71,7 +71,7 @@ typedef struct
 } GUIttf;
 
 /**
- * \brief 查找一个字号
+ * \brief 从ttf中查找一个字号
  * \param ttf TTF字体
  * \param pixels 字号
  * \return GUIfont 字号, NULL表示未找到
@@ -83,7 +83,7 @@ GUIfont *guiTTFGetFont(GUIttf *ttf, int pixels);
  * \param fontData TTF字体数据(二进制数据)
  * \param ... 字号, 0表示结束
  * \return GUIttf TTF字体
- * \note GUIttf *ttf = guiTTFCreate(const unsigned char *fontData, 16, 32, 64, 0); // 初始化字号16, 32, 64
+ * \note GUIttf *ttf = guiTTFInit(const unsigned char *fontData, 16, 32, 64, 0); // 初始化字号16, 32, 64
  */
 GUIttf *guiTTFCreate(const unsigned char *fontData, ...);
 
@@ -94,16 +94,16 @@ GUIttf *guiTTFCreate(const unsigned char *fontData, ...);
  * \param text 文本内容
  * \return GUIchar 单个文字
  */
-GUIchar *guiTTFCreateCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text);
+GUIchar *guiTTFCreateCharFromFont(GUIttf *ttf, GUIfont *font, wchar_t text);
 
 /**
- * \brief 从Font中获取一个文字
+ * \brief 从Font中获取一个文字，如果没有则创建
  * \param ttf TTF字体
  * \param font 字号列表
  * \param text 文本内容
  * \return GUIchar 单个文字
  */
-GUIchar *guiTTFGetCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text);
+GUIchar *guiTTFGetCharFromFont(GUIttf *ttf, GUIfont *font, wchar_t text);
 
 /**
  * \brief 获取一个文字
@@ -112,7 +112,7 @@ GUIchar *guiTTFGetCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text);
  * \param pixels 字号
  * \return GUIchar 单个文字
  */
-GUIchar *guiTTFGetChar(GUIttf *ttf, const wchar_t text, int pixels);
+GUIchar *guiTTFGetChar(GUIttf *ttf, wchar_t text, int pixels);
 
 /**
  * \brief 渲染一个文字

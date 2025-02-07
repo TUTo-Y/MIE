@@ -12,8 +12,10 @@
 #include <string.h>
 #include <locale.h>
 
+
 const char img_path[] = "./image.jpeg";
 const char img_data[] = "这里是嵌入数据,aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
 
 #if 1
 
@@ -112,9 +114,6 @@ int main()
     resGetFile("r.vert", (void **)&vertexShaderSource, NULL, true);
     resGetFile("r.frag", (void **)&fragmentShaderSource, NULL, true);
     GLuint rProgram = guiShaderCreateProgram(vertexShaderSource, fragmentShaderSource, NULL);
-    resGetFile("img.vert", (void **)&vertexShaderSource, NULL, true);
-    resGetFile("img.frag", (void **)&fragmentShaderSource, NULL, true);
-    GLuint imgProgram = guiShaderCreateProgram(vertexShaderSource, fragmentShaderSource, NULL);
 
     // 设置着色器值
     mat4 projection = GLM_MAT4_IDENTITY_INIT;
@@ -128,7 +127,7 @@ int main()
     glm_lookat((vec3){0.0f, 0.0f, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, view);
     // 复合
     glm_mat4_mul(projection, view, PV);
-
+    
     /*设置直角坐标系*/
     guiShaderUse(rProgram);
     guiShaderUniformMatrix(rProgram, "model", 4fv, (float *)model);
@@ -139,34 +138,18 @@ int main()
     unsigned char *fontData;
     size_t size;
     resGetFile("kai.ttf", (void **)&fontData, &size, true);
-    GUIttf *ttf = guiTTFCreate(fontData, 0);
+    GUIttf *ttf = guiTTFCreate(fontData, 16, 80, 64, 0);
 
     guiStrInitPV(PV);
 
-    GUIstr *s1 = guiStrCreate(ttf, 32, GUI_STR_MOD_LEFT_TOP, fontProgram, NULL, (vec4){0.0f, 1.0f, 0.0f, 1.0f});
-    GUIstr *s2 = guiStrCreate(ttf, 32, GUI_STR_MOD_LEFT_TOP, fontProgram, NULL, (vec4){1.0f, 0.0f, 0.0f, 1.0f});
-    GUIstr *s3 = guiStrCreate(ttf, 32, GUI_STR_MOD_LEFT_TOP, fontProgram, NULL, (vec4){1.0f, 0.0f, 0.0f, 1.0f});
-    GUIstr *s4 = guiStrCreate(ttf, 32, GUI_STR_MOD_LEFT_TOP, fontProgram, NULL, (vec4){1.0f, 0.0f, 1.0f, 1.0f});
+    GUIstr *s1 = guiStrCreate(ttf, 100, GUI_STR_MOD_CENTER, fontProgram, NULL, (vec4){0.0f, 1.0f, 0.0f, 1.0f});
+    GUIstr *s2 = guiStrCreate(ttf, 100, GUI_STR_MOD_CENTER, fontProgram, NULL, (vec4){1.0f, 0.0f, 0.0f, 1.0f});
+    GUIstr *s3 = guiStrCreate(ttf, 100, GUI_STR_MOD_CENTER, fontProgram, NULL, (vec4){1.0f, 0.0f, 0.0f, 1.0f});
+    GUIstr *s4 = guiStrCreate(ttf, 100, GUI_STR_MOD_CENTER, fontProgram, NULL, (vec4){1.0f, 0.0f, 1.0f, 1.0f});
     guiStrCpy(s1, L"原图像");
     guiStrCpy(s2, L"随机分割后的图像 1");
     guiStrCpy(s3, L"随机分割后的图像 2");
     guiStrCpy(s4, L"嵌入数据后的图像 1");
-
-    glm_mat4_identity(model);
-    glm_translate(model, (vec3){-WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f});
-    guiStrSetModel(s1, model);
-    
-    glm_mat4_identity(model);
-    glm_translate(model, (vec3){0.0f, WINDOW_HEIGHT / 2.0f, 0.0f});
-    guiStrSetModel(s2, model);
-    
-    glm_mat4_identity(model);
-    glm_translate(model, (vec3){-WINDOW_WIDTH / 2.0f, 0.0f, 0.0f});
-    guiStrSetModel(s3, model);
-    
-    glm_mat4_identity(model);
-    glm_translate(model, (vec3){0.0f, 0.0f, 0.0f});
-    guiStrSetModel(s4, model);
 
     // 原图像
     char *imgData;
@@ -189,30 +172,6 @@ int main()
     rdhEmbedData((uint8_t *)imgData1, (uint8_t *)imgData2, imgW, imgH, &m, &mSize, img_data, sizeof(img_data));
     imgTexture3 = guiTextureCreate(imgData1, imgW, imgH, 1, GL_RED);
 
-    // 创建图像
-    float imgVertex[] = {
-        -(float)WINDOW_WIDTH / 4.0f, (float)WINDOW_HEIGHT / 4.0f, 0.0f, 0.0f, 1.0f,
-        (float)WINDOW_WIDTH / 4.0f, (float)WINDOW_HEIGHT / 4.0f, 0.0f, 1.0f, 1.0f,
-        (float)WINDOW_WIDTH / 4.0f, -(float)WINDOW_HEIGHT / 4.0f, 0.0f, 1.0f, 0.0f,
-        
-        -(float)WINDOW_WIDTH / 4.0f, (float)WINDOW_HEIGHT / 4.0f, 0.0f, 0.0f, 1.0f,
-        (float)WINDOW_WIDTH / 4.0f, -(float)WINDOW_HEIGHT / 4.0f, 0.0f, 1.0f, 0.0f,
-        -(float)WINDOW_WIDTH / 4.0f, -(float)WINDOW_HEIGHT / 4.0f, 0.0f, 0.0f, 0.0f};
-    GLuint imgVAO, imgrVBO;
-    glGenVertexArrays(1, &imgVAO);
-    glGenBuffers(1, &imgrVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, imgrVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(imgVertex), imgVertex, GL_STATIC_DRAW);
-    glBindVertexArray(imgVAO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    guiShaderUse(imgProgram);
-    guiShaderUniformMatrix(imgProgram, "PV", 4fv, (float *)PV);
-
-
     // 初始化GUI界面
     GUIframe frame;
     guiFrameInit(&frame, 30);
@@ -224,40 +183,7 @@ int main()
         glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // 渲染图像
-        guiShaderUse(imgProgram);
-        glBindVertexArray(imgVAO);
-        
-        mat4 imgModel = GLM_MAT4_IDENTITY_INIT;
-        glm_translate(imgModel, (vec3){-WINDOW_WIDTH / 4.0f, WINDOW_HEIGHT / 4.0f, 0.0f});
-        guiShaderUniformMatrix(imgProgram, "model", 4fv, (float *)imgModel);
-        glBindTexture(GL_TEXTURE_2D, imgTexture);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        
-        glm_mat4_identity(imgModel);
-        glm_translate(imgModel, (vec3){WINDOW_WIDTH / 4.0f, WINDOW_HEIGHT / 4.0f, 0.0f});
-        guiShaderUniformMatrix(imgProgram, "model", 4fv, (float *)imgModel);
-        glBindTexture(GL_TEXTURE_2D, imgTexture1);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        
-        glm_mat4_identity(imgModel);
-        glm_translate(imgModel, (vec3){-WINDOW_WIDTH / 4.0f, -WINDOW_HEIGHT / 4.0f, 0.0f});
-        guiShaderUniformMatrix(imgProgram, "model", 4fv, (float *)imgModel);
-        glBindTexture(GL_TEXTURE_2D, imgTexture2);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-
-        glm_mat4_identity(imgModel);
-        glm_translate(imgModel, (vec3){WINDOW_WIDTH / 4.0f, -WINDOW_HEIGHT / 4.0f, 0.0f});
-        guiShaderUniformMatrix(imgProgram, "model", 4fv, (float *)imgModel);
-        glBindTexture(GL_TEXTURE_2D, imgTexture3);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
         // 渲染文本
-        guiStrRender(s1);
-        guiStrRender(s2);
-        guiStrRender(s3);
-        guiStrRender(s4);
 
         // 渲染直角坐标系
         guiShaderUse(rProgram);

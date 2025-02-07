@@ -12,7 +12,7 @@
 #include <stdbool.h>
 
 #include "rand.h"
-#include "log.h"
+// #include "log.h"
 
 enum
 {

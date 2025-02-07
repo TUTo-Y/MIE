@@ -15,10 +15,14 @@
 #include "log.h"
 
 #define guiShaderUse(program) glUseProgram(program)
-#define guiShaderUniform(program, name, ntype, ...) glUniform##ntype(glGetUniformLocation(program, name), __VA_ARGS__)
-#define guiShaderUniformMatrix(program, name, ntype, ...) glUniformMatrix##ntype(glGetUniformLocation(program, name), 1, GL_FALSE, __VA_ARGS__)
-// guiShaderUniform(program, "color", 4f, 1.0f, 0.0f, 0.0f, 1.0f);
-// guiShaderUniformMatrix(program, "transform", 4fv, transform);
+#define guiShaderUniformGetLocation(program, name) glGetUniformLocation(program, name)
+
+#define guiShaderUniformFromID(ID, ntype, ...) glUniform##ntype(ID, __VA_ARGS__)
+#define guiShaderUniformMatrixFromID(ID, ntype, ...) glUniformMatrix##ntype(ID, 1, GL_FALSE, __VA_ARGS__)
+
+#define guiShaderUniform(program, name, ntype, ...) guiShaderUniformFromID(guiShaderUniformGetLocation(program, name), ntype, __VA_ARGS__)
+#define guiShaderUniformMatrix(program, name, ntype, ...) guiShaderUniformMatrixFromID(guiShaderUniformGetLocation(program, name), ntype, __VA_ARGS__)
+
 #define guiShaderDelete(program) glDeleteProgram(program)
 
 /**
@@ -27,7 +31,7 @@
  * \param shaderSource 着色器源码
  * \return 着色器
  */
-GLuint guiShaderCreate(GLenum shaderType, const char* shaderSource);
+GLuint guiShaderCreate(GLenum shaderType, const char *shaderSource);
 
 /**
  * \brief 创建着色器程序
@@ -37,6 +41,5 @@ GLuint guiShaderCreate(GLenum shaderType, const char* shaderSource);
  * \return 着色器程序ID, 0表示失败
  */
 GLuint guiShaderCreateProgram(const char *vertexShaderSource, const char *fragmentShaderSource, const char *geometryShaderSource);
-
 
 #endif // GUI_SHADER_H

@@ -1,18 +1,42 @@
 #include "gui_ttf.h"
 
-#define GUI_TTF_FONT_R 8    // 文字预留空间
-#define GUI_TTF_FONT_INIT 32 // 初始化文字数量
-#define GUI_TTF_FONT_ADD 64  // 每次添加文字数量
-
+#define GUI_TTF_FONT_R 0x10                // 文字预留空间
+#define GUI_TTF_FONT_INIT 0x20             // 初始化文字数量
+#define GUI_TTF_FONT_ADD GUI_TTF_FONT_INIT // 每次添加文字数量
 
 /**
- * \brief 查找一个字号
- * \param ttf TTF字体
+ * \brief 添加字体到font结构体中
+ * \param info 字体信息
+ * \param font 字体结构体
  * \param pixels 字号
- * \return GUIfont 字号, NULL表示未找到
  */
+void guiTTFAddFont(stbtt_fontinfo *info, GUIfont *font, int pixels)
+{
+    /* 初始化字体信息 */
+    font->pixels = pixels;                                                      // 设置字号
+    font->scale = stbtt_ScaleForPixelHeight(info, font->pixels);                // 计算缩放比例
+    stbtt_GetFontVMetrics(info, &font->ascent, &font->descent, &font->lineGap); // 获取字体高度
+    font->ascent *= font->scale;
+    font->descent *= font->scale;
+    font->lineGap *= font->scale;
+
+    // 初始化文本列表
+    font->textMax = GUI_TTF_FONT_INIT;
+    font->textCount = 0;
+    font->textList = (wchar_t *)malloc(sizeof(wchar_t) * font->textMax);
+    font->textRend = (GUIchar *)malloc(sizeof(GUIchar) * font->textMax);
+
+    // 清空文本列表
+    memset(font->textList, 0, sizeof(wchar_t) * font->textMax);
+    memset(font->textRend, 0, sizeof(GUIchar) * font->textMax);
+
+    // 设置文本列表
+    font->textList[0] = L'\0';
+}
+
 GUIfont *guiTTFGetFont(GUIttf *ttf, int pixels)
 {
+    // 查找字号
     for (int i = 0; i < ttf->fontCount; i++)
     {
         GUIfont *font = &ttf->fontList[i];
@@ -21,17 +45,15 @@ GUIfont *guiTTFGetFont(GUIttf *ttf, int pixels)
             return font;
         }
     }
-    ERROR("字号 %d 不存在\n", pixels);
-    return NULL;
+
+    // 没有找到字号则添加
+    ttf->fontCount += GUI_TTF_FONT_ADD;
+    ttf->fontList = (GUIfont *)realloc(ttf->fontList, sizeof(GUIfont) * ttf->fontCount);
+    guiTTFAddFont(&ttf->fontInfo, &ttf->fontList[ttf->fontCount - 1], pixels);
+
+    return &ttf->fontList[ttf->fontCount - 1];
 }
 
-/**
- * \brief 初始化TTF字体
- * \param fontData TTF字体数据(二进制数据)
- * \param ... 字号, 0表示结束
- * \return GUIttf TTF字体
- * \note GUIttf *ttf = guiTTFCreate(const unsigned char *fontData, 16, 32, 64, 0); // 初始化字号16, 32, 64
- */
 GUIttf *guiTTFCreate(const unsigned char *fontData, ...)
 {
     GUIttf *ttf = (GUIttf *)malloc(sizeof(GUIttf));
@@ -58,43 +80,13 @@ GUIttf *guiTTFCreate(const unsigned char *fontData, ...)
     /* 初始化字号 */
     va_start(args, fontData);
     for (int i = 0; i < ttf->fontCount; i++)
-    {
-        GUIfont *font = &ttf->fontList[i];
-
-        /* 初始化字体信息 */
-        font->pixels = va_arg(args, int);                                                     // 设置字号
-        font->scale = stbtt_ScaleForPixelHeight(&ttf->fontInfo, font->pixels);                // 计算缩放比例
-        stbtt_GetFontVMetrics(&ttf->fontInfo, &font->ascent, &font->descent, &font->lineGap); // 获取字体高度
-        font->ascent *= font->scale;
-        font->descent *= font->scale;
-        font->lineGap *= font->scale;
-
-        // 初始化文本列表
-        font->textMax = GUI_TTF_FONT_INIT;
-        font->textCount = 0;
-        font->textList = (wchar_t *)malloc(sizeof(wchar_t) * font->textMax);
-        font->textRend = (GUIchar *)malloc(sizeof(GUIchar) * font->textMax);
-
-        // 清空文本列表
-        memset(font->textList, 0, sizeof(wchar_t) * font->textMax);
-        memset(font->textRend, 0, sizeof(GUIchar) * font->textMax);
-
-        // 设置文本列表
-        font->textList[0] = L'\0';
-    }
+        guiTTFAddFont(&ttf->fontInfo, &ttf->fontList[i], va_arg(args, int));
     va_end(args);
 
     return ttf;
 }
 
-/**
- * \brief 从Font中创建一个文字
- * \param ttf TTF字体
- * \param font 字号列表
- * \param text 文本内容
- * \return GUIchar 单个文字
- */
-GUIchar *guiTTFCreateCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text)
+GUIchar *guiTTFCreateCharFromFont(GUIttf *ttf, GUIfont *font, wchar_t text)
 {
     if (!font && !ttf)
         return NULL;
@@ -164,14 +156,7 @@ GUIchar *guiTTFCreateCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text
     return ttfChar;
 }
 
-/**
- * \brief 从Font中获取一个文字
- * \param ttf TTF字体
- * \param font 字号列表
- * \param text 文本内容
- * \return GUIchar 单个文字
- */
-GUIchar *guiTTFGetCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text)
+GUIchar *guiTTFGetCharFromFont(GUIttf *ttf, GUIfont *font, wchar_t text)
 {
     if (!font && !ttf)
         return NULL;
@@ -179,33 +164,24 @@ GUIchar *guiTTFGetCharFromFont(GUIttf *ttf, GUIfont *font, const wchar_t text)
     /* 查找文字是否存在 */
     wchar_t *c = wcschr(font->textList, text);
     if (c)
-    {
         return &font->textRend[c - font->textList];
-    }
 
     /* 创建文字 */
     return guiTTFCreateCharFromFont(ttf, font, text);
 }
 
-/**
- * \brief 创建一个文字
- * \param ttf TTF字体
- * \param text 文本内容
- * \param pixels 字号
- * \return GUIchar 单个文字
- */
-GUIchar *guiTTFGetChar(GUIttf *ttf, const wchar_t text, int pixels)
+GUIchar *guiTTFGetChar(GUIttf *ttf, wchar_t text, int pixels)
 {
     GUIfont *font = NULL; // 对应字号的字体
 
-    if(!ttf)
+    if (!ttf)
         return NULL;
 
     /* 查找字号 */
     font = guiTTFGetFont(ttf, pixels);
     if (!font)
         return NULL;
-    
+
     /* 根据字号查找字 */
     wchar_t *c = wcschr(font->textList, text);
     if (c)
@@ -215,13 +191,8 @@ GUIchar *guiTTFGetChar(GUIttf *ttf, const wchar_t text, int pixels)
     return guiTTFCreateCharFromFont(ttf, font, text);
 }
 
-/**
- * \brief 渲染一个文字
- * \param c 文字
- */
 void guiTTFRenderChar(GUIchar *c)
 {
-    // glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, c->texture);      // 绑定纹理
     glBindVertexArray(c->VAO);                     // 绑定VAO
     glBindBuffer(GL_ARRAY_BUFFER, c->VBO);         // 绑定VBO
@@ -230,9 +201,6 @@ void guiTTFRenderChar(GUIchar *c)
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // 绘制
 }
 
-/**
- * \brief 清除TTF缓存
- */
 void guiTTFDelete(GUIttf *ttf)
 {
     for (int i = 0; i < ttf->fontCount; i++)
