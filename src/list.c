@@ -1,21 +1,34 @@
 #include "list.h"
 
-/**
- * \brief 初始化一个新的头链表
- */
+// 用于初始化list
+#define LIST_FD_BK_INIT(l)       \
+    {                            \
+        (l)->fd = (l)->bk = (l); \
+    }
+
+#define LIST_NODE_INIT(l)   \
+    {                       \
+        (l)->size = 0;      \
+        LIST_FD_BK_INIT(l); \
+    }
+
+#define LIST_UNLINK(node, tmp)     \
+    {                              \
+        (tmp) = (node);            \
+        (tmp)->fd->bk = (tmp)->bk; \
+        (tmp)->bk->fd = (tmp)->fd; \
+                                   \
+        LIST_FD_BK_INIT(tmp);      \
+    }
+
 void listInitList(list *l)
 {
     if (l == NULL)
         return;
 
-    l->count = 0;
-    l->fd = l->bk = l;
+    LIST_NODE_INIT(l);
 }
 
-/**
- * \brief 创建一个节点
- * \return 新的节点
- */
 list *listCreateNode()
 {
     list *node = NULL;
@@ -26,23 +39,15 @@ list *listCreateNode()
         return NULL;
 
     // 初始化节点
-    node->data = NULL;
-    node->fd = node->bk = node;
+    LIST_NODE_INIT(node);
 
     return node;
 }
 
-/**
- * \brief 向节点中写入数据
- * \param node 节点
- * \param data 数据
- * \param size 数据大小(当copy为true时有效)
- * \param copy 是否复制数据
- * \return 节点
- */
 list *listDataToNode(list *node, const void *data, size_t size, bool copy)
 {
-    if (node == NULL || (copy == true && data == NULL))
+    if (node == NULL ||
+        (copy == true && data == NULL))
         return NULL;
 
     // 复制数据
@@ -62,9 +67,6 @@ list *listDataToNode(list *node, const void *data, size_t size, bool copy)
     return node;
 }
 
-/**
- * \brief 向链表头处添加节点
- */
 void listAddNodeInStart(list *l, list *node)
 {
     if (l == NULL || node == NULL)
@@ -81,9 +83,6 @@ void listAddNodeInStart(list *l, list *node)
     ++l->count;
 }
 
-/**
- * \brief 向链表尾处添加节点
- */
 void listAddNodeInEnd(list *l, list *node)
 {
     if (l == NULL || node == NULL)
@@ -100,25 +99,24 @@ void listAddNodeInEnd(list *l, list *node)
     ++l->count;
 }
 
-/**
- * \brief 从链表头取出一个节点
- * \param l 链表
- * \return 节点，若链表为空则返回NULL
- */
 list *listGetNodeFromStart(list *l)
 {
     if (l == NULL || l->count == 0)
         return NULL;
 
+    // list *node = l->bk;
+    // list *bck = node->bk;
+
+    // // 解链
+    // l->bk = bck;
+    // bck->fd = l;
+
+    // // 重置node定位
+    // LIST_FD_BK_INIT(node);
+
     list *node = l->bk;
-    list *bck = node->bk;
-
-    // 解链
-    l->bk = bck;
-    bck->fd = l;
-
-    // 将节点的fd和bk指向自己
-    node->fd = node->bk = node;
+    list *tmp;
+    LIST_UNLINK(node, tmp);
 
     // 减少count
     --l->count;
@@ -126,25 +124,24 @@ list *listGetNodeFromStart(list *l)
     return node;
 }
 
-/**
- * \brief 从链表尾取出一个节点
- * \param l 链表
- * \return 节点, 若链表为空则返回NULL
- */
 list *listGetNodeFromEnd(list *l)
 {
     if (l == NULL || l->count == 0)
         return NULL;
 
+    // list *node = l->fd;
+    // list *fwd = node->fd;
+
+    // // 解链
+    // l->fd = fwd;
+    // fwd->bk = l;
+
+    // // 重置node定位
+    // LIST_FD_BK_INIT(node);
+
     list *node = l->fd;
-    list *fwd = node->fd;
-
-    // 解链
-    l->fd = fwd;
-    fwd->bk = l;
-
-    // 将节点的fd和bk指向自己
-    node->fd = node->bk = node;
+    list *tmp;
+    LIST_UNLINK(node, tmp);
 
     // 减少count
     --l->count;
@@ -152,12 +149,6 @@ list *listGetNodeFromEnd(list *l)
     return node;
 }
 
-/**
- * \brief 删除一个节点数据
- * \param node 节点
- * \param freeFun 释放数据的函数
- * \return void
- */
 void listDeleteNodeData(list *node, void (*freeFun)(void *))
 {
     if (node == NULL)
@@ -170,13 +161,6 @@ void listDeleteNodeData(list *node, void (*freeFun)(void *))
     node->data = NULL;
 }
 
-/**
- * \brief 删除一个节点
- * \param l 链表(若改节点未被取出，必须提供链表)
- * \param node 节点
- * \param freeFun 释放数据的函数
- * \return void
- */
 void listDeleteNode(list *l, list *node, void (*freeFun)(void *))
 {
     if (node == NULL || node == l)
@@ -196,8 +180,7 @@ void listDeleteNode(list *l, list *node, void (*freeFun)(void *))
         bk->fd = fd;
 
         // 减少count
-        if (l)
-            --l->count;
+        --l->count;
     }
 
     // 释放节点
@@ -206,12 +189,6 @@ void listDeleteNode(list *l, list *node, void (*freeFun)(void *))
     return;
 }
 
-/**
- * \brief 删除链表
- * \param l 链表
- * \param freeFun 释放数据的函数
- * \return void
- */
 void listDeleteList(list *l, void (*freeFun)(void *))
 {
     if (l == NULL)
@@ -224,23 +201,22 @@ void listDeleteList(list *l, void (*freeFun)(void *))
     return;
 }
 
-/**
- * \brief 获取链表的节点数量
- * \param l 链表
- * \return 节点数量
- */
-int listGetCount(list *l)
+list *listSearchDataAddr(list *l, const void *data)
 {
-    return l->count;
+    if (l == NULL)
+        return NULL;
+
+    list *node = l->fd;
+    while (node != l)
+    {
+        if (node->data == data)
+            return node;
+        node = node->fd;
+    }
+
+    return NULL;
 }
 
-/**
- * \brief 从头部开始依次处理节点的每一个数据
- * \param l 链表
- * \param doData 处理数据的函数
- * \param arg 传递给处理数据的参数
- * \return void
- */
 void listDoFromStart(list *l, void (*doData)(list *l, list *node, void *arg), void *arg)
 {
     if (l == NULL || doData == NULL)
@@ -257,13 +233,6 @@ void listDoFromStart(list *l, void (*doData)(list *l, list *node, void *arg), vo
     }
 }
 
-/**
- * \brief 从尾部开始依次处理节点的每一个数据
- * \param l 链表
- * \param doData 处理数据的函数
- * \param arg 传递给处理数据的参数
- * \return void
- */
 void listDoFromEnd(list *l, void (*doData)(list *l, list *node, void *arg), void *arg)
 {
     if (l == NULL || doData == NULL)

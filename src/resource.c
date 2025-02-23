@@ -7,11 +7,9 @@ typedef struct
     size_t size;
 } resItem;
 
-list resList;
+char *resDir; // 资源目录
+list resList; // 资源列表
 
-/**
- * \brief 删除resItem
- */
 void resDeleteItem(resItem *res)
 {
     if (res == NULL)
@@ -25,25 +23,21 @@ void resDeleteItem(resItem *res)
     free(res);
 }
 
-/**
- * \brief 初始化资源列表
- */
-void resInit(void)
+void resInit(const char *resourceDir)
 {
+    // 初始化资源目录
     listInitList(&resList);
+
+    // 设置资源目录
+    resDir = malloc(strlen(resourceDir) + 5);
+    strcpy(resDir, resourceDir);
+    if (resDir[strlen(resDir) - 1] != '\\')
+        strcat(resDir, "\\");
 }
 
-/**
- * \brief 加载资源文件
- * \param fileName 文件名
- * \param data 数据
- * \param size 大小
- * \param live 是否常驻内存(只有在第一次加载时有效)
- * \return 是否成功
- */
-bool resGetFile(const char *fileName, void **data, size_t *size, bool live)
+uint8_t *resGetFile(const char *fileName, uint8_t **data, size_t *size, bool live)
 {
-    if (fileName == NULL || data == NULL)
+    if (fileName == NULL)
         return false;
 
     // 检查文件是否存在资源列表中
@@ -55,34 +49,35 @@ bool resGetFile(const char *fileName, void **data, size_t *size, bool live)
         if (strcmp(item->fileName, fileName) == 0)
         {
             // 如果已经加载，返回数据
-            *data = item->data;
+            if (data)
+                *data = item->data;
             if (size)
                 *size = item->size;
 
             // // 如果不常驻内存，删除节点
             // if (live == false)
             //     listDeleteNode(&resList, node, free); // 不删除数据，只删除节点
-            return true;
+            return item->data;
         }
         node = node->fd;
     }
 
     // 如果没有加载，加载文件
     char path[256] = {0};
-    strcpy(path, RESOURCE_DIR);
-    strcat(path, fileName);
+    strncpy(path, resDir, sizeof(path));
+    strncat(path, fileName, sizeof(path) - strlen(path) - 1);
 
     FILE *fp = fopen(path, "rb");
     if (fp == NULL)
     {
         ERROR("资源文件 %s 不存在\n", fileName);
-        return false;
+        return NULL;
     }
 
     // 获取文件大小
-    fseek(fp, 0, SEEK_END);
+    fseek(fp, 0L, SEEK_END);
     size_t fileSize = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
+    fseek(fp, 0L, SEEK_SET);
 
     // 读取文件
     char *fileData = malloc(fileSize + 1);
@@ -93,7 +88,8 @@ bool resGetFile(const char *fileName, void **data, size_t *size, bool live)
     fclose(fp);
 
     // 拷贝数据
-    *data = fileData;
+    if (data)
+        *data = fileData;
     if (size)
         *size = fileSize;
 
@@ -107,13 +103,10 @@ bool resGetFile(const char *fileName, void **data, size_t *size, bool live)
 
         listAddNodeInStart(&resList, listDataToNode(listCreateNode(), item, 0, false));
     }
-
-    return true;
+    
+    return fileData;
 }
 
-/**
- * \brief 删除资源列表
- */
 void resQuit(void)
 {
     listDeleteList(&resList, (void (*)(void *))resDeleteItem);

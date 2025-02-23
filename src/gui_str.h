@@ -1,6 +1,18 @@
 /**
  * @file gui_str.h
  * @brief GUI 字符串
+ * 
+ * // 创建字符串
+ * GUIstr *s1 = guiStrCreate(ttf, 64, GUI_STR_MOD_CENTER, program, NULL, (vec4){1.0f, 0.0f, 0.0f, 1.0f});
+ * guiStrCpy(s1, L"我shi一个");
+ * 
+ * // 修改model和color
+ * guiStrSetModel(s1, model);
+ * guiStrSetColor(s1, color);
+ * 
+ * // 渲染字符串
+ * guiStrRender();
+ * 
  */
 #ifndef GUI_STR_H
 #define GUI_STR_H
@@ -17,8 +29,7 @@
 #include <stb_truetype.h>
 
 #include "log.h"
-#include "gui_ttf.h"
-#include "gui_shader.h"
+#include "gui.h"
 
 #define guiStrGetFix(str) ((str)->fix)
 #define guiStrGetModel(str) ((str)->model)
@@ -29,6 +40,7 @@
 #define guiStrSetFix(str, fix) glm_mat4_copy(fix, guiStrGetFix(str))         // 设置修正矩阵
 #define guiStrSetModel(str, model) glm_mat4_copy(model, guiStrGetModel(str)) // 设置模型矩阵
 #define guiStrSetColor(str, color) glm_vec4_copy(color, guiStrGetColor(str)) // 设置颜色
+#define guiStrSetMode(str, mode) ((str)->mode = mode)                        // 设置字符串对齐模式
 
 #define guiStrAppFix(str, fix) guiShaderUniformMatrixFromID((str)->fixLoc, 4fv, (float *)(fix))              // 更新修正矩阵数据
 #define guiStrAppModel(str) guiShaderUniformMatrixFromID((str)->modelLoc, 4fv, (float *)guiStrGetModel(str)) // 更新模型矩阵数据
@@ -75,19 +87,10 @@ enum
 };
 
 /**
- * \brief 设置字符串的投影视图矩阵
- * \param PV 投影视图矩阵
- * \note 所有字符串共用一个PV
- */
-void guiStrInitPV(mat4 pv);
-
-/**
  * \brief 渲染字符串
  * \param str 字符串
  */
 void guiStrRender(GUIstr *str);
-
-#define guiStrSetMode(str, mode) ((str)->mode = mode) // 设置字符串对齐模式
 
 /**
  * \brief 设置字符串对齐模式(模型矩阵)
@@ -107,6 +110,11 @@ void guiStrAppMode(GUIstr *str);
  * \return GUIstr* 字符串
  */
 GUIstr *guiStrCreate(GUIttf *ttf, int pixels, int mode, GLuint program, mat4 model, vec4 color);
+
+/**
+ * \brief 删除字符串
+ */
+void guiStrDelete(GUIstr *str);
 
 /**
  * \brief 设置字符串文本
@@ -141,10 +149,5 @@ void guiStrBack(GUIstr *str);
  * \param n 删除字符数量
  */
 void guiStrBackN(GUIstr *str, int n);
-
-/**
- * \brief 删除字符串
- */
-void guiStrDelete(GUIstr *str);
 
 #endif // GUI_STR_H

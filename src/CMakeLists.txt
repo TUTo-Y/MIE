@@ -28,7 +28,7 @@ add_library(mcore STATIC
 add_executable(MIE ${SRC_FILES})
 
 # 链接库到可执行文件
-target_link_libraries(MIE PRIVATE mcore glfw cglm opengl32 m)
+target_link_libraries(MIE PRIVATE mcore glfw cglm opengl32 m pthread)
 
 # 复制资源文件
 add_custom_command(

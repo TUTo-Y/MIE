@@ -139,7 +139,7 @@ int main()
     resGetFile("kai.ttf", (void **)&fontData, &size, true);
     GUIttf *ttf = guiTTFCreate(fontData, 16, 80, 64, 0);
 
-    guiStrInitPV(PV);
+    guiStrInit(PV);
 
     GUIstr *s1 = guiStrCreate(ttf, 100, GUI_STR_MOD_CENTER, programFont, NULL, (vec4){1.0f, 0.0f, 0.0f, 1.0f});
     guiStrCpy(s1, L"我是一个字符串");

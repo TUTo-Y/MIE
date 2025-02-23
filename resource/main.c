@@ -140,7 +140,7 @@ int main()
     resGetFile("kai.ttf", (void **)&fontData, &size, true);
     GUIttf *ttf = guiTTFCreate(fontData, 16, 80, 64, 0);
 
-    guiStrInitPV(PV);
+    guiStrInit(PV);
 
     GUIstr *s1 = guiStrCreate(ttf, 100, GUI_STR_MOD_CENTER, fontProgram, NULL, (vec4){0.0f, 1.0f, 0.0f, 1.0f});
     GUIstr *s2 = guiStrCreate(ttf, 100, GUI_STR_MOD_CENTER, fontProgram, NULL, (vec4){1.0f, 0.0f, 0.0f, 1.0f});

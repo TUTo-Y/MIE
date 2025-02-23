@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 typedef struct _list list;
@@ -14,9 +15,11 @@ typedef struct _list
 {
     union
     {
-        void *data;
-        int count;
+        void *data;    // 数据(当且仅当list为头节点时有效)
+        int count;     // 节点数量(当且仅当list为头节点时有效)
+        uint64_t size; // 占位大小
     };
+
     list *fd; // 向前
     list *bk; // 向后
 } list;
@@ -96,11 +99,12 @@ void listDeleteNode(list *l, list *node, void (*freeFun)(void *));
 void listDeleteList(list *l, void (*freeFun)(void *));
 
 /**
- * \brief 获取链表的节点数量
+ * \brief 列表中搜索数据地址
  * \param l 链表
- * \return 节点数量
+ * \param data 数据的值
+ * \return 节点，若未找到则返回NULL
  */
-int listGetCount(list *l);
+list *listSearchDataAddr(list *l, const void *data);
 
 /**
  * \brief 从头部开始依次处理节点的每一个数据
@@ -109,7 +113,7 @@ int listGetCount(list *l);
  * \param arg 传递给处理数据的参数
  * \return void
  */
-void listDoFromStart(list *l, void (*doData)(list *l, list *node, void *arg), void* arg);
+void listDoFromStart(list *l, void (*doData)(list *l, list *node, void *arg), void *arg);
 
 /**
  * \brief 从尾部开始依次处理节点的每一个数据
@@ -118,6 +122,6 @@ void listDoFromStart(list *l, void (*doData)(list *l, list *node, void *arg), vo
  * \param arg 传递给处理数据的参数
  * \return void
  */
-void listDoFromEnd(list *l, void (*doData)(list *l, list *node, void *arg), void* arg);
+void listDoFromEnd(list *l, void (*doData)(list *l, list *node, void *arg), void *arg);
 
 #endif // LIST_H

@@ -51,6 +51,19 @@
         "functional": "c",
         "tuple": "c",
         "utility": "c",
-        "cstddef": "c"
+        "cstddef": "c",
+        "cstdlib": "c",
+        "gui_events.h": "c",
+        "gui_str.h": "c",
+        "gui_ctrl.h": "c",
+        "gui_window.h": "c",
+        "semaphore.h": "c",
+        "unistd.h": "c",
+        "list": "c",
+        "gui_widgetid.h": "c",
+        "gui_widget.h": "c",
+        "gui_widget_mousemove.h": "c",
+        "gui_shader.h": "c",
+        "pthread.h": "c"
     }
 }

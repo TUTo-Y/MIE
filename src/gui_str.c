@@ -1,8 +1,8 @@
 #include "gui_str.h"
 
-#define GUI_STR_R 0x10           // 字符串预留空间
-#define GUI_STR_INIT 0x20        // 字符串初始大小
-#define GUI_STR_ADD GUI_STR_INIT // 字符串每次增加的大小
+#define GUI_STR_R 0x10                 // 字符串预留空间
+#define GUI_STR_INIT 0x20              // 字符串初始大小
+#define GUI_STR_ADD (GUI_STR_INIT * 2) // 字符串每次增加的大小
 
 /**
  * \brief 检查字符串是否需要更新修复矩阵
@@ -24,20 +24,13 @@ void guiStrCheckLen(GUIstr *str, size_t count)
     if (size >= str->countMax)
     {
         // 扩展字符串
-        str->countMax += size > GUI_STR_ADD ? size : GUI_STR_ADD;
+        str->countMax += ((size - str->countMax) > GUI_STR_ADD ? (size - str->countMax) : GUI_STR_ADD);
         str->strText = (wchar_t *)realloc(str->strText, sizeof(wchar_t) * str->countMax);
         str->strChar = (GUIchar **)realloc(str->strChar, sizeof(GUIchar *) * str->countMax);
 
         memset(str->strText + str->count, 0, sizeof(wchar_t) * (str->countMax - str->count));
         memset(str->strChar + str->count, 0, sizeof(GUIchar *) * (str->countMax - str->count));
     }
-}
-
-static mat4 PV = GLM_MAT4_IDENTITY_INIT;
-
-void guiStrInitPV(mat4 pv)
-{
-    glm_mat4_copy(pv, PV);
 }
 
 void guiStrRender(GUIstr *str)
@@ -63,7 +56,7 @@ void guiStrRender(GUIstr *str)
     for (size_t i = 0; i < str->count; i++)
     {
         guiStrAppFix(str, fix);
-        guiTTFRenderChar(str->strChar[i]);
+        guiCharRender(str->strChar[i]);
         glm_translate(fix, (vec3){str->strChar[i]->advance, 0.0f, 0.0f});
     }
 }
@@ -107,10 +100,8 @@ GUIstr *guiStrCreate(GUIttf *ttf, int pixels, int mode, GLuint program, mat4 mod
     GUIstr *str = (GUIstr *)malloc(sizeof(GUIstr));
 
     str->ttf = ttf;
+    str->font = guiFontGet(ttf, pixels);
     str->program = program;
-
-    // 找对应的字号
-    str->font = guiTTFGetFont(ttf, pixels);
     str->count = 0;
     str->countMax = GUI_STR_INIT;
     str->strText = (wchar_t *)malloc(sizeof(wchar_t) * str->countMax);
@@ -149,6 +140,13 @@ GUIstr *guiStrCreate(GUIttf *ttf, int pixels, int mode, GLuint program, mat4 mod
     return str;
 }
 
+void guiStrDelete(GUIstr *str)
+{
+    free(str->strText);
+    free(str->strChar);
+    free(str);
+}
+
 void guiStrCpy(GUIstr *str, const wchar_t *text)
 {
     size_t textSize = wcslen(text);
@@ -157,7 +155,7 @@ void guiStrCpy(GUIstr *str, const wchar_t *text)
     for (size_t i = 0; i < textSize; i++)
     {
         str->strText[i] = text[i];
-        str->strChar[i] = guiTTFGetCharFromFont(str->ttf, str->font, text[i]);
+        str->strChar[i] = guiCharGetFromFont(str->ttf, str->font, text[i]);
     }
 
     str->strText[textSize] = L'\0';
@@ -174,12 +172,12 @@ void guiStrCat(GUIstr *str, const wchar_t *text)
     for (size_t i = 0; i < textSize; i++)
     {
         str->strText[str->count + i] = text[i];
-        str->strChar[str->count + i] = guiTTFGetCharFromFont(str->ttf, str->font, text[i]);
+        str->strChar[str->count + i] = guiCharGetFromFont(str->ttf, str->font, text[i]);
     }
 
     str->strText[str->count + textSize] = L'\0';
     str->count += textSize;
-    
+
     guiStrCheckMode(str);
 }
 
@@ -188,11 +186,11 @@ void guiStrCatC(GUIstr *str, const wchar_t text)
     guiStrCheckLen(str, 1);
 
     str->strText[str->count] = text;
-    str->strChar[str->count] = guiTTFGetCharFromFont(str->ttf, str->font, text);
+    str->strChar[str->count] = guiCharGetFromFont(str->ttf, str->font, text);
 
     str->strText[str->count + 1] = L'\0';
     str->count++;
-    
+
     guiStrCheckMode(str);
 }
 
@@ -203,7 +201,7 @@ void guiStrBack(GUIstr *str)
 
     str->count--;
     str->strText[str->count] = L'\0';
-    
+
     guiStrCheckMode(str);
 }
 
@@ -217,13 +215,6 @@ void guiStrBackN(GUIstr *str, int n)
 
     str->count -= n;
     str->strText[str->count] = L'\0';
-    
-    guiStrCheckMode(str);
-}
 
-void guiStrDelete(GUIstr *str)
-{
-    free(str->strText);
-    free(str->strChar);
-    free(str);
+    guiStrCheckMode(str);
 }
