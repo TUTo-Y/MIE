@@ -66,6 +66,8 @@ int main()
     int xpos = (mode->width - WINDOW_WIDTH) / 2;
     int ypos = (mode->height - WINDOW_HEIGHT) / 2;
 
+
+    
     // 设置窗口位置到屏幕中心
     glfwSetWindowPos(window, xpos, ypos);
     glfwMakeContextCurrent(window);
