@@ -11,13 +11,10 @@
 #include <GLFW/glfw3.h>
 #include <stb_truetype.h>
 
+#include "gui.h"
 #include "gui_window.h"
 #include "gui_widget.h"
 #include "gui_widgetID.h"
-
-typedef struct _GUIwin GUIwin;
-typedef struct _GUIevent GUIevent;
-typedef struct _GUIwidget GUIwidget;
 
 bool guiWidgetMouseMoveEvent(GUIwin *win, GUIwidget *widget, const GUIevent *event);
 

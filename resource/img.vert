@@ -10,5 +10,6 @@ out vec2 TexCoords;
 void main()
 {
     gl_Position = PV * model * vec4(aPos, 1.0);
+    
     TexCoords = aTexCoords;
 }

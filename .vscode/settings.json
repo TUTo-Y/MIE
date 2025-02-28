@@ -64,6 +64,8 @@
         "gui_widget.h": "c",
         "gui_widget_mousemove.h": "c",
         "gui_shader.h": "c",
-        "pthread.h": "c"
+        "pthread.h": "c",
+        "gui_type.h": "c",
+        "gui_widget_loginback.h": "c"
     }
 }

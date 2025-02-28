@@ -9,7 +9,7 @@ void guiWidgetInit(GUIwidget *widget,
                    uint64_t id,
                    void (*init)(GUIwin *win, GUIwidget *widget),
                    void (*destroy)(GUIwin *win, GUIwidget *widget),
-                   void (*msg)(GUIwin *win, GUIwidget *widget, uint64_t *type, void *data),
+                   void (*msg)(GUIwin *win, GUIwidget *widget, uint64_t type, void *data),
                    bool (*callDraw)(GUIwin *win, GUIwidget *widget),
                    bool (*callEvent)(GUIwin *win, GUIwidget *widget, const GUIevent *event),
                    int priorityDraw,
@@ -56,6 +56,6 @@ void guiWidgetInit(GUIwidget *widget,
 
 void guiWidgetDestroy(GUIwidget *widget)
 {
-    // 调用初始化函数
+    // 调用销毁函数
     CALL(widget->DestroyCall, widget);
 }

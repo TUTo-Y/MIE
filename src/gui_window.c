@@ -73,11 +73,6 @@ void guiWindowAddWidget(GUIwin *win, uint64_t id)
     CALL(widget->init, win, widget);
 }
 
-/**
- * \brief 从窗口中移除控件
- * \param win 窗口控制器
- * \param widget 控件ID
- */
 void guiWindowRemoveWidget(GUIwin *win, uint64_t id)
 {
     // 通过ID获取控件
@@ -178,10 +173,12 @@ void guiWindowDrawCallBack(list *group, GUIwin *win)
         list *node = l->fd;
         while (node != l)
         {
-            GUIwidget *widget = (GUIwidget *)node->data;
+            list *tmp = node;
+            node = node->fd;
+
+            GUIwidget *widget = (GUIwidget *)tmp->data;
             if (widget->callDraw(win, widget) == false)
                 over = true; // 相同优先级的都需要调用
-            node = node->fd;
         }
     }
 }
@@ -200,10 +197,12 @@ void guiWindowEventCallBack(list *group, GUIwin *win, const GUIevent *event)
         list *node = l->fd;
         while (node != l)
         {
-            GUIwidget *widget = (GUIwidget *)node->data;
+            list *tmp = node;
+            node = node->fd;
+
+            GUIwidget *widget = (GUIwidget *)tmp->data;
             if (widget->callEvent(win, widget, event) == false)
                 over = true; // 相同优先级的都需要调用
-            node = node->fd;
         }
     }
 }
@@ -284,6 +283,7 @@ void guiWindowStart(GUIwin *win)
     // 帧率控制
     GUIFrame *frame = guiFrameCreate(30);
 
+    glClearColor(0.8f, 0.95f, 0.95f, 1.0f);
     glfwShowWindow(win->window);
     while (!glfwWindowShouldClose(win->window))
     {
@@ -293,11 +293,15 @@ void guiWindowStart(GUIwin *win)
         if (0 == sem_trywait(&win->semTask))
         {
             pthread_mutex_lock(&win->mutexTask);
-            list *node = win->listTask.fd;
-            while (node != &win->listTask)
+            list *node;
+            while (node = listGetNodeFromStart(&win->listTask))
             {
+                // 获取任务
 
-                node = node->fd;
+                // 处理任务
+
+                // 释放任务
+                listDeleteNode(NULL, node, NULL);
             }
             pthread_mutex_unlock(&win->mutexTask);
         }
@@ -306,7 +310,6 @@ void guiWindowStart(GUIwin *win)
         if (guiFrameCheck(frame))
         {
             // 清空颜色缓冲区
-            glClearColor(0.1f, 0.5f, 0.5f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
             // 调用渲染回调函数
@@ -322,13 +325,36 @@ void guiWindowStart(GUIwin *win)
 
 void guiWindowQuit(GUIwin *win)
 {
-    // 释放所有控件
+    // 调用每一个控件的销毁函数
     list *node = win->listWidget.fd;
     while (node != &win->listWidget)
     {
-        list *tmp = node;
+        // 获取控件
+        GUIwidget *widget = (GUIwidget *)node->data;
         node = node->fd;
-        GUIwidget *widget = (GUIwidget *)tmp->data;
-        guiWindowRemoveWidget(win, widget->id);
+
+        // 解绑窗口
+        widget->win = NULL;
+
+        // 调用销毁函数
+        CALL(widget->destroy, win, widget);
     }
+
+    // 释放所有list
+    for (int i = 0; i < GUI_CALL_PRIORITY_NUM; i++)
+    {
+        listDeleteList(&win->listDraw[i], NULL);
+        listDeleteList(&win->listEventMouseButton[i], NULL);
+        listDeleteList(&win->listEventCursorPos[i], NULL);
+        listDeleteList(&win->listEventCharMods[i], NULL);
+        listDeleteList(&win->listEventScroll[i], NULL);
+    }
+    listDeleteList(&win->listWidget, NULL);
+    listDeleteList(&win->listTask, NULL);
+
+    // 释放信号量
+    sem_destroy(&win->semTask);
+
+    // 释放锁
+    pthread_mutex_destroy(&win->mutexTask);
 }

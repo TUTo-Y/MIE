@@ -1,6 +1,7 @@
 #include "gui.h"
 
 mat4 PV = GLM_MAT4_IDENTITY_INIT;
+GLuint program_img = 0;
 
 void guiSetPV(int w, int h)
 {

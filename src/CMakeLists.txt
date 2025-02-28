@@ -42,5 +42,4 @@ add_custom_command(
     DEPENDS ${RESOURCE_FILES}
     COMMENT "Copying resource files to ${BUILD_OUTPUT_DIR}/resource"
 )
-
 add_custom_target(copy_resources ALL DEPENDS "${BUILD_OUTPUT_DIR}/resource")

@@ -13,14 +13,11 @@
 
 typedef struct
 {
-    size_t width;  // 窗口宽度
-    size_t height; // 窗口高度
-
-    char res_path[PATH_MAX]; // 资源路径
+    char res_path[PATH_MAX];       // 资源路径
+    char loginback_path[PATH_MAX]; // 登录背景路径
 } cfg;
 
 extern cfg config;
-
 
 /**
  * \brief 初始化加载配置文件

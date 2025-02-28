@@ -14,6 +14,27 @@
 #include <semaphore.h>
 #if 1
 
+// 加载基础着色器
+bool loadBaseShader()
+{
+    // 加载基础图像着色器
+    if (0 == (program_img = guiShaderCreateProgram(resGetFile("img.vert", NULL, NULL, false),
+                                                   resGetFile("img.frag", NULL, NULL, false),
+                                                   NULL)))
+        return false;
+    guiShaderUse(program_img);
+    guiShaderUniform(program_img, "Texture", 1i, 0);
+    guiShaderUniformMatrix(program_img, "PV", 4fv, (float *)PV);
+
+    return true;
+}
+
+// 销毁基础着色器
+void destroyBaseShader()
+{
+    glDeleteProgram(program_img);
+}
+
 void Init()
 {
     // 设置中文
@@ -36,8 +57,12 @@ void Init()
     // 初始化随机数
     srand((unsigned int)time(NULL));
 
+    // 初始化配置
+    if (confInit("config") == false)
+        ERROR("加载配置文件失败\n");
+
     // 初始化资源
-    resInit("resource");
+    resInit(config.res_path);
 
     // 设置PV
     guiSetPV(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -54,7 +79,7 @@ void Quit()
 
 int main()
 {
-    DEBUG("%s\n", glfwGetVersionString());
+    DEBUG("测试glfw版本 : %s\n", glfwGetVersionString());
     Init();
 
     // 创建窗口
@@ -66,8 +91,6 @@ int main()
     int xpos = (mode->width - WINDOW_WIDTH) / 2;
     int ypos = (mode->height - WINDOW_HEIGHT) / 2;
 
-
-    
     // 设置窗口位置到屏幕中心
     glfwSetWindowPos(window, xpos, ypos);
     glfwMakeContextCurrent(window);
@@ -77,21 +100,44 @@ int main()
         goto quit;
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    // 创建控件
-    GUIwidget widget;
-    guiWidgetInit(&widget,
+    // 加载基础着色器
+    if (loadBaseShader() == false)
+        goto quit;
+
+    // 创建窗口移动控件
+    GUIwidget WidgetWindowMove;
+    guiWidgetInit(&WidgetWindowMove,
                   0,
                   GUI_WIDGET_ID_MOUSEMOVE,
                   NULL, NULL, NULL, NULL,
                   &guiWidgetMouseMoveEvent, -1, GUI_CALL_PRIORITY_4, GUI_CALL_PRIORITY_4, -1, -1, NULL, NULL, NULL, NULL);
-    
+
+    // 初始化登录背景控件
+    GUIwidget WidgetLoginBack;
+    guiWidgetInit(&WidgetLoginBack, 0, GUI_WIDGET_ID_LOGIN_BACK,
+                  gui_widget_loginback_init, gui_widget_loginback_destroy, gui_widget_loginback_msg,
+                  gui_widget_loginback_callDraw, gui_widget_loginback_callEvent,
+                  GUI_CALL_PRIORITY_0, -1, GUI_CALL_PRIORITY_4, -1, -1, NULL, NULL, gui_widget_loginback_StartCall, gui_widget_loginback_DestroyCall);
+
     // 创建窗口
     GUIwin win;
     guiWindowInit(&win, window);
+
+    // 添加控件
     guiWindowAddWidget(&win, GUI_WIDGET_ID_MOUSEMOVE);
+    guiWindowAddWidget(&win, GUI_WIDGET_ID_LOGIN_BACK);
+
+    // 运行窗口
     guiWindowStart(&win);
     guiWindowQuit(&win);
 
+    // 释放控件
+    guiWidgetDestroy(&WidgetWindowMove);
+
+    // 销毁基础着色器
+    destroyBaseShader();
+
+    // 销毁窗口
     glfwDestroyWindow(window);
 
 quit:

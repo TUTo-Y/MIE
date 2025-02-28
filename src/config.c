@@ -1,8 +1,6 @@
 #include "config.h"
 
 cfg config = {
-    .width = 1000,
-    .height = 618,
     .res_path = "resource\\"};
 
 bool confInit(const char *configFile)
@@ -21,8 +19,6 @@ bool confInit(const char *configFile)
         DEBUG("写入默认配置...\n");
 
         // 写入新的配置文件
-        fprintf(fp, "width = %d\n", config.width);
-        fprintf(fp, "height = %d\n", config.height);
         fprintf(fp, "res_path = %s\n", config.res_path);
 
         fclose(fp);
@@ -56,19 +52,13 @@ bool confInit(const char *configFile)
         }
 
         // 匹配配置
-        if (strcmp(key, "width") == 0)
-        {
-            config.width = atoi(value);
-            continue;
-        }
-        else if (strcmp(key, "height") == 0)
-        {
-            config.height = atoi(value);
-            continue;
-        }
-        else if (strcmp(key, "res_path") == 0)
+        if (strcmp(key, "res_path") == 0)
         {
             strcpy(config.res_path, value);
+
+            // 对目录需要添加斜杠
+            if (config.res_path[strlen(config.res_path) - 1] != '\\')
+                strcat(config.res_path, "\\");
             continue;
         }
         else
