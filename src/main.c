@@ -110,14 +110,14 @@ int main()
                   0,
                   GUI_WIDGET_ID_MOUSEMOVE,
                   NULL, NULL, NULL, NULL,
-                  &guiWidgetMouseMoveEvent, -1, GUI_CALL_PRIORITY_4, GUI_CALL_PRIORITY_4, -1, -1, NULL, NULL, NULL, NULL);
+                  &guiWidgetMouseMoveEvent, -1, GUI_CALL_PRIORITY_2, GUI_CALL_PRIORITY_2, -1, -1, NULL, NULL, NULL, NULL);
 
     // 初始化登录背景控件
     GUIwidget WidgetLoginBack;
     guiWidgetInit(&WidgetLoginBack, 0, GUI_WIDGET_ID_LOGIN_BACK,
                   gui_widget_loginback_init, gui_widget_loginback_destroy, gui_widget_loginback_msg,
                   gui_widget_loginback_callDraw, gui_widget_loginback_callEvent,
-                  GUI_CALL_PRIORITY_0, -1, GUI_CALL_PRIORITY_4, -1, -1, NULL, NULL, gui_widget_loginback_StartCall, gui_widget_loginback_DestroyCall);
+                  GUI_CALL_PRIORITY_0, -1, GUI_CALL_PRIORITY_2, -1, -1, NULL, NULL, gui_widget_loginback_StartCall, gui_widget_loginback_DestroyCall);
 
     // 创建窗口
     GUIwin win;

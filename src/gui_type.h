@@ -73,9 +73,7 @@ typedef struct _GUIevent
 #define GUI_CALL_PRIORITY_0 0
 #define GUI_CALL_PRIORITY_1 1
 #define GUI_CALL_PRIORITY_2 2
-#define GUI_CALL_PRIORITY_3 3
-#define GUI_CALL_PRIORITY_4 4
-#define GUI_CALL_PRIORITY_NUM 5
+#define GUI_CALL_PRIORITY_NUM 3
 #define GUI_CALL_PRIORITY_SAFE_GET(n) ((n) % GUI_CALL_PRIORITY_NUM)
 
 typedef struct _GUIwin

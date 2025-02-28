@@ -170,11 +170,11 @@ void guiWindowDrawCallBack(list *group, GUIwin *win)
 
         // 遍历所有控件
         list *l = &group[i];
-        list *node = l->fd;
+        list *node = l->bk;
         while (node != l)
         {
             list *tmp = node;
-            node = node->fd;
+            node = node->bk;
 
             GUIwidget *widget = (GUIwidget *)tmp->data;
             if (widget->callDraw(win, widget) == false)
@@ -194,11 +194,11 @@ void guiWindowEventCallBack(list *group, GUIwin *win, const GUIevent *event)
 
         // 遍历所有控件
         list *l = &group[i];
-        list *node = l->fd;
+        list *node = l->bk;
         while (node != l)
         {
             list *tmp = node;
-            node = node->fd;
+            node = node->bk;
 
             GUIwidget *widget = (GUIwidget *)tmp->data;
             if (widget->callEvent(win, widget, event) == false)

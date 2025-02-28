@@ -17,6 +17,8 @@ typedef struct gui_widget_loginback_struct
     double movA;      // 移动加速度
     int movX, movY;   // 当前位置
     int movDX, movDY; // 要移动的目标
+
+    double animTime; // 动画时间
 } gui_widget_loginback_struct;
 
 void gui_widget_loginback_StartCall(GUIwidget *widget)
@@ -38,7 +40,7 @@ void gui_widget_loginback_StartCall(GUIwidget *widget)
     st->texture = guiTextureCreate(data, st->imageW, st->imageH, nrChannels, GL_RGB);
 
     // 调整大小
-    float scale = ((float)st->imageW / (float)WINDOW_WIDTH > (float)st->imageH / (float)WINDOW_HEIGHT) ? WINDOW_HEIGHT * 1.08f / st->imageH : WINDOW_WIDTH * 1.08f / st->imageW;
+    float scale = ((float)st->imageW / (float)WINDOW_WIDTH > (float)st->imageH / (float)WINDOW_HEIGHT) ? WINDOW_HEIGHT * 1.01f / st->imageH : WINDOW_WIDTH * 1.01f / st->imageW;
 
     st->imageW *= scale;
     st->imageH *= scale;
@@ -109,13 +111,13 @@ void gui_widget_loginback_init(GUIwin *win, GUIwidget *widget)
     glm_mat4_identity(st->model);
 
     // 设置移动速度
-    st->movA = 1;
+    st->movA = 10;
 
     // 要移动的目标
     double x, y;
     glfwGetCursorPos(win->window, &x, &y);
-    x = WINDOW_POS_2_GL_POS_x(x);
-    y = WINDOW_POS_2_GL_POS_y(y);
+    x = WINDOW_POS_2_GL_POS_x(x < 0 ? 0 : (x > WINDOW_WIDTH ? WINDOW_WIDTH : x));
+    y = WINDOW_POS_2_GL_POS_y(y < 0 ? 0 : (y > WINDOW_HEIGHT ? WINDOW_HEIGHT : y));
 
     st->movDX = -(x / (WINDOW_WIDTH / 2)) * st->disW;
     st->movDY = -(y / (WINDOW_HEIGHT / 2)) * st->disH;
@@ -124,7 +126,10 @@ void gui_widget_loginback_init(GUIwin *win, GUIwidget *widget)
     st->movY = st->movDY;
 
     glm_mat4_identity(st->model);
-    glm_translate(st->model, (vec3){st->movX, st->movY, 0});
+    glm_translate(st->model, (vec3){-st->movX, -st->movY, 0});
+
+    // 设置动画时间
+    st->animTime = glfwGetTime();
 }
 
 void gui_widget_loginback_destroy(GUIwin *win, GUIwidget *widget)
@@ -147,12 +152,19 @@ bool gui_widget_loginback_callDraw(GUIwin *win, GUIwidget *widget)
     glBindTexture(GL_TEXTURE_2D, st->texture);
 
     // 设置模型矩阵
-    st->movX += st->movDX - st->movX + 1;
-    st->movY = st->movDY;
+    if (st->movX != st->movDX || st->movY != st->movDY)
+    {
+        double time = glfwGetTime() - st->animTime;
 
-    glm_mat4_identity(st->model);
-    glm_translate(st->model, (vec3){st->movDX - st->movX + 1, st->movDY - st->movY + 1, 0});
+        st->movX += (st->movDX - st->movX) * time * st->movA;
+        st->movY += (st->movDY - st->movY) * time * st->movA;
+
+        glm_mat4_identity(st->model);
+        glm_translate(st->model, (vec3){-st->movX, -st->movY, 0});
+    }
     guiShaderUniformMatrix(program_img, "model", 4fv, (float *)st->model);
+
+    st->animTime = glfwGetTime();
 
     // 绘制
     glBindVertexArray(st->VAO);
@@ -168,7 +180,9 @@ bool gui_widget_loginback_callEvent(GUIwin *win, GUIwidget *widget, const GUIeve
         gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)widget->data;
 
         double x, y;
-        glfwGetCursorPos(win->window, &x, &y);
+        // glfwGetCursorPos(win->window, &x, &y);
+        x = event->CursorPos.xpos;
+        y = event->CursorPos.ypos;
         x = WINDOW_POS_2_GL_POS_x(x);
         y = WINDOW_POS_2_GL_POS_y(y);
 
