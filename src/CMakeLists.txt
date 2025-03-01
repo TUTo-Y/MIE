@@ -11,7 +11,6 @@ file(GLOB CORE_FILES "${CMAKE_SOURCE_DIR}/src/core/*.c")            # core
 
 file(GLOB SRC_FILES "${CMAKE_SOURCE_DIR}/src/*.c")                  # src
 
-file(GLOB_RECURSE RESOURCE_FILES "${CMAKE_SOURCE_DIR}/resource/*")  # resource
 
 # 设置编译选项以启用调试信息
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
@@ -30,16 +29,17 @@ add_executable(MIE ${SRC_FILES})
 # 链接库到可执行文件
 target_link_libraries(MIE PRIVATE mcore glfw cglm opengl32 m pthread)
 
-# 复制资源文件
-add_custom_command(
-    OUTPUT "${BUILD_OUTPUT_DIR}/resource"
-    BYPRODUCTS "${BUILD_OUTPUT_DIR}/resource"
-    COMMAND ${CMAKE_COMMAND} -E remove_directory "${BUILD_OUTPUT_DIR}/resource"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${BUILD_OUTPUT_DIR}/resource"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_SOURCE_DIR}/resource"
-    "${BUILD_OUTPUT_DIR}/resource"
-    DEPENDS ${RESOURCE_FILES}
-    COMMENT "Copying resource files to ${BUILD_OUTPUT_DIR}/resource"
-)
-add_custom_target(copy_resources ALL DEPENDS "${BUILD_OUTPUT_DIR}/resource")
+# # 复制资源文件
+# file(GLOB_RECURSE RESOURCE_FILES "${CMAKE_SOURCE_DIR}/resource/*")  # resource
+# add_custom_command(
+#     OUTPUT "${BUILD_OUTPUT_DIR}/resource"
+#     BYPRODUCTS "${BUILD_OUTPUT_DIR}/resource"
+#     COMMAND ${CMAKE_COMMAND} -E remove_directory "${BUILD_OUTPUT_DIR}/resource"
+#     COMMAND ${CMAKE_COMMAND} -E make_directory "${BUILD_OUTPUT_DIR}/resource"
+#     COMMAND ${CMAKE_COMMAND} -E copy_directory
+#     "${CMAKE_SOURCE_DIR}/resource"
+#     "${BUILD_OUTPUT_DIR}/resource"
+#     DEPENDS ${RESOURCE_FILES}
+#     COMMENT "Copying resource files to ${BUILD_OUTPUT_DIR}/resource"
+# )
+# add_custom_target(copy_resources ALL DEPENDS "${BUILD_OUTPUT_DIR}/resource")

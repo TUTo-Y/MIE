@@ -7,7 +7,6 @@ typedef struct
     size_t size;
 } resItem;
 
-char *resDir; // 资源目录
 list resList; // 资源列表
 
 void resDeleteItem(resItem *res)
@@ -23,16 +22,10 @@ void resDeleteItem(resItem *res)
     free(res);
 }
 
-void resInit(const char *resourceDir)
+void resInit()
 {
     // 初始化资源目录
     listInitList(&resList);
-
-    // 设置资源目录
-    resDir = malloc(strlen(resourceDir) + 5);
-    strcpy(resDir, resourceDir);
-    if (resDir[strlen(resDir) - 1] != '\\')
-        strcat(resDir, "\\");
 }
 
 uint8_t *resGetFile(const char *fileName, uint8_t **data, size_t *size, bool live)
@@ -64,8 +57,7 @@ uint8_t *resGetFile(const char *fileName, uint8_t **data, size_t *size, bool liv
 
     // 如果没有加载，加载文件
     char path[256] = {0};
-    strncpy(path, resDir, sizeof(path));
-    strncat(path, fileName, sizeof(path) - strlen(path) - 1);
+    strncpy(path, fileName, sizeof(path) - strlen(path) - 1);
 
     FILE *fp = fopen(path, "rb");
     if (fp == NULL)

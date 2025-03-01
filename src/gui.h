@@ -15,9 +15,12 @@
 
 #include "gui_ttf.h"
 #include "gui_str.h"
+#include "gui_draw.h"
 #include "gui_frame.h"
 #include "gui_shader.h"
 #include "gui_texture.h"
+#include "gui_program.h"
+
 
 #include "gui_type.h"
 #include "gui_window.h"
@@ -39,14 +42,6 @@
 
 #define CALL(fun, ...) ((fun) ? (fun)(__VA_ARGS__) : false)
 
-extern mat4 PV;
-extern GLuint program_img;
 
-/**
- * \brief 初始化PV矩阵
- * \param w 窗口宽度
- * \param h 窗口高度
- */
-void guiSetPV(int w, int h);
 
 #endif // GUI_H

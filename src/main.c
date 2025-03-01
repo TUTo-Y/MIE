@@ -14,31 +14,13 @@
 #include <semaphore.h>
 #if 1
 
-// 加载基础着色器
-bool loadBaseShader()
-{
-    // 加载基础图像着色器
-    if (0 == (program_img = guiShaderCreateProgram(resGetFile("img.vert", NULL, NULL, false),
-                                                   resGetFile("img.frag", NULL, NULL, false),
-                                                   NULL)))
-        return false;
-    guiShaderUse(program_img);
-    guiShaderUniform(program_img, "Texture", 1i, 0);
-    guiShaderUniformMatrix(program_img, "PV", 4fv, (float *)PV);
-
-    return true;
-}
-
-// 销毁基础着色器
-void destroyBaseShader()
-{
-    glDeleteProgram(program_img);
-}
+void guiPlay(GLFWwindow *window);
 
 void Init()
 {
     // 设置中文
     setlocale(LC_ALL, "zh_CN.UTF-8");
+    DEBUG("测试glfw版本 : %s\n", glfwGetVersionString());
 
     // 初始化glfw
     glfwInit();
@@ -62,10 +44,7 @@ void Init()
         ERROR("加载配置文件失败\n");
 
     // 初始化资源
-    resInit(config.res_path);
-
-    // 设置PV
-    guiSetPV(WINDOW_WIDTH, WINDOW_HEIGHT);
+    resInit(config);
 }
 
 void Quit()
@@ -79,7 +58,6 @@ void Quit()
 
 int main()
 {
-    DEBUG("测试glfw版本 : %s\n", glfwGetVersionString());
     Init();
 
     // 创建窗口
@@ -101,9 +79,27 @@ int main()
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // 加载基础着色器
-    if (loadBaseShader() == false)
+    if (guiProgramInit() == false)
         goto quit;
 
+    // 渲染窗口
+    guiPlay(window);
+
+    // 销毁基础着色器
+    guiProgramDestroy();
+
+    // 销毁窗口
+    glfwDestroyWindow(window);
+
+quit:
+    Quit();
+    return 0;
+}
+
+#endif
+
+void guiPlay(GLFWwindow *window)
+{
     // 创建窗口移动控件
     GUIwidget WidgetWindowMove;
     guiWidgetInit(&WidgetWindowMove,
@@ -133,16 +129,4 @@ int main()
 
     // 释放控件
     guiWidgetDestroy(&WidgetWindowMove);
-
-    // 销毁基础着色器
-    destroyBaseShader();
-
-    // 销毁窗口
-    glfwDestroyWindow(window);
-
-quit:
-    Quit();
-    return 0;
 }
-
-#endif

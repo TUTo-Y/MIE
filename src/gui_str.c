@@ -134,9 +134,6 @@ GUIstr *guiStrCreate(GUIttf *ttf, int pixels, int mode, GLuint program, mat4 mod
     // 设置纹理
     guiShaderUniform(str->program, "Texture", 1i, 0);
 
-    // 设置PV
-    guiShaderUniformMatrix(str->program, "PV", 4fv, (float *)PV);
-
     return str;
 }
 

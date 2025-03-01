@@ -29,7 +29,7 @@
  * \brief 初始化资源列表
  * \param resourceDir 资源目录
  */
-void resInit(const char *resourceDir);
+void resInit();
 
 /**
  * \brief 加载资源文件
