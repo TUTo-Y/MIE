@@ -47,6 +47,31 @@ bool guiProgramInit()
     guiShaderUse(program.rrc);
     guiShaderUniformMatrix(program.rrc, "PV", 4fv, (float *)PV);
 
+    // 加载纹理矩形着色器
+    if (0 == (program.rt = guiShaderCreateProgram(resGetFile(config.rt_vert, NULL, NULL, false),
+                                                  resGetFile(config.rt_frag, NULL, NULL, false),
+                                                  NULL)))
+        return false;
+    guiShaderUse(program.rt);
+    guiShaderUniformMatrix(program.rt, "PV", 4fv, (float *)PV);
+    guiShaderUniform(program.rt, "Texture", 1i, 0);
+
+    // 加载颜色矩形着色器
+    if (0 == (program.rc = guiShaderCreateProgram(resGetFile(config.rc_vert, NULL, NULL, false),
+                                                  resGetFile(config.rc_frag, NULL, NULL, false),
+                                                  NULL)))
+        return false;
+    guiShaderUse(program.rc);
+    guiShaderUniformMatrix(program.rc, "PV", 4fv, (float *)PV);
+
+    // 加载高斯模糊着色器
+    if (0 == (program.gaussblur = guiShaderCreateProgram(resGetFile(config.gaussblur_vert, NULL, NULL, false),
+                                                         resGetFile(config.gaussblur_frag, NULL, NULL, false),
+                                                         NULL)))
+        return false;
+    guiShaderUse(program.gaussblur);
+    guiShaderUniform(program.gaussblur, "Texture", 1i, 0);
+
     return true;
 }
 

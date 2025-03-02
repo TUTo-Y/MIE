@@ -22,6 +22,9 @@ typedef struct
     GLuint loginBack;
     GLuint rrt; // 圆角纹理矩形
     GLuint rrc; // 圆角颜色矩形
+    GLuint rt;  // 纹理矩形
+    GLuint rc;  // 颜色矩形
+    GLuint gaussblur; // 高斯模糊
 } GUIprogram;
 
 extern GUIprogram program;

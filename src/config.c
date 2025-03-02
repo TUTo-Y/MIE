@@ -11,6 +11,10 @@ cfg config = {
     .rrt_frag = "resource\\rrt.frag",
     .rrc_vert = "resource\\rrc.vert",
     .rrc_frag = "resource\\rrc.frag",
+    .rt_vert = "resource\\rt.vert",
+    .rt_frag = "resource\\rt.frag",
+    .rc_vert = "resource\\rc.vert",
+    .rc_frag = "resource\\rc.frag",
     .gaussblur_vert = "resource\\gaussblur.vert",
     .gaussblur_frag = "resource\\gaussblur.frag"
 };
@@ -41,6 +45,10 @@ bool confInit(const char *configFile)
         fprintf(fp, "rrt_frag = %s\n", config.rrt_frag);
         fprintf(fp, "rrc_vert = %s\n", config.rrc_vert);
         fprintf(fp, "rrc_frag = %s\n", config.rrc_frag);
+        fprintf(fp, "rt_vert = %s\n", config.rt_vert);
+        fprintf(fp, "rt_frag = %s\n", config.rt_frag);
+        fprintf(fp, "rc_vert = %s\n", config.rc_vert);
+        fprintf(fp, "rc_frag = %s\n", config.rc_frag);
         fprintf(fp, "gaussblur_vert = %s\n", config.gaussblur_vert);
         fprintf(fp, "gaussblur_frag = %s\n", config.gaussblur_frag);
 
@@ -123,6 +131,26 @@ bool confInit(const char *configFile)
         else if (strcmp(key, "rrc_frag") == 0)
         {
             strcpy(config.rrc_frag, value);
+            continue;
+        }
+        else if (strcmp(key, "rt_vert") == 0)
+        {
+            strcpy(config.rt_vert, value);
+            continue;
+        }
+        else if (strcmp(key, "rt_frag") == 0)
+        {
+            strcpy(config.rt_frag, value);
+            continue;
+        }
+        else if (strcmp(key, "rc_vert") == 0)
+        {
+            strcpy(config.rc_vert, value);
+            continue;
+        }
+        else if (strcmp(key, "rc_frag") == 0)
+        {
+            strcpy(config.rc_frag, value);
             continue;
         }
         else if (strcmp(key, "gaussblur_vert") == 0)

@@ -44,7 +44,7 @@ void Init()
         ERROR("加载配置文件失败\n");
 
     // 初始化资源
-    resInit(config);
+    resInit();
 }
 
 void Quit()
@@ -76,20 +76,18 @@ int main()
     // 初始化glad
     if (0 == gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         goto quit;
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    // 加载基础着色器
-    if (guiProgramInit() == false)
+    // 初始化gui
+    if (guiInit() == false)
         goto quit;
 
     // 渲染窗口
     guiPlay(window);
 
-    // 销毁基础着色器
-    guiProgramDestroy();
-
     // 销毁窗口
     glfwDestroyWindow(window);
+
+    guiQuit();
 
 quit:
     Quit();

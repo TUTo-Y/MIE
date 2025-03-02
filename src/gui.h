@@ -13,6 +13,7 @@
 #include <cglm/cglm.h>
 #include <GLFW/glfw3.h>
 
+#include "gui_fb.h"
 #include "gui_ttf.h"
 #include "gui_str.h"
 #include "gui_draw.h"
@@ -42,6 +43,14 @@
 
 #define CALL(fun, ...) ((fun) ? (fun)(__VA_ARGS__) : false)
 
+// 设置默认视图
+#define GUI_SET_DEFAULT_VIEWPORT() glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+// 默认清屏颜色
+#define GUI_SET_DEFAULT_CLEARCOLOR() glClearColor(0.8f, 0.8f, 0.9f, 1.0f)
+
+bool guiInit();
+
+void guiQuit();
 
 
 #endif // GUI_H

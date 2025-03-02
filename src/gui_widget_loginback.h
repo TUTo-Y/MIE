@@ -4,6 +4,8 @@
 #include <stb_image.h>
 #include <cglm/cglm.h>
 
+#include "gui_draw.h"
+
 #include "gui.h"
 #include "config.h"
 #include "resource.h"

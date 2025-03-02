@@ -28,6 +28,12 @@ typedef struct
     char rrc_vert[PATH_MAX]; // 圆角颜色矩形顶点着色器
     char rrc_frag[PATH_MAX]; // 圆角颜色矩形片段着色器
 
+    char rt_vert[PATH_MAX]; // 纹理矩形顶点着色器
+    char rt_frag[PATH_MAX]; // 纹理矩形片段着色器
+
+    char rc_vert[PATH_MAX]; // 颜色矩形顶点着色器
+    char rc_frag[PATH_MAX]; // 颜色矩形片段着色器
+
     char gaussblur_vert[PATH_MAX]; // 高斯模糊顶点着色器
     char gaussblur_frag[PATH_MAX]; // 高斯模糊片段着色器
 } cfg;

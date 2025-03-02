@@ -271,113 +271,25 @@ void guiWindowScrollCallback(GLFWwindow *window, double xoffset, double yoffset)
     // 调用事件回调函数
     guiWindowEventCallBack(win->listEventScroll, win, (const GUIevent *)&event);
 }
-#if 1
+#if 0
 void guiWindowStart(GUIwin *win)
 {
-    /* 背景 */
-    GLuint tertexVAO, tertexVBO, tertexEBO;
-    // 顶点数据
-    float vertex[] = {
-        -(WINDOW_WIDTH / 2), (WINDOW_HEIGHT / 2), 0.0f, 0.0f, 1.0f,
-        (WINDOW_WIDTH / 2), (WINDOW_HEIGHT / 2), 0.0f, 1.0f, 1.0f,
-        (WINDOW_WIDTH / 2), -(WINDOW_HEIGHT / 2), 0.0f, 1.0f, 0.0f,
-        -(WINDOW_WIDTH / 2), -(WINDOW_HEIGHT / 2), 0.0f, 0.0f, 0.0f};
-    unsigned int indices[] = {
-        0, 1, 2,
-        2, 3, 0};
-    glGenVertexArrays(1, &tertexVAO);
-    glGenBuffers(1, &tertexVBO);
-    glGenBuffers(1, &tertexEBO);
-    glBindVertexArray(tertexVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, tertexVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tertexEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    // 纹理
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load(config.loginback_path, &width, &height, &nrChannels, 0);
-    GLint texture = guiTextureCreate(data, width, height, nrChannels, GL_RGB);
-    free(data);
-    // 着色器
-    mat4 model = GLM_MAT4_IDENTITY_INIT;
-    guiShaderUse(program.img);
-    guiShaderUniformMatrix(program.img, "model", 4fv, (float *)model);
+    // 读取图片
+    int width, height, channels = 0;
+    unsigned char *data = stbi_load(config.loginback_path, &width, &height, &channels, 0);
+    if (data == NULL)
+        ERROR("图片加载失败\n");
+    GLuint texture = guiTextureCreate(data, width, height, channels, 0);
+    stbi_image_free(data);
 
-    /* 前景 */
-    GUIdrawrr drrt = guiDrawRRTCreate(WINDOW_WIDTH / 4, WINDOW_HEIGHT / 2, 50.0f, 0.02f);
-    guiDrawRRTApplyTexture(drrt, texture, width/2.0f, height /4.0f,  width / 4.0f, height / 2.0f, width, height);
-    glm_translate(drrt->model, (vec3){WINDOW_WIDTH / 8.0f, 0.0f, 0.0f});
-
-    // GUIdrawrr drrc = guiDrawRRCCreate(WINDOW_WIDTH / 4, WINDOW_HEIGHT / 2, 50.0f, 0.02f, (vec4){0.1f, 0.2f, 0.3f, 0.5f});
-
-    
-
-    // /*前景*/
-    // GLuint fgVAO, fgVBO, fgEBO;
-    // // 顶点数据
-    // // float fgVertex[] = {
-    // //     -(WINDOW_WIDTH / 4), (WINDOW_HEIGHT / 4), 0.0f, 0.0f, 1.0f,
-    // //     (WINDOW_WIDTH / 4), (WINDOW_HEIGHT / 4), 0.0f, 1.0f, 1.0f,
-    // //     (WINDOW_WIDTH / 4), -(WINDOW_HEIGHT / 4), 0.0f, 1.0f, 0.0f,
-    // //     -(WINDOW_WIDTH / 4), -(WINDOW_HEIGHT / 4), 0.0f, 0.0f, 0.0f};
-    // float fgVertex[] = {
-    //     0, (WINDOW_HEIGHT / 4), 0.0f, 0.0f, 1.0f,
-    //     (WINDOW_WIDTH / 4), (WINDOW_HEIGHT / 4), 0.0f, 1.0f, 1.0f,
-    //     (WINDOW_WIDTH / 4), -(WINDOW_HEIGHT / 4), 0.0f, 1.0f, 0.0f,
-    //     0, -(WINDOW_HEIGHT / 4), 0.0f, 0.0f, 0.0f};
-    // unsigned int fgIndices[] = {
-    //     0, 1, 2,
-    //     2, 3, 0};
-    // glGenVertexArrays(1, &fgVAO);
-    // glGenBuffers(1, &fgVBO);
-    // glGenBuffers(1, &fgEBO);
-    // glBindVertexArray(fgVAO);
-    // glBindBuffer(GL_ARRAY_BUFFER, fgVBO);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(fgVertex), fgVertex, GL_STATIC_DRAW);
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fgEBO);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(fgIndices), fgIndices, GL_STATIC_DRAW);
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-    // glEnableVertexAttribArray(0);
-    // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-    // glEnableVertexAttribArray(1);
-    // // 获取pv
-    // mat4 PV;
-    // guiProgramSetPV(WINDOW_WIDTH, WINDOW_HEIGHT, PV);
-    // GLuint fgProgram = guiShaderCreateProgram(resGetFile("resource\\r.vert", NULL, NULL, false),
-    //                                           resGetFile("resource\\r.frag", NULL, NULL, false),
-    //                                           NULL);
-    // guiShaderUse(fgProgram);
-    // guiShaderUniformMatrix(fgProgram, "PV", 4fv, (float *)PV);
-    // guiShaderUniformMatrix(fgProgram, "model", 4fv, (float *)model);
-    // guiShaderUniform(fgProgram, "color", 4f, 1.0f, 0.0f, 1.0f, 1.0f);
-    // guiShaderUniform(fgProgram, "type", 1i, 2);
-    // guiShaderUniform(fgProgram, "halfw", 1f, (WINDOW_WIDTH / 4));
-    // guiShaderUniform(fgProgram, "halfh", 1f, (WINDOW_HEIGHT / 4));
-    // guiShaderUniform(fgProgram, "r", 1f, 50.0f);
-    // guiShaderUniform(fgProgram, "vague", 1f, 0.02f);
-    // guiShaderUniform(fgProgram, "Texture", 1i, 0);
-    // float w = width / 4.0f, h = height / 2.0f;
-    // float x = width / 2.0f, y = height - height / 4.0f - h;
-    // mat3 cut = GLM_MAT3_IDENTITY_INIT;
-    // glm_translate2d(cut, (vec3){x / width, y /height, 0.0f});
-    // glm_scale2d(cut, (vec3){w / width, h / height, 1.0f});
-    // guiShaderUniformMatrix(fgProgram, "cut", 3fv, (float *)cut);
-
-    // // 模板测试
-    // glEnable(GL_STENCIL_TEST);
-    // glStencilMask(0xFF);
 
     // 混合
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     // 帧率控制
     GUIFrame *frame = guiFrameCreate(30);
-    glClearColor(0.5f, 0.95f, 0.95f, 1.0f);
+    // glClearColor(0.5f, 0.95f, 0.95f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glfwShowWindow(win->window);
     while (!glfwWindowShouldClose(win->window))
     {
@@ -392,27 +304,6 @@ void guiWindowStart(GUIwin *win)
             // 清空颜色缓冲区
             glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-            // // 渲染背景
-            // // glStencilFunc(GL_EQUAL, 1, 0xFF);
-            // guiShaderUse(program.img);
-            // mat4 model = GLM_MAT4_IDENTITY_INIT;
-            // guiShaderUniformMatrix(program.img, "model", 4fv, (float *)model);
-            // glActiveTexture(GL_TEXTURE0);
-            // glBindTexture(GL_TEXTURE_2D, texture);
-            // glBindVertexArray(tertexVAO);
-            // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-            guiDrawRRTRender(drrt);
-            // guiDrawRRCRender(drrc);
-
-            // // 渲染前景
-            // // glStencilFunc(GL_ALWAYS, 1, 0xFF);
-            // // glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
-            // glActiveTexture(GL_TEXTURE0);
-            // glBindTexture(GL_TEXTURE_2D, texture);
-            // guiShaderUse(fgProgram);
-            // glBindVertexArray(fgVAO);
-            // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
             // 交换缓冲区
             glfwSwapBuffers(win->window);
@@ -430,10 +321,14 @@ void guiWindowStart(GUIwin *win)
     glfwSetCharModsCallback(win->window, guiWindowCharModsCallback);
     glfwSetScrollCallback(win->window, guiWindowScrollCallback);
 
+    // 混合
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     // 帧率控制
     GUIFrame *frame = guiFrameCreate(30);
 
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    GUI_SET_DEFAULT_CLEARCOLOR();
     glfwShowWindow(win->window);
     while (!glfwWindowShouldClose(win->window))
     {
