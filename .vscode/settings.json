@@ -102,6 +102,7 @@
         "streambuf": "c",
         "cinttypes": "c",
         "cstdbool": "c",
-        "variant": "c"
+        "variant": "c",
+        "stb_image_resize2.h": "c"
     }
 }

@@ -50,7 +50,7 @@ GLuint guiTextureCreate(const unsigned char *data, int width, int height, int ch
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // 设置字节对齐方式
-    if (format == GL_RED)
+    // if (format == GL_RED)
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     // 生成纹理

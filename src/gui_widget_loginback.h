@@ -3,6 +3,8 @@
 
 #include <stb_image.h>
 #include <cglm/cglm.h>
+#include <stb_image_resize2.h>
+#include <stb_image_write.h>
 
 #include "gui_draw.h"
 

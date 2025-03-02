@@ -2,17 +2,18 @@
 
 #define SCALE 1.02f // 边框大小
 #define LOGINBACK2SCALE 0.7f
-#define LOGINBACK2W (((float)WINDOW_WIDTH) * LOGINBACK2SCALE)
-#define LOGINBACK2H (((float)WINDOW_HEIGHT) * LOGINBACK2SCALE)
+#define LOGINBACK2WIDTH (((float)WINDOW_WIDTH) * LOGINBACK2SCALE)
+#define LOGINBACK2HEIGHT (((float)WINDOW_HEIGHT) * LOGINBACK2SCALE)
+#define LOGINBACK2DISW (((float)WINDOW_WIDTH) * (1.0f - LOGINBACK2SCALE) / 2.0f)
+#define LOGINBACK2DISH (((float)WINDOW_HEIGHT) * (1.0f - LOGINBACK2SCALE) / 2.0f)
 
 typedef struct gui_widget_loginback_struct
 {
     // 基础数据
     GLuint loginbackTex;   // 背景纹理
     GLuint loginbackr2Tex; // 圆角背景纹理
-    int imageW, imageH;    // 图像真实大小
-    float scale;           // 缩放比例
-    float imgW, imgH;      // 图像缩放后的大小
+    int imageW, imageH;    // 图像大小
+    float disW, disH;      // 图像边距
 
     // 渲染数据
     GUIdrawr loginback;    // 背景
@@ -33,20 +34,28 @@ void gui_widget_loginback_StartCall(GUIwidget *widget)
     gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)widget->data;
 
     // 加载图像
-    int nrChannels;
-    unsigned char *data = stbi_load(config.loginback_path, &st->imageW, &st->imageH, &nrChannels, 0);
-
-    // 创建纹理
-    st->loginbackTex = guiTextureCreate(data, st->imageW, st->imageH, nrChannels, GL_RGB);
-    st->loginbackr2Tex = guiDrawGaussian(st->loginbackTex, (vec4){0, 0, st->imageW, st->imageH}, 1.0f);
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load(config.loginback_path, &width, &height, &nrChannels, 3);
 
     // 调整大小
-    st->scale = ((float)st->imageW / (float)WINDOW_WIDTH > (float)st->imageH / (float)WINDOW_HEIGHT) ? WINDOW_HEIGHT * SCALE / st->imageH : WINDOW_WIDTH * SCALE / st->imageW;
-    st->imgW = st->imageW * st->scale;
-    st->imgH = st->imageH * st->scale;
+    float scale = ((float)width / (float)WINDOW_WIDTH > (float)height / (float)WINDOW_HEIGHT) ? WINDOW_HEIGHT * SCALE / (float)height : WINDOW_WIDTH * SCALE / (float)width;
+    st->imageW = width * scale;
+    st->imageH = height * scale;
+    st->disW = fabsf((WINDOW_WIDTH - st->imageW) / 2.0f);
+    st->disH = fabsf((WINDOW_HEIGHT - st->imageH) / 2.0f);
+    unsigned char *data2 = (unsigned char *)malloc(st->imageW * st->imageH * 3);
+     
+    if (!(stbir_resize_uint8_linear(data, width, height, 0,
+                                  data2, st->imageW, st->imageH, 0, STBIR_RGB)))
+    ERROR("调整大小错误\n");
+
+    // 创建纹理
+    st->loginbackTex = guiTextureCreate(data2, st->imageW, st->imageH, 3, GL_RGB);
+    st->loginbackr2Tex = guiDrawGaussian(st->loginbackTex, (vec4){0, 0, st->imageW, st->imageH}, 3.0f);
 
     // 释放图像数据
     stbi_image_free(data);
+    stbi_image_free(data2);
 }
 void gui_widget_loginback_DestroyCall(GUIwidget *widget)
 {
@@ -65,22 +74,20 @@ void gui_widget_loginback_init(GUIwin *win, GUIwidget *widget)
     gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)widget->data;
 
     // 生成渲染器
-
-    st->loginback = guiDrawRTCreate(st->imgW, st->imgH);
-    st->loginbackr2 = guiDrawRRTCreate(LOGINBACK2W, LOGINBACK2H, 20.0f, GUI_DRAW_DEFAULT_VAGUE);
+    st->loginback = guiDrawRTCreate(st->imageW, st->imageH);
+    st->loginbackr2 = guiDrawRRTCreate(LOGINBACK2WIDTH, LOGINBACK2HEIGHT, 30.0f, GUI_DRAW_DEFAULT_VAGUE);
 
     // 绑定纹理
     guiDrawRTBindTexture(st->loginback, st->loginbackTex);
     guiDrawRRTBindTexture(st->loginbackr2, st->loginbackr2Tex);
 
-    // 设置模型矩阵
-    float w = (st->imageW * st->scale * LOGINBACK2SCALE) / SCALE;
-    float h = (st->imageH * st->scale * LOGINBACK2SCALE) / SCALE;
-    guiDrawRRTCutTexture(st->loginbackr2, 
-        (st->imageW - w) / 2,
-        (st->imageW - h) / 2,
-        w, h
-    );
+    // 设置模型矩阵根据loginback
+    float mox = 0.0f, moy = 0.0f;
+    guiDrawRRTCutTexture(st->loginbackr2,
+                         st->disW + LOGINBACK2DISW,
+                         st->disH + LOGINBACK2DISH,
+
+                         LOGINBACK2WIDTH, LOGINBACK2HEIGHT);
 }
 
 void gui_widget_loginback_destroy(GUIwin *win, GUIwidget *widget)
