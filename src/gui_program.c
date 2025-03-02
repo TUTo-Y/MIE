@@ -20,16 +20,6 @@ bool guiProgramInit()
     guiShaderUniform(program.img, "Texture", 1i, 0);
     guiShaderUniformMatrix(program.img, "PV", 4fv, (float *)PV);
 
-    // 加载登录背景着色器
-    if (0 == (program.loginBack = guiShaderCreateProgram(resGetFile(config.loginback_vert, NULL, NULL, false),
-                                                         resGetFile(config.loginback_frag, NULL, NULL, false),
-                                                         NULL)))
-        return false;
-    guiShaderUse(program.loginBack);
-    guiShaderUniformMatrix(program.loginBack, "PV", 4fv, (float *)PV);
-    guiShaderUniform(program.loginBack, "TextureBack", 1i, 0);
-    guiShaderUniform(program.loginBack, "TextureFront", 1i, 1);
-
     // 加载圆角纹理矩形着色器
     if (0 == (program.rrt = guiShaderCreateProgram(resGetFile(config.rrt_vert, NULL, NULL, false),
                                                    resGetFile(config.rrt_frag, NULL, NULL, false),
@@ -71,6 +61,15 @@ bool guiProgramInit()
         return false;
     guiShaderUse(program.gaussblur);
     guiShaderUniform(program.gaussblur, "Texture", 1i, 0);
+
+    // 加载图标着色器
+    if (0 == (program.icon = guiShaderCreateProgram(resGetFile(config.icon_vert, NULL, NULL, false),
+                                                    resGetFile(config.icon_frag, NULL, NULL, false),
+                                                    NULL)))
+        return false;
+    guiShaderUse(program.icon);
+    guiShaderUniformMatrix(program.icon, "PV", 4fv, (float *)PV);
+    guiShaderUniform(program.icon, "Texture", 1i, 0);
 
     return true;
 }

@@ -25,6 +25,7 @@ void Init()
     // 初始化glfw
     glfwInit();
     glfwGetError(NULL);
+    glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -96,6 +97,7 @@ quit:
 
 #endif
 
+void tim(GUIwin *win, void *data, void *data2);
 void guiPlay(GLFWwindow *window)
 {
     // 创建窗口移动控件
@@ -113,13 +115,21 @@ void guiPlay(GLFWwindow *window)
                   gui_widget_loginback_callDraw, gui_widget_loginback_callEvent,
                   GUI_CALL_PRIORITY_0, -1, GUI_CALL_PRIORITY_2, -1, -1, NULL, NULL, gui_widget_loginback_StartCall, gui_widget_loginback_DestroyCall);
 
+    // 初始化登录背景控件
+    GUIwidget WidgetLoginChoice;
+    guiWidgetInit(&WidgetLoginChoice, 0, GUI_WIDGET_ID_LOGIN_CHOICE,
+                  gui_widget_login_choice_init, gui_widget_login_choice_destroy, gui_widget_login_choice_msg,
+                  gui_widget_login_choice_callDraw, gui_widget_login_choice_callEvent, 
+                  GUI_CALL_PRIORITY_1, GUI_CALL_PRIORITY_1, GUI_CALL_PRIORITY_1, GUI_CALL_PRIORITY_1, GUI_CALL_PRIORITY_1, NULL, NULL, gui_widget_login_choice_StartCall, gui_widget_login_choice_DestroyCall);
+
     // 创建窗口
     GUIwin win;
     guiWindowInit(&win, window);
 
     // 添加控件
-    guiWindowAddWidget(&win, GUI_WIDGET_ID_MOUSEMOVE);
-    guiWindowAddWidget(&win, GUI_WIDGET_ID_LOGIN_BACK);
+    guiWindowAddWidget(&win, GUI_WIDGET_ID_MOUSEMOVE, 0, 0, 0, 0, 0);
+    guiWindowAddWidget(&win, GUI_WIDGET_ID_LOGIN_BACK, 0, 0, 0, 0, 0);
+    guiWindowAddWidget(&win, GUI_WIDGET_ID_LOGIN_CHOICE, 0, 0, 0, 0, 0);
 
     // 运行窗口
     guiWindowStart(&win);

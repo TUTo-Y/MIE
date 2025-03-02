@@ -13,6 +13,10 @@
 #include <cglm/cglm.h>
 #include <GLFW/glfw3.h>
 
+#include "log.h"
+#include "list.h"
+#include "config.h"
+
 #include "gui_fb.h"
 #include "gui_ttf.h"
 #include "gui_str.h"
@@ -30,6 +34,7 @@
 
 #include "gui_widget_mousemove.h"
 #include "gui_widget_loginback.h"
+#include "gui_widget_login_choice.h"
 
 #define WINDOW_WIDTH 1500
 #define WINDOW_HEIGHT 954

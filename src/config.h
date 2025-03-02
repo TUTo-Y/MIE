@@ -18,9 +18,6 @@ typedef struct
 
     char img_vert[PATH_MAX]; // 图像顶点着色器
     char img_frag[PATH_MAX]; // 图像片段着色器
-    
-    char loginback_vert[PATH_MAX]; // 登录背景顶点着色器
-    char loginback_frag[PATH_MAX]; // 登录背景片段着色器
 
     char rrt_vert[PATH_MAX]; // 圆角纹理矩形顶点着色器
     char rrt_frag[PATH_MAX]; // 圆角纹理矩形片段着色器
@@ -36,6 +33,10 @@ typedef struct
 
     char gaussblur_vert[PATH_MAX]; // 高斯模糊顶点着色器
     char gaussblur_frag[PATH_MAX]; // 高斯模糊片段着色器
+
+    char icon_vert[PATH_MAX]; // 图标顶点着色器
+    char icon_frag[PATH_MAX]; // 图标片段着色器
+    
 } cfg;
 
 extern cfg config;

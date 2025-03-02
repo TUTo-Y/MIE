@@ -1,5 +1,21 @@
 #include "gui_window.h"
 
+void guiWindowAddTask(GUIwin *win, GUIwindowtask task, void *data, void *data2)
+{
+    /* 添加任务 */
+    GUItask *t = (GUItask *)malloc(sizeof(GUItask));
+    t->task = task;
+    t->data = data;
+    t->data2 = data2;
+    pthread_mutex_lock(&win->mutexTask);
+    listAddNodeInEnd(&win->listTask, listDataToNode(listCreateNode(), t, 0, 0));
+    pthread_mutex_unlock(&win->mutexTask);
+
+    /* 通知任务 */
+    sem_post(&win->semTask);
+    glfwPostEmptyEvent();
+}
+
 void guiWindowInit(GUIwin *win, GLFWwindow *window)
 {
     memset(win, 0, sizeof(GUIwin));
@@ -26,8 +42,7 @@ void guiWindowInit(GUIwin *win, GLFWwindow *window)
     // 控件列表初始化
     listInitList(&win->listWidget);
 }
-
-void guiWindowAddWidget(GUIwin *win, uint64_t id)
+void guiWindowAddWidget(GUIwin *win, uint64_t id, bool priorityDraw, bool priorityEventMouseButton, bool priorityEventCursorPos, bool priorityEventCharMods, bool priorityEventScroll)
 {
     // 通过ID获取控件
     GUIwidget *widget = guiIDGetFromID(id);
@@ -44,30 +59,35 @@ void guiWindowAddWidget(GUIwin *win, uint64_t id)
     // 添加到控件列表
     listAddNodeInEnd(&win->listWidget, listDataToNode(listCreateNode(), widget, 0, false));
 
+    typedef void (*ListAddFunc)(list *l, list *node);
+    ListAddFunc listaddfun[2] = {
+        listAddNodeInEnd,
+        listAddNodeInStart};
+
     // 添加渲染列表
     if (widget->priorityDraw >= 0)
-        listAddNodeInEnd(&win->listDraw[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityDraw)],
-                         listDataToNode(listCreateNode(), widget, 0, false));
+        listaddfun[priorityDraw](&win->listDraw[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityDraw)],
+                                 listDataToNode(listCreateNode(), widget, 0, false));
 
     // 添加鼠标事件列表
     if (widget->priorityEventMouseButton >= 0)
-        listAddNodeInEnd(&win->listEventMouseButton[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventMouseButton)],
-                         listDataToNode(listCreateNode(), widget, 0, false));
+        listaddfun[priorityEventMouseButton](&win->listEventMouseButton[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventMouseButton)],
+                                             listDataToNode(listCreateNode(), widget, 0, false));
 
     // 添加光标事件列表
     if (widget->priorityEventCursorPos >= 0)
-        listAddNodeInEnd(&win->listEventCursorPos[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventCursorPos)],
-                         listDataToNode(listCreateNode(), widget, 0, false));
+        listaddfun[priorityEventCursorPos](&win->listEventCursorPos[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventCursorPos)],
+                                           listDataToNode(listCreateNode(), widget, 0, false));
 
     // 添加字符事件列表
     if (widget->priorityEventCharMods >= 0)
-        listAddNodeInEnd(&win->listEventCharMods[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventCharMods)],
-                         listDataToNode(listCreateNode(), widget, 0, false));
+        listaddfun[priorityEventCharMods](&win->listEventCharMods[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventCharMods)],
+                                          listDataToNode(listCreateNode(), widget, 0, false));
 
     // 添加滚轮事件列表
     if (widget->priorityEventScroll >= 0)
-        listAddNodeInEnd(&win->listEventScroll[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventScroll)],
-                         listDataToNode(listCreateNode(), widget, 0, false));
+        listaddfun[priorityEventScroll](&win->listEventScroll[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventScroll)],
+                                        listDataToNode(listCreateNode(), widget, 0, false));
 
     // 调用初始化函数
     CALL(widget->init, win, widget);
@@ -282,7 +302,10 @@ void guiWindowStart(GUIwin *win)
     GLuint texture = guiTextureCreate(data, width, height, channels, 0);
     stbi_image_free(data);
 
+    GUIdrawrr drawrrc = guiDrawRRCCreate(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, 30.0f, 0.03f, (vec4){0.0f, 1.0f, 0.0f, 1.0f});
 
+    // 抗锯齿
+    glEnable(GL_MULTISAMPLE);
     // 混合
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -304,6 +327,7 @@ void guiWindowStart(GUIwin *win)
             // 清空颜色缓冲区
             glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+            guiDrawRRCRender(drawrrc);
 
             // 交换缓冲区
             glfwSwapBuffers(win->window);
@@ -325,6 +349,9 @@ void guiWindowStart(GUIwin *win)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    // 抗锯齿
+    glEnable(GL_MULTISAMPLE);
+
     // 帧率控制
     GUIFrame *frame = guiFrameCreate(30);
 
@@ -342,11 +369,17 @@ void guiWindowStart(GUIwin *win)
             while (node = listGetNodeFromStart(&win->listTask))
             {
                 // 获取任务
+                GUItask *task = (GUItask *)node->data;
 
                 // 处理任务
+                pthread_mutex_unlock(&win->mutexTask);
+                task->task(win, task->data, task->data2);
 
                 // 释放任务
-                listDeleteNode(NULL, node, NULL);
+                listDeleteNode(NULL, node, free);
+
+                // 重新加锁
+                pthread_mutex_lock(&win->mutexTask);
             }
             pthread_mutex_unlock(&win->mutexTask);
         }

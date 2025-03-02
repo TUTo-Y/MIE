@@ -22,8 +22,9 @@
 enum
 {
     GUI_WIDGET_ID_START,
-    GUI_WIDGET_ID_LOGIN_BACK, // 登录背景
-    GUI_WIDGET_ID_MOUSEMOVE, // 鼠标移动窗口控件
+    GUI_WIDGET_ID_LOGIN_BACK,   // 登录背景
+    GUI_WIDGET_ID_LOGIN_CHOICE, // 登录选择
+    GUI_WIDGET_ID_MOUSEMOVE,    // 鼠标移动窗口控件
     GUI_WIDGET_ID_MAX
 };
 

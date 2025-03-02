@@ -4,8 +4,8 @@
 
 #define PI 3.141592653589793238462643383279502884197169399375
 
-#define kernel_size 33 // 33核的高斯模糊
-#define s 10.0         // 通常为1.0~10.0, 值越高越模糊
+#define kernel_size 9 // 33核的高斯模糊
+#define s 7.0         // 通常为1.0~10.0, 值越高越模糊
 
 double gaussian(double x, double sigma)
 {

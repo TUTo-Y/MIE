@@ -13,11 +13,11 @@ void guiFrameControl(GUIFrame *param)
         {
             pthread_mutex_unlock(&param->lock);
 
-            // 抛出空事件
-            glfwPostEmptyEvent();
-
             // 发送信号
             sem_post(&param->semWait);
+
+            // 抛出空事件
+            glfwPostEmptyEvent();
 
             // 等待事件
             struct timespec ts;
@@ -37,10 +37,6 @@ void guiFrameControl(GUIFrame *param)
         {
             start += checkTime;
         }
-        // while (glfwGetTime() - start > param->frameRate)
-        // {
-        //     start += param->frameRate;
-        // }
     }
     pthread_mutex_unlock(&param->lock);
 }

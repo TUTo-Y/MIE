@@ -3,12 +3,12 @@
 struct
 {
     GLuint VAO, VBO, EBO;
-} GUIrt;
+} GUIt;
 
 struct
 {
     GLuint VAO, VBO, EBO;
-} GUIrc;
+} GUIc;
 
 void guiDrawTInit()
 {
@@ -22,13 +22,13 @@ void guiDrawTInit()
         0, 1, 2, 3};
 
     // 创建VAO, VBO, EBO
-    glGenVertexArrays(1, &GUIrt.VAO);
-    glBindVertexArray(GUIrt.VAO);
-    glGenBuffers(1, &GUIrt.VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, GUIrt.VBO);
+    glGenVertexArrays(1, &GUIt.VAO);
+    glBindVertexArray(GUIt.VAO);
+    glGenBuffers(1, &GUIt.VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, GUIt.VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
-    glGenBuffers(1, &GUIrt.EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GUIrt.EBO);
+    glGenBuffers(1, &GUIt.EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GUIt.EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
@@ -38,9 +38,9 @@ void guiDrawTInit()
 
 void guiDrawTQuit()
 {
-    glDeleteVertexArrays(1, &GUIrt.VAO);
-    glDeleteBuffers(1, &GUIrt.VBO);
-    glDeleteBuffers(1, &GUIrt.EBO);
+    glDeleteVertexArrays(1, &GUIt.VAO);
+    glDeleteBuffers(1, &GUIt.VBO);
+    glDeleteBuffers(1, &GUIt.EBO);
 }
 
 void guiDrawCInit()
@@ -55,22 +55,22 @@ void guiDrawCInit()
         0, 1, 2, 3};
 
     // 创建VAO, VBO, EBO
-    glGenVertexArrays(1, &GUIrc.VAO);
-    glBindVertexArray(GUIrc.VAO);
-    glGenBuffers(1, &GUIrc.VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, GUIrc.VBO);
+    glGenVertexArrays(1, &GUIc.VAO);
+    glBindVertexArray(GUIc.VAO);
+    glGenBuffers(1, &GUIc.VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, GUIc.VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
-    glGenBuffers(1, &GUIrc.EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GUIrc.EBO);
+    glGenBuffers(1, &GUIc.EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GUIc.EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
 }
 void guiDrawCQuit()
 {
-    glDeleteVertexArrays(1, &GUIrc.VAO);
-    glDeleteBuffers(1, &GUIrc.VBO);
-    glDeleteBuffers(1, &GUIrc.EBO);
+    glDeleteVertexArrays(1, &GUIc.VAO);
+    glDeleteBuffers(1, &GUIc.VBO);
+    glDeleteBuffers(1, &GUIc.EBO);
 }
 
 GUIdrawrr guiDrawRRTCreate(float width, float height, float r, float vague)
@@ -136,7 +136,7 @@ void guiDrawRRTRender(GUIdrawrr drawrrt)
     glBindTexture(GL_TEXTURE_2D, drawrrt->tex.texture);
 
     // 绘制
-    glBindVertexArray(GUIrt.VAO);
+    glBindVertexArray(GUIt.VAO);
     glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, 0);
 }
 
@@ -175,7 +175,7 @@ void guiDrawRRCRender(GUIdrawrr drawrrc)
     guiShaderUniform(program.rrc, "color", 4f, drawrrc->color.color[0], drawrrc->color.color[1], drawrrc->color.color[2], drawrrc->color.color[3]);
 
     // 绘制
-    glBindVertexArray(GUIrc.VAO);
+    glBindVertexArray(GUIc.VAO);
     glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, 0);
 }
 
@@ -233,7 +233,7 @@ void guiDrawRTRender(GUIdrawr drawrt)
     glBindTexture(GL_TEXTURE_2D, drawrt->tex.texture);
 
     // 绘制
-    glBindVertexArray(GUIrt.VAO);
+    glBindVertexArray(GUIt.VAO);
     glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, 0);
 }
 
@@ -263,11 +263,48 @@ void guiDrawRCRender(GUIdrawr drawrc)
     guiShaderUniform(program.rc, "color", 4f, drawrc->color.color[0], drawrc->color.color[1], drawrc->color.color[2], drawrc->color.color[3]);
 
     // 绘制
-    glBindVertexArray(GUIrc.VAO);
+    glBindVertexArray(GUIc.VAO);
     glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, 0);
 }
 
-GLuint guiDrawGaussian(GLuint texture, vec4 pos, float step)
+GUIicon guiDrawIconCreate(float width, float height, GLuint texture, vec4 color)
+{
+    GUIicon icon = (GUIicon_t *)malloc(sizeof(GUIicon_t));
+
+    // 初始化texture
+    icon->texture = texture;
+
+    // 初始化color
+    glm_vec4_copy(color, icon->color);
+
+    // 初始化fix
+    glm_scale_make(icon->fix, (vec3){width / 2.0f, height / 2.0f, 1.0f});
+
+    // 初始化model
+    glm_mat4_identity(icon->model);
+
+    return icon;
+}
+
+void guiDrawIconRender(GUIicon icon)
+{
+    guiShaderUse(program.icon);
+
+    // 设置模型矩阵
+    guiShaderUniformMatrix(program.icon, "fix", 4fv, (float *)icon->fix);
+    guiShaderUniformMatrix(program.icon, "model", 4fv, (float *)icon->model);
+    guiShaderUniform(program.icon, "color", 4f, icon->color[0], icon->color[1], icon->color[2], icon->color[3]);
+
+    // 绑定纹理
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, icon->texture);
+
+    // 绘制
+    glBindVertexArray(GUIt.VAO);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, 0);
+}
+
+GLuint guiDrawGaussian(GLuint texture, vec4 pos, int n, float step)
 {
     // 获取基础数据
     float x = pos[0], y = pos[1], w = pos[2], h = pos[3];
@@ -277,54 +314,47 @@ GLuint guiDrawGaussian(GLuint texture, vec4 pos, float step)
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
 
     // 创建纹理
-    GLuint textureGaussian1, textureGaussian2;
-    textureGaussian1 = guiTextureCreateEmpty(w, h, GL_RGB);
-    textureGaussian2 = guiTextureCreateEmpty(w, h, GL_RGB);
+    GLuint textureGaussian[2];
+    textureGaussian[0] = guiTextureCreateEmpty(w, h, GL_RGB);
+    textureGaussian[1] = guiTextureCreateEmpty(w, h, GL_RGB);
 
-    // 设置着色器
+    GLuint textureGaussian_t = texture;
+
+    // 设置着色器, 第一次需要进行剪切
     guiShaderUse(program.gaussblur);
+    y = height - y - h; // 坐标转换为右下角坐标系
+    mat4 cut;
+    glm_translate_make(cut, (vec3){x / width, y / height, 0.0f});
+    glm_scale(cut, (vec3){w / width, h / height, 1.0f});
+    guiShaderUse(program.gaussblur);
+    guiShaderUniformMatrix(program.gaussblur, "cut", 4fv, (float *)cut);
     guiShaderUniform(program.gaussblur, "step", 1f, step);
 
     // 创建帧缓冲
     GUIfb fb = guiFbCreate(w, h);
     guiFbStart(fb);
 
-    // 第一次渲染
-    guiFbBindTexture(fb, textureGaussian1);
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            guiFbBindTexture(fb, textureGaussian[j]);
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // 设置着色器
-    guiShaderUse(program.gaussblur);
-    mat4 cut;
-    y = height - y - h; // 坐标转换为右下角坐标系
-    glm_translate_make(cut, (vec3){x / width, y / height, 0.0f});
-    glm_scale(cut, (vec3){w / width, h / height, 1.0f});
-    guiShaderUniformMatrix(program.gaussblur, "cut", 4fv, (float *)cut);
-    guiShaderUniform(program.gaussblur, "horizontal", 1i, 0);
+            guiShaderUniform(program.gaussblur, "horizontal", 1i, j);
+            // 渲染
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, textureGaussian_t);
+            textureGaussian_t = textureGaussian[j];
+            glBindVertexArray(GUIt.VAO);
+            glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, 0);
 
-    // 渲染
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glBindVertexArray(GUIrt.VAO);
-    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, 0);
-
-    // 第二次渲染
-    guiFbBindTexture(fb, textureGaussian2);
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // 设置着色器
-    guiShaderUse(program.gaussblur);
-    glm_mat4_identity(cut);
-    guiShaderUniformMatrix(program.gaussblur, "cut", 4fv, (float *)cut);
-    guiShaderUniform(program.gaussblur, "horizontal", 1i, 1);
-
-    // 渲染
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textureGaussian1);
-    glBindVertexArray(GUIrt.VAO);
-    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, 0);
+            // 第二次不再剪切
+            mat4 cut = GLM_MAT4_IDENTITY_INIT;
+            guiShaderUniformMatrix(program.gaussblur, "cut", 4fv, (float *)cut);
+        }
+    }
 
     GUI_SET_DEFAULT_CLEARCOLOR();
     // 结束渲染
@@ -332,7 +362,7 @@ GLuint guiDrawGaussian(GLuint texture, vec4 pos, float step)
     guiFbDelete(fb);
 
     // 销毁纹理
-    glDeleteTextures(1, &textureGaussian1);
+    glDeleteTextures(1, &textureGaussian[0]);
 
-    return textureGaussian2;
+    return textureGaussian[1];
 }

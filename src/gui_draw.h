@@ -68,6 +68,16 @@ typedef struct
 } GUIdrawr_t;
 typedef GUIdrawr_t *GUIdrawr;
 
+typedef struct
+{
+    mat4 model;
+    mat4 fix;
+
+    vec4 color;
+    GLuint texture;
+} GUIicon_t;
+typedef GUIicon_t *GUIicon;
+
 /**
  * \brief 初始化和退出纹理矩形渲染
  */
@@ -355,12 +365,70 @@ static inline void guiDrawRCDestroy(GUIdrawr drawrc)
 }
 
 /**
+ * \brief 创建图标
+ * \param width 宽度
+ * \param height 高度
+ * \param texture 图标纹理
+ * \param color 颜色
+ */
+GUIicon guiDrawIconCreate(float width, float height, GLuint texture, vec4 color);
+
+/**
+ * \brief 设置图标纹理
+ * \param icon 图标
+ * \param texture 纹理
+ */
+static inline void guiDrawIconBindTexture(GUIicon icon, GLuint texture)
+{
+    icon->texture = texture;
+}
+
+/**
+ * \brief 设置图标颜色
+ * \param icon 图标
+ * \param color 颜色
+ */
+static inline void guiDrawIconSetColor(GUIicon icon, vec4 color)
+{
+    glm_vec4_copy(color, icon->color);
+}
+
+/**
+ * \brief 设置图标宽度和高度
+ * \param icon 图标
+ * \param width 宽度
+ * \param height 高度
+ */
+static inline void guiDrawIconSetWH(GUIicon icon, float width, float height)
+{
+    glm_scale_make(icon->fix, (vec3){width / 2.0f, height / 2.0f, 1.0f});
+}
+
+/**
+ * \brief 设置图标model
+ * \param icon 图标
+ * \param model model矩阵
+ */
+static inline void guiDrawIconSetModel(GUIicon icon, mat4 model)
+{
+    glm_mat4_copy(model, icon->model);
+}
+
+/**
+ * \brief 渲染图标
+ * \param icon 图标
+ */
+void guiDrawIconRender(GUIicon icon);
+
+
+/**
  * \brief 渲染一个高斯模糊图像
  * \param texture 纹理
  * \param pos 位置x, y, w, h
- * \param step 步长, 通常为2.0f, 越大越模糊
+ * \param n n次模糊
+ * \param step 步长
  * \return GLuint 高斯纹理
  */
-GLuint guiDrawGaussian(GLuint texture, vec4 pos, float step);
+GLuint guiDrawGaussian(GLuint texture, vec4 pos, int n, float step);
 
 #endif // GUI_DRAW_H

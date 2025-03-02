@@ -5,8 +5,6 @@ cfg config = {
     .loginback_path = "resource\\loginback.jpg",
     .img_vert = "resource\\img.vert",
     .img_frag = "resource\\img.frag",
-    .loginback_vert = "resource\\loginback.vert",
-    .loginback_frag = "resource\\loginback.frag",
     .rrt_vert = "resource\\rrt.vert",
     .rrt_frag = "resource\\rrt.frag",
     .rrc_vert = "resource\\rrc.vert",
@@ -16,8 +14,9 @@ cfg config = {
     .rc_vert = "resource\\rc.vert",
     .rc_frag = "resource\\rc.frag",
     .gaussblur_vert = "resource\\gaussblur.vert",
-    .gaussblur_frag = "resource\\gaussblur.frag"
-};
+    .gaussblur_frag = "resource\\gaussblur.frag",
+    .icon_vert = "resource\\icon.vert",
+    .icon_frag = "resource\\icon.frag"};
 
 bool confInit(const char *configFile)
 {
@@ -39,10 +38,10 @@ bool confInit(const char *configFile)
         fprintf(fp, "loginback_path = %s\n", config.loginback_path);
         fprintf(fp, "img_vert = %s\n", config.img_vert);
         fprintf(fp, "img_frag = %s\n", config.img_frag);
-        fprintf(fp, "loginback_vert = %s\n", config.loginback_vert);
-        fprintf(fp, "loginback_frag = %s\n", config.loginback_frag);
         fprintf(fp, "rrt_vert = %s\n", config.rrt_vert);
         fprintf(fp, "rrt_frag = %s\n", config.rrt_frag);
+        fprintf(fp, "rrc_vert = %s\n", config.rrc_vert);
+        fprintf(fp, "rrc_frag = %s\n", config.rrc_frag);
         fprintf(fp, "rrc_vert = %s\n", config.rrc_vert);
         fprintf(fp, "rrc_frag = %s\n", config.rrc_frag);
         fprintf(fp, "rt_vert = %s\n", config.rt_vert);
@@ -51,6 +50,8 @@ bool confInit(const char *configFile)
         fprintf(fp, "rc_frag = %s\n", config.rc_frag);
         fprintf(fp, "gaussblur_vert = %s\n", config.gaussblur_vert);
         fprintf(fp, "gaussblur_frag = %s\n", config.gaussblur_frag);
+        fprintf(fp, "icon_vert = %s\n", config.icon_vert);
+        fprintf(fp, "icon_frag = %s\n", config.icon_frag);
 
         fclose(fp);
         return true;
@@ -103,16 +104,6 @@ bool confInit(const char *configFile)
             strcpy(config.img_frag, value);
             continue;
         }
-        else if (strcmp(key, "loginback_vert") == 0)
-        {
-            strcpy(config.loginback_vert, value);
-            continue;
-        }
-        else if (strcmp(key, "loginback_frag") == 0)
-        {
-            strcpy(config.loginback_frag, value);
-            continue;
-        }
         else if (strcmp(key, "rrt_vert") == 0)
         {
             strcpy(config.rrt_vert, value);
@@ -163,6 +154,17 @@ bool confInit(const char *configFile)
             strcpy(config.gaussblur_frag, value);
             continue;
         }
+        else if (strcmp(key, "icon_vert") == 0)
+        {
+            strcpy(config.icon_vert, value);
+            continue;
+        }
+        else if (strcmp(key, "icon_frag") == 0)
+        {
+            strcpy(config.icon_frag, value);
+            continue;
+        }
+
         else
         {
             ERROR("第[%2d]行错误配置 : %s\n", lineCount, line);
