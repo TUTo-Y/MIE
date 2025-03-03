@@ -11,7 +11,6 @@ void guiFrameControl(GUIFrame *param)
 
         if (intervalTime < param->frameRate)
         {
-            pthread_mutex_unlock(&param->lock);
 
             // 发送信号
             sem_post(&param->semWait);
@@ -23,8 +22,9 @@ void guiFrameControl(GUIFrame *param)
             struct timespec ts;
             ts.tv_sec = 0;
             ts.tv_nsec = (long)((param->frameRate - intervalTime) * 1e9);
+            
+            pthread_mutex_unlock(&param->lock);
             nanosleep(&ts, NULL);
-
             pthread_mutex_lock(&param->lock);
         }
 

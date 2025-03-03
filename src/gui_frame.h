@@ -18,7 +18,6 @@
 #include <semaphore.h>
 #include <GLFW/glfw3.h>
 
-
 typedef struct
 {
     sem_t semWait; // 时间信号量
@@ -34,16 +33,13 @@ typedef struct
 #define guiFrameGetSemWait(param) &((param)->semWait)
 
 // 检查是否需要渲染
-#define guiFrameCheck(param) (0 == sem_trywait(&((param)->semWait)))
+#define guiFrameCheck(param) (0 == sem_trywait(guiFrameGetSemWait(param)))
 
 // 帧率控制
 GUIFrame *guiFrameCreate(int frameRate);
 
 // 销毁帧率控制
 void guiFrameDestroy(GUIFrame *param);
-
-// // 获取等待信号量
-// sem_t *guiFrameGetSemWait(GUIFrame *param);
 
 // 设置帧率
 void guiFrameSet(GUIFrame *param, int frameRate);

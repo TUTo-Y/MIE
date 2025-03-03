@@ -7,11 +7,81 @@
 
 #include "rand.h"
 #include "RDH.h"
-
+#include "vector.h"
 #include <math.h>
 #include <string.h>
 #include <locale.h>
 #include <semaphore.h>
+
+#include <stdio.h>
+#if 0
+int main()
+{
+    int w, h;
+    unsigned char *data = stbi_load("anime-girl-3840x2160-cake-cafe-25376.jpeg", &w, &h, NULL, 3);
+    printf("w = %d, h = %d, n = %d\n", w, h);
+    // 将data解析成data1, data2, data3
+    unsigned char *data1 = (unsigned char *)malloc(w * h);
+    unsigned char *data2 = (unsigned char *)malloc(w * h);
+    unsigned char *data3 = (unsigned char *)malloc(w * h);
+    for (int i = 0; i < w * h; i++)
+    {
+        data1[i] = data[i * 3];
+        data2[i] = data[i * 3 + 1];
+        data3[i] = data[i * 3 + 2];
+    }
+
+    // 保存data1, data2, data3
+    stbi_write_png("r.png", w, h, 1, data1, w);
+    stbi_write_png("g.png", w, h, 1, data2, w);
+    stbi_write_png("b.png", w, h, 1, data3, w);
+
+    // 分别嵌入数据到data1, data2, data3
+    unsigned char *datac[3] = {data1, data2, data3};
+    unsigned char *d = malloc(w * h * 3);
+    for (int i = 0; i < 3; i++)
+    {
+        // 生成随机数
+        for (int i = 0; i < w * h * 3; i++)
+            d[i] = rand() % 256;
+
+        // 分割图像
+        unsigned char *img1, *img2;
+        rdhSplitImage(datac[i], w * h, &img1, &img2);
+
+        // 嵌入数据
+        unsigned char *m = NULL;
+        int mSize = 0;
+        rdhEmbedData(img1, img2, w, h, &m, &mSize, d, w * h * 3);
+
+        // 合并图像
+        rdhCombineImage(img1, img2, w * h, &datac[i]);
+    }
+    free(d);
+    
+    stbi_write_png("r1.png", w, h, 1, data1, w);
+    stbi_write_png("g1.png", w, h, 1, data2, w);
+    stbi_write_png("b1.png", w, h, 1, data3, w);
+
+    // 合并data1, data2, data3
+    for (int i = 0; i < w * h; i++)
+    {
+        data[i * 3] = data1[i];
+        data[i * 3 + 1] = data2[i];
+        data[i * 3 + 2] = data3[i];
+    }
+
+    // 保存合并后的图像
+    stbi_write_png("out.png", w, h, 3, data, w * 3);
+
+    // 释放
+    free(data1);
+    free(data2);
+    free(data3);
+    free(data);
+    return 0;
+}
+#endif
 #if 1
 
 void guiPlay(GLFWwindow *window);
@@ -95,46 +165,32 @@ quit:
     return 0;
 }
 
-#endif
-
-void tim(GUIwin *win, void *data, void *data2);
 void guiPlay(GLFWwindow *window)
 {
-    // 创建窗口移动控件
-    GUIwidget WidgetWindowMove;
-    guiWidgetInit(&WidgetWindowMove,
-                  0,
-                  GUI_WIDGET_ID_MOUSEMOVE,
-                  NULL, NULL, NULL, NULL,
-                  &guiWidgetMouseMoveEvent, -1, GUI_CALL_PRIORITY_2, GUI_CALL_PRIORITY_2, -1, -1, NULL, NULL, NULL, NULL);
-
-    // 初始化登录背景控件
-    GUIwidget WidgetLoginBack;
-    guiWidgetInit(&WidgetLoginBack, 0, GUI_WIDGET_ID_LOGIN_BACK,
-                  gui_widget_loginback_init, gui_widget_loginback_destroy, gui_widget_loginback_msg,
-                  gui_widget_loginback_callDraw, gui_widget_loginback_callEvent,
-                  GUI_CALL_PRIORITY_0, -1, GUI_CALL_PRIORITY_2, -1, -1, NULL, NULL, gui_widget_loginback_StartCall, gui_widget_loginback_DestroyCall);
-
-    // 初始化登录背景控件
-    GUIwidget WidgetLoginChoice;
-    guiWidgetInit(&WidgetLoginChoice, 0, GUI_WIDGET_ID_LOGIN_CHOICE,
-                  gui_widget_login_choice_init, gui_widget_login_choice_destroy, gui_widget_login_choice_msg,
-                  gui_widget_login_choice_callDraw, gui_widget_login_choice_callEvent, 
-                  GUI_CALL_PRIORITY_1, GUI_CALL_PRIORITY_1, GUI_CALL_PRIORITY_1, GUI_CALL_PRIORITY_1, GUI_CALL_PRIORITY_1, NULL, NULL, gui_widget_login_choice_StartCall, gui_widget_login_choice_DestroyCall);
+    // 初始化控件
+    guiWidgetInit(guiIDRegister(GUI_ID_MOUSEMOVE), NULL, NULL, NULL, NULL, NULL, gui_widget_mousemove_eventCall);
+    guiWidgetInit(guiIDRegister(GUI_ID_LOGINBACK),
+                  gui_widget_loginback_registerCall, gui_widget_loginback_logoffCall,
+                  gui_widget_loginback_loadCall, gui_widget_loginback_uploadCall,
+                  gui_widget_loginback_drawCall, gui_widget_loginback_eventCall);
 
     // 创建窗口
-    GUIwin win;
-    guiWindowInit(&win, window);
+    GUIid winID = guiWindowCreate(guiIDRegister(GUI_ID_WINDOW), window);
 
-    // 添加控件
-    guiWindowAddWidget(&win, GUI_WIDGET_ID_MOUSEMOVE, 0, 0, 0, 0, 0);
-    guiWindowAddWidget(&win, GUI_WIDGET_ID_LOGIN_BACK, 0, 0, 0, 0, 0);
-    guiWindowAddWidget(&win, GUI_WIDGET_ID_LOGIN_CHOICE, 0, 0, 0, 0, 0);
+    // 将控件添加进窗口
+    guiWidgetToControl(GUI_ID2CONTROLP(winID), GUI_ID_MOUSEMOVE,
+                       GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
+                       0, 0, true);
+    guiWidgetToControl(GUI_ID2CONTROLP(winID), GUI_ID_LOGINBACK,
+                       GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
+                       20, 20, true);
 
-    // 运行窗口
-    guiWindowStart(&win);
-    guiWindowQuit(&win);
 
-    // 释放控件
-    guiWidgetDestroy(&WidgetWindowMove);
+    // 开始渲染
+    guiWindowStart(winID);
+
+    // 退出窗口
+    guiWindowDestroy(winID, true);
 }
+
+#endif

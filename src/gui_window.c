@@ -1,26 +1,67 @@
 #include "gui_window.h"
 
-void guiWindowAddTask(GUIwin *win, GUIwindowtask task, void *data, void *data2)
+void guiWindowMouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
 {
-    /* 添加任务 */
-    GUItask *t = (GUItask *)malloc(sizeof(GUItask));
-    t->task = task;
-    t->data = data;
-    t->data2 = data2;
-    pthread_mutex_lock(&win->mutexTask);
-    listAddNodeInEnd(&win->listTask, listDataToNode(listCreateNode(), t, 0, 0));
-    pthread_mutex_unlock(&win->mutexTask);
+    GUIwin *win = (GUIwin *)glfwGetWindowUserPointer(window);
 
-    /* 通知任务 */
-    sem_post(&win->semTask);
-    glfwPostEmptyEvent();
+    // 事件
+    GUIevent event;
+    event.type = GUI_EVENT_TYPE_MOUSE_BUTTON;
+    event.MouseButton.button = button;
+    event.MouseButton.action = action;
+    event.MouseButton.mods = mods;
+
+    // 事件回调
+    guiControlRunEventCallback(&GUI_GETCONTROLP(win)->EventMouseButton, &event);
 }
 
-void guiWindowInit(GUIwin *win, GLFWwindow *window)
+void guiWindowCursorPosCallback(GLFWwindow *window, double xpos, double ypos)
 {
-    memset(win, 0, sizeof(GUIwin));
+    GUIwin *win = (GUIwin *)glfwGetWindowUserPointer(window);
 
-    // 设置窗口的额外数据
+    // 事件
+    GUIevent event;
+    event.type = GUI_EVENT_TYPE_CURSOR_POS;
+    event.CursorPos.xpos = xpos;
+    event.CursorPos.ypos = ypos;
+
+    // 事件回调
+    guiControlRunEventCallback(&GUI_GETCONTROLP(win)->EventCursorPos, &event);
+}
+
+void guiWindowCharModsCallback(GLFWwindow *window, unsigned int codepoint, int mods)
+{
+    GUIwin *win = (GUIwin *)glfwGetWindowUserPointer(window);
+
+    // 事件
+    GUIevent event;
+    event.type = GUI_EVENT_TYPE_CHAR_MODS;
+    event.CharMods.codepoint = codepoint;
+    event.CharMods.mods = mods;
+
+    // 事件回调
+    guiControlRunEventCallback(&GUI_GETCONTROLP(win)->EventCharMods, &event);
+}
+
+void guiWindowScrollCallback(GLFWwindow *window, double xoffset, double yoffset)
+{
+    GUIwin *win = (GUIwin *)glfwGetWindowUserPointer(window);
+
+    // 事件
+    GUIevent event;
+    event.type = GUI_EVENT_TYPE_SCROLL;
+    event.Scroll.xoffset = xoffset;
+    event.Scroll.yoffset = yoffset;
+
+    // 事件回调
+    guiControlRunEventCallback(&GUI_GETCONTROLP(win)->EventScroll, &event);
+}
+
+GUIid guiWindowCreate(GUIid id, GLFWwindow *window)
+{
+    GUIwin *win = (GUIwin *)guiIDGet(id);
+
+    // 窗口
     win->window = window;
     glfwSetWindowUserPointer(window, win);
 
@@ -29,316 +70,35 @@ void guiWindowInit(GUIwin *win, GLFWwindow *window)
     listInitList(&win->listTask);
     pthread_mutex_init(&win->mutexTask, NULL);
 
-    // 列表初始化
-    for (int i = 0; i < GUI_CALL_PRIORITY_NUM; i++)
-    {
-        listInitList(&win->listDraw[i]);
-        listInitList(&win->listEventMouseButton[i]);
-        listInitList(&win->listEventCursorPos[i]);
-        listInitList(&win->listEventCharMods[i]);
-        listInitList(&win->listEventScroll[i]);
-    }
+    // 控制回调初始化
+    guiControlInit(GUI_GETCONTROLP(win));
 
-    // 控件列表初始化
-    listInitList(&win->listWidget);
-}
-void guiWindowAddWidget(GUIwin *win, uint64_t id, bool priorityDraw, bool priorityEventMouseButton, bool priorityEventCursorPos, bool priorityEventCharMods, bool priorityEventScroll)
-{
-    // 通过ID获取控件
-    GUIwidget *widget = guiIDGetFromID(id);
-    if (widget == NULL)
-        return;
-
-    // 检查ID是否已经绑定
-    if (widget->win != NULL)
-        return;
-
-    // 绑定窗口
-    widget->win = win;
-
-    // 添加到控件列表
-    listAddNodeInEnd(&win->listWidget, listDataToNode(listCreateNode(), widget, 0, false));
-
-    typedef void (*ListAddFunc)(list *l, list *node);
-    ListAddFunc listaddfun[2] = {
-        listAddNodeInEnd,
-        listAddNodeInStart};
-
-    // 添加渲染列表
-    if (widget->priorityDraw >= 0)
-        listaddfun[priorityDraw](&win->listDraw[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityDraw)],
-                                 listDataToNode(listCreateNode(), widget, 0, false));
-
-    // 添加鼠标事件列表
-    if (widget->priorityEventMouseButton >= 0)
-        listaddfun[priorityEventMouseButton](&win->listEventMouseButton[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventMouseButton)],
-                                             listDataToNode(listCreateNode(), widget, 0, false));
-
-    // 添加光标事件列表
-    if (widget->priorityEventCursorPos >= 0)
-        listaddfun[priorityEventCursorPos](&win->listEventCursorPos[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventCursorPos)],
-                                           listDataToNode(listCreateNode(), widget, 0, false));
-
-    // 添加字符事件列表
-    if (widget->priorityEventCharMods >= 0)
-        listaddfun[priorityEventCharMods](&win->listEventCharMods[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventCharMods)],
-                                          listDataToNode(listCreateNode(), widget, 0, false));
-
-    // 添加滚轮事件列表
-    if (widget->priorityEventScroll >= 0)
-        listaddfun[priorityEventScroll](&win->listEventScroll[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventScroll)],
-                                        listDataToNode(listCreateNode(), widget, 0, false));
-
-    // 调用初始化函数
-    CALL(widget->init, win, widget);
+    return id;
 }
 
-void guiWindowRemoveWidget(GUIwin *win, uint64_t id)
+GUIid guiWindowDestroy(GUIid id, bool isDelete)
 {
-    // 通过ID获取控件
-    GUIwidget *widget = guiIDGetFromID(id);
-    if (widget == NULL)
-        return;
+    GUIwin *win = (GUIwin *)guiIDGet(id);
 
-    // 检查ID是否已经绑定
-    if (widget->win != win)
-        return;
+    // 控制回调销毁
+    guiControlDestroy(GUI_GETCONTROLP(win));
 
-    // 解绑窗口
-    widget->win = NULL;
+    // 任务销毁
+    sem_destroy(&win->semTask);
+    listDeleteList(&win->listTask, free);
+    pthread_mutex_destroy(&win->mutexTask);
 
-    // 移除控件列表
-    list *l = &win->listWidget;
-    list *node = listSearchDataAddr(l, widget);
-    if (node != NULL)
-        listDeleteNode(l, node, NULL);
-    else
-        ERROR("没有找到ID为:%lld的控件\n", id);
+    // 窗口
+    if (isDelete == true)
+        guiIDLogoff(id);
 
-    // 移除渲染列表
-    if (widget->priorityDraw >= 0)
-    {
-        list *l = &win->listDraw[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityDraw)];
-        list *tmp = l->fd;
-        while (tmp != l)
-        {
-            if (tmp->data == widget)
-            {
-                listDeleteNode(l, tmp, NULL);
-                break;
-            }
-            tmp = tmp->fd;
-        }
-    }
-
-    // 移除鼠标事件列表
-    if (widget->priorityEventMouseButton >= 0)
-    {
-        list *l = &win->listEventMouseButton[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventMouseButton)];
-        list *node = listSearchDataAddr(l, widget);
-        if (node != NULL)
-            listDeleteNode(l, node, NULL);
-        else
-            ERROR("没有找到ID为:%lld的控件的鼠标事件回调函数\n", id);
-    }
-
-    // 移除光标事件列表
-    if (widget->priorityEventCursorPos >= 0)
-    {
-        list *l = &win->listEventCursorPos[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventCursorPos)];
-        list *node = listSearchDataAddr(l, widget);
-        if (node != NULL)
-            listDeleteNode(l, node, NULL);
-        else
-            ERROR("没有找到ID为:%lld的控件的光标事件回调函数\n", id);
-    }
-
-    // 移除字符事件列表
-    if (widget->priorityEventCharMods >= 0)
-    {
-        list *l = &win->listEventCharMods[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventCharMods)];
-        list *node = listSearchDataAddr(l, widget);
-        if (node != NULL)
-            listDeleteNode(l, node, NULL);
-        else
-            ERROR("没有找到ID为:%lld的控件的字符事件回调函数\n", id);
-    }
-
-    // 移除滚轮事件列表
-    if (widget->priorityEventScroll >= 0)
-    {
-        list *l = &win->listEventScroll[GUI_CALL_PRIORITY_SAFE_GET(widget->priorityEventScroll)];
-        list *node = listSearchDataAddr(l, widget);
-        if (node != NULL)
-            listDeleteNode(l, node, NULL);
-        else
-            ERROR("没有找到ID为:%lld的控件的滚轮事件回调函数\n", id);
-    }
-
-    // 调用销毁函数
-    CALL(widget->destroy, win, widget);
+    return id;
 }
 
-void guiWindowDrawCallBack(list *group, GUIwin *win)
+void guiWindowStart(GUIid id)
 {
-    bool over = false;
-    for (int i = 0; i < GUI_CALL_PRIORITY_NUM && over == false; i++)
-    {
-        // 如果没有控件，直接跳过
-        if (group[i].count == 0)
-            continue;
+    GUIwin *win = (GUIwin *)guiIDGet(id);
 
-        // 遍历所有控件
-        list *l = &group[i];
-        list *node = l->bk;
-        while (node != l)
-        {
-            list *tmp = node;
-            node = node->bk;
-
-            GUIwidget *widget = (GUIwidget *)tmp->data;
-            if (widget->callDraw(win, widget) == false)
-                over = true; // 相同优先级的都需要调用
-        }
-    }
-}
-
-void guiWindowEventCallBack(list *group, GUIwin *win, const GUIevent *event)
-{
-    bool over = false;
-    for (int i = 0; i < GUI_CALL_PRIORITY_NUM && over == false; i++)
-    {
-        // 如果没有控件，直接跳过
-        if (group[i].count == 0)
-            continue;
-
-        // 遍历所有控件
-        list *l = &group[i];
-        list *node = l->bk;
-        while (node != l)
-        {
-            list *tmp = node;
-            node = node->bk;
-
-            GUIwidget *widget = (GUIwidget *)tmp->data;
-            if (widget->callEvent(win, widget, event) == false)
-                over = true; // 相同优先级的都需要调用
-        }
-    }
-}
-
-void guiWindowMouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
-{
-    GUIwin *win = (GUIwin *)glfwGetWindowUserPointer(window);
-    if (win == NULL)
-        return;
-
-    // 复制事件
-    GUIevent event = {0};
-    event.type = GUI_EVENT_TYPE_MOUSE_BUTTON;
-    event.MouseButton.button = button;
-    event.MouseButton.action = action;
-    event.MouseButton.mods = mods;
-
-    // 调用事件回调函数
-    guiWindowEventCallBack(win->listEventMouseButton, win, (const GUIevent *)&event);
-}
-
-void guiWindowCursorPosCallback(GLFWwindow *window, double xpos, double ypos)
-{
-    GUIwin *win = (GUIwin *)glfwGetWindowUserPointer(window);
-    if (win == NULL)
-        return;
-
-    // 复制事件
-    GUIevent event = {0};
-    event.type = GUI_EVENT_TYPE_CURSOR_POS;
-    event.CursorPos.xpos = xpos;
-    event.CursorPos.ypos = ypos;
-
-    // 调用事件回调函数
-    guiWindowEventCallBack(win->listEventCursorPos, win, (const GUIevent *)&event);
-}
-
-void guiWindowCharModsCallback(GLFWwindow *window, unsigned int codepoint, int mods)
-{
-    GUIwin *win = (GUIwin *)glfwGetWindowUserPointer(window);
-    if (win == NULL)
-        return;
-
-    // 复制事件
-    GUIevent event = {0};
-    event.type = GUI_EVENT_TYPE_CHAR_MODS;
-    event.CharMods.codepoint = codepoint;
-    event.CharMods.mods = mods;
-
-    // 调用事件回调函数
-    guiWindowEventCallBack(win->listEventCharMods, win, (const GUIevent *)&event);
-}
-
-void guiWindowScrollCallback(GLFWwindow *window, double xoffset, double yoffset)
-{
-    GUIwin *win = (GUIwin *)glfwGetWindowUserPointer(window);
-    if (win == NULL)
-        return;
-
-    // 复制事件
-    GUIevent event = {0};
-    event.type = GUI_EVENT_TYPE_SCROLL;
-    event.Scroll.xoffset = xoffset;
-    event.Scroll.yoffset = yoffset;
-
-    // 调用事件回调函数
-    guiWindowEventCallBack(win->listEventScroll, win, (const GUIevent *)&event);
-}
-#if 0
-void guiWindowStart(GUIwin *win)
-{
-    // 读取图片
-    int width, height, channels = 0;
-    unsigned char *data = stbi_load(config.loginback_path, &width, &height, &channels, 0);
-    if (data == NULL)
-        ERROR("图片加载失败\n");
-    GLuint texture = guiTextureCreate(data, width, height, channels, 0);
-    stbi_image_free(data);
-
-    GUIdrawrr drawrrc = guiDrawRRCCreate(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, 30.0f, 0.03f, (vec4){0.0f, 1.0f, 0.0f, 1.0f});
-
-    // 抗锯齿
-    glEnable(GL_MULTISAMPLE);
-    // 混合
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // 帧率控制
-    GUIFrame *frame = guiFrameCreate(30);
-    // glClearColor(0.5f, 0.95f, 0.95f, 1.0f);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glfwShowWindow(win->window);
-    while (!glfwWindowShouldClose(win->window))
-    {
-        glfwWaitEvents();
-        // 按任意键退出
-        if (glfwGetKey(win->window, GLFW_KEY_SPACE) == GLFW_PRESS)
-            break;
-
-        // 渲染界面
-        if (guiFrameCheck(frame))
-        {
-            // 清空颜色缓冲区
-            glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-            guiDrawRRCRender(drawrrc);
-
-            // 交换缓冲区
-            glfwSwapBuffers(win->window);
-        }
-    }
-
-    guiFrameDestroy(frame);
-}
-#else
-void guiWindowStart(GUIwin *win)
-{
     // 设置各个回调函数
     glfwSetMouseButtonCallback(win->window, guiWindowMouseButtonCallback);
     glfwSetCursorPosCallback(win->window, guiWindowCursorPosCallback);
@@ -355,35 +115,42 @@ void guiWindowStart(GUIwin *win)
     // 帧率控制
     GUIFrame *frame = guiFrameCreate(30);
 
+    // 设置清除颜色
     GUI_SET_DEFAULT_CLEARCOLOR();
+
+    // 开始渲染
     glfwShowWindow(win->window);
+
     while (!glfwWindowShouldClose(win->window))
     {
         glfwWaitEvents();
 
+        
         // 处理任务
         if (0 == sem_trywait(&win->semTask))
         {
-            pthread_mutex_lock(&win->mutexTask);
-            list *node;
-            while (node = listGetNodeFromStart(&win->listTask))
-            {
-                // 获取任务
-                GUItask *task = (GUItask *)node->data;
+            DEBUG("有任务产生\n");
+            // pthread_mutex_lock(&win->mutexTask);
+            // list *node;
+            // while (node = listGetNodeFromStart(&win->listTask))
+            // {
+            //     // 获取任务
+            //     GUItask *task = (GUItask *)node->data;
 
-                // 处理任务
-                pthread_mutex_unlock(&win->mutexTask);
-                task->task(win, task->data, task->data2);
+            //     // 处理任务
+            //     pthread_mutex_unlock(&win->mutexTask);
+            //     task->task(win, task->data, task->data2);
 
-                // 释放任务
-                listDeleteNode(NULL, node, free);
+            //     // 释放任务
+            //     listDeleteNode(NULL, node, free);
 
-                // 重新加锁
-                pthread_mutex_lock(&win->mutexTask);
-            }
-            pthread_mutex_unlock(&win->mutexTask);
+            //     // 重新加锁
+            //     pthread_mutex_lock(&win->mutexTask);
+            // }
+            // pthread_mutex_unlock(&win->mutexTask);
         }
 
+        
         // 渲染界面
         if (guiFrameCheck(frame))
         {
@@ -391,49 +158,12 @@ void guiWindowStart(GUIwin *win)
             glClear(GL_COLOR_BUFFER_BIT);
 
             // 调用渲染回调函数
-            guiWindowDrawCallBack(win->listDraw, win);
+            guiControlRunEventCallback(&GUI_GETCONTROLP(win)->Draw, NULL);
 
             // 交换缓冲区
             glfwSwapBuffers(win->window);
         }
-    }
 
+    }
     guiFrameDestroy(frame);
-}
-#endif
-
-void guiWindowQuit(GUIwin *win)
-{
-    // 调用每一个控件的销毁函数
-    list *node = win->listWidget.fd;
-    while (node != &win->listWidget)
-    {
-        // 获取控件
-        GUIwidget *widget = (GUIwidget *)node->data;
-        node = node->fd;
-
-        // 解绑窗口
-        widget->win = NULL;
-
-        // 调用销毁函数
-        CALL(widget->destroy, win, widget);
-    }
-
-    // 释放所有list
-    for (int i = 0; i < GUI_CALL_PRIORITY_NUM; i++)
-    {
-        listDeleteList(&win->listDraw[i], NULL);
-        listDeleteList(&win->listEventMouseButton[i], NULL);
-        listDeleteList(&win->listEventCursorPos[i], NULL);
-        listDeleteList(&win->listEventCharMods[i], NULL);
-        listDeleteList(&win->listEventScroll[i], NULL);
-    }
-    listDeleteList(&win->listWidget, NULL);
-    listDeleteList(&win->listTask, NULL);
-
-    // 释放信号量
-    sem_destroy(&win->semTask);
-
-    // 释放锁
-    pthread_mutex_destroy(&win->mutexTask);
 }

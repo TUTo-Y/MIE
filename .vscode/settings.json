@@ -103,6 +103,8 @@
         "cinttypes": "c",
         "cstdbool": "c",
         "variant": "c",
-        "stb_image_resize2.h": "c"
+        "stb_image_resize2.h": "c",
+        "gui_id.h": "c",
+        "gui_control.h": "c"
     }
 }

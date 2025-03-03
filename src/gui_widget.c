@@ -1,61 +1,65 @@
 #include "gui_widget.h"
-#include "gui_widgetID.h"
-#include "gui.h"
-/**
- * \brief 初始化并注册控件
- */
-void guiWidgetInit(GUIwidget *widget,
-                   uint64_t flag,
-                   uint64_t id,
-                   void (*init)(GUIwin *win, GUIwidget *widget),
-                   void (*destroy)(GUIwin *win, GUIwidget *widget),
-                   void (*msg)(GUIwin *win, GUIwidget *widget, uint64_t type, void *data),
-                   bool (*callDraw)(GUIwin *win, GUIwidget *widget),
-                   bool (*callEvent)(GUIwin *win, GUIwidget *widget, const GUIevent *event),
-                   int priorityDraw,
-                   int priorityEventMouseButton,
-                   int priorityEventCursorPos,
-                   int priorityEventCharMods,
-                   int priorityEventScroll,
-                   void *data,
-                   void *data2,
-                   void (*StartCall)(GUIwidget *widget),
-                   void (*DestroyCall)(GUIwidget *widget))
+
+GUIid guiWidgetInit(GUIid id,
+                    void (*registerCall)(GUIid id),
+                    void (*logoffCall)(GUIid id),
+                    void (*loadCall)(GUIid id),
+                    void (*uploadCall)(GUIid id),
+                    bool (*drawCall)(GUIid id),
+                    bool (*eventCall)(GUIid id, const GUIevent *event))
 {
-    memset(widget, 0, sizeof(GUIwidget));
+    GUIwidget *widget = (GUIwidget *)guiIDGet(id);
+    if (registerCall)
+    {
+        widget->registerCall = registerCall;
+    }
+    if (logoffCall)
+    {
+        widget->logoffCall = logoffCall;
+    }
+    if (loadCall)
+    {
+        widget->loadCall = loadCall;
+    }
+    if (uploadCall)
+    {
+        widget->uploadCall = uploadCall;
+    }
+    if (drawCall)
+    {
+        widget->drawCall = drawCall;
+    }
+    if (eventCall)
+    {
+        widget->eventCall = eventCall;
+    }
 
-    widget->flag = flag;
-    widget->id = id;
+    CALL(registerCall, id);
 
-    widget->init = init;
-    widget->destroy = destroy;
-    widget->msg = msg;
-    widget->callDraw = callDraw;
-    widget->callEvent = callEvent;
-
-    widget->priorityDraw = priorityDraw;
-    widget->priorityEventMouseButton = priorityEventMouseButton;
-    widget->priorityEventCursorPos = priorityEventCursorPos;
-    widget->priorityEventCharMods = priorityEventCharMods;
-    widget->priorityEventScroll = priorityEventScroll;
-
-    widget->data = data;
-    widget->data2 = data2;
-
-    widget->win = NULL;
-
-    widget->StartCall = StartCall;
-    widget->DestroyCall = DestroyCall;
-
-    // 注册控件
-    guiIDRegister(widget->id, widget);
-
-    // 调用初始化函数
-    CALL(widget->StartCall, widget);
+    return id;
 }
 
-void guiWidgetDestroy(GUIwidget *widget)
+GUIid guiWidgetLogoff(GUIid id, bool isDelete)
 {
-    // 调用销毁函数
-    CALL(widget->DestroyCall, widget);
+    GUIwidget *widget = (GUIwidget *)guiIDGet(id);
+
+    CALL(widget->logoffCall, id);
+
+    if (isDelete == true)
+        guiIDLogoff(id);
+
+    return id;
+}
+void guiWidgetToControl(GUIControl *control, GUIid id, size_t flag, size_t priorityEvent, size_t drawEvent, bool enable)
+{
+    guiControlAddWidget(control, id);
+    // 添加进入绘制回调
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_DRAW))
+        guiControlAddCallback(control, id, GUI_WIDGET_CALLFLAG_DRAW, drawEvent, enable);
+
+    GUI_FLAG_UNSET(flag, GUI_WIDGET_CALLFLAG_DRAW);
+
+    // 添加进入事件回调
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT))
+        guiControlAddCallback(control, id, flag, priorityEvent, enable);
 }

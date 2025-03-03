@@ -26,12 +26,12 @@ typedef struct gui_widget_loginback_struct
 
 } gui_widget_loginback_struct;
 
-void gui_widget_loginback_StartCall(GUIwidget *widget)
+void gui_widget_loginback_registerCall(GUIid id)
 {
     // 分配内存
-    widget->data = malloc(sizeof(gui_widget_loginback_struct));
-    memset(widget->data, 0, sizeof(gui_widget_loginback_struct));
-    gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)widget->data;
+    GUI_ID2WIDGET(id)->data1 = malloc(sizeof(gui_widget_loginback_struct));
+    memset(GUI_ID2WIDGET(id)->data1, 0, sizeof(gui_widget_loginback_struct));
+    gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)GUI_ID2WIDGET(id)->data1;
 
     // 加载图像
     int width, height, nrChannels;
@@ -56,23 +56,22 @@ void gui_widget_loginback_StartCall(GUIwidget *widget)
     // 释放图像数据
     stbi_image_free(data);
     stbi_image_free(data2);
-
 }
-void gui_widget_loginback_DestroyCall(GUIwidget *widget)
+void gui_widget_loginback_logoffCall(GUIid id)
 {
-    gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)widget->data;
+    gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)GUI_ID2WIDGET(id)->data1;
 
     // 释放纹理
     glDeleteTextures(1, &st->loginbackTex);
     glDeleteTextures(1, &st->loginbackr2Tex);
 
     // 释放内存
-    free(widget->data);
+    free(st);
 }
 
-void gui_widget_loginback_init(GUIwin *win, GUIwidget *widget)
+void gui_widget_loginback_loadCall(GUIid id)
 {
-    gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)widget->data;
+    gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)GUI_ID2WIDGET(id)->data1;
 
     // 生成渲染器
     st->loginback = guiDrawRTCreate(st->imageW, st->imageH);
@@ -84,7 +83,7 @@ void gui_widget_loginback_init(GUIwin *win, GUIwidget *widget)
 
     // 初始化物理数据
     double x, y;
-    glfwGetCursorPos(win->window, &x, &y);
+    glfwGetCursorPos(GUI_GETWINDOW()->window, &x, &y);
     x = WINDOW_POS_2_GL_POS_x(x < 0 ? 0 : (x > WINDOW_WIDTH ? WINDOW_WIDTH : x));
     y = WINDOW_POS_2_GL_POS_y(y < 0 ? 0 : (y > WINDOW_HEIGHT ? WINDOW_HEIGHT : y));
 
@@ -108,22 +107,18 @@ void gui_widget_loginback_init(GUIwin *win, GUIwidget *widget)
                          LOGINBACK2WIDTH, LOGINBACK2HEIGHT);
 }
 
-void gui_widget_loginback_destroy(GUIwin *win, GUIwidget *widget)
+void gui_widget_loginback_uploadCall(GUIid id)
 {
-    gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)widget->data;
+    gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)GUI_ID2WIDGET(id)->data1;
 
     // 释放渲染器
     guiDrawRTDestroy(st->loginback);
     guiDrawRRTDestroy(st->loginbackr2);
 }
 
-void gui_widget_loginback_msg(GUIwin *win, GUIwidget *widget, uint64_t type, void *data)
+bool gui_widget_loginback_drawCall(GUIid id)
 {
-}
-
-bool gui_widget_loginback_callDraw(GUIwin *win, GUIwidget *widget)
-{
-    gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)widget->data;
+    gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)GUI_ID2WIDGET(id)->data1;
 
     // 设置模型矩阵
     if (st->movX != st->movDX || st->movY != st->movDY)
@@ -159,12 +154,12 @@ bool gui_widget_loginback_callDraw(GUIwin *win, GUIwidget *widget)
     return true;
 }
 
-bool gui_widget_loginback_callEvent(GUIwin *win, GUIwidget *widget, const GUIevent *event)
+bool gui_widget_loginback_eventCall(GUIid id, const GUIevent *event)
 {
 
     if (event->type == GUI_EVENT_TYPE_CURSOR_POS)
     {
-        gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)widget->data;
+        gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)GUI_ID2WIDGET(id)->data1;
 
         st->movDX = -(WINDOW_POS_2_GL_POS_x(event->CursorPos.xpos) / (WINDOW_WIDTH / 2)) * st->disW;
         st->movDY = -(WINDOW_POS_2_GL_POS_y(event->CursorPos.ypos) / (WINDOW_HEIGHT / 2)) * st->disH;

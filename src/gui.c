@@ -15,6 +15,9 @@ bool guiInit()
     // 初始化圆角颜色矩形
     guiDrawCInit();
 
+    // 控件初始化
+    guiIDInit();
+
     return true;
 }
 
@@ -28,4 +31,7 @@ void guiQuit()
 
     // 销毁基础着色器
     guiProgramDestroy();
+
+    // 控件销毁
+    guiIDQuit();
 }

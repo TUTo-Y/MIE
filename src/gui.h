@@ -26,11 +26,9 @@
 #include "gui_texture.h"
 #include "gui_program.h"
 
-
 #include "gui_type.h"
 #include "gui_window.h"
 #include "gui_widget.h"
-#include "gui_widgetID.h"
 
 #include "gui_widget_mousemove.h"
 #include "gui_widget_loginback.h"
@@ -53,9 +51,13 @@
 // 默认清屏颜色
 #define GUI_SET_DEFAULT_CLEARCOLOR() glClearColor(0.8f, 0.8f, 0.9f, 1.0f)
 
+// flag操作
+#define GUI_FLAG_CHECK(flag, type) ((flag) & (type))   // 检查
+#define GUI_FLAG_SET(flag, type) ((flag) |= (type))    // 添加
+#define GUI_FLAG_UNSET(flag, type) ((flag) &= ~(type)) // 删除
+
 bool guiInit();
 
 void guiQuit();
-
 
 #endif // GUI_H

@@ -9,45 +9,49 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-#include <glad.h>
-#include <cglm/cglm.h>
-#include <GLFW/glfw3.h>
-#include <stb_truetype.h>
-
-#include "list.h"
-
-#include "gui.h"
 #include "gui_type.h"
-#include "gui_window.h"
-#include "gui_widgetID.h"
-
-#define GUI_WIDGET_FLAG_VISIBLE 0x00000001
-#define GUI_WIDGET_FLAG_ENABLE 0x00000002
+#include "gui_ID.h"
+#include "gui.h"
 
 /**
- * \brief 初始化并注册控件
+ * \brief 注册时初始化一个控件
+ * \param id 控件ID
+ * \param registerCall 注册回调函数
+ * \param logoffCall 注销回调函数
+ * \param loadCall 加载回调函数
+ * \param uploadCall 卸载回调函数
+ * \param msg 消息回调函数
+ * \param drawCall 绘制回调函数
+ * \param eventCall 事件回调函数
+ * \return ID
+ * \note guiWidgetInit(guiIDRegister(ID), ...);
  */
-void guiWidgetInit(GUIwidget *widget,
-                   uint64_t flag,
-                   uint64_t id,
-                   void (*init)(GUIwin *win, GUIwidget *widget),
-                   void (*destroy)(GUIwin *win, GUIwidget *widget),
-                   void (*msg)(GUIwin *win, GUIwidget *widget, uint64_t type, void *data),
-                   bool (*callDraw)(GUIwin *win, GUIwidget *widget),
-                   bool (*callEvent)(GUIwin *win, GUIwidget *widget, const GUIevent *event),
-                   int priorityDraw,
-                   int priorityEventMouseButton,
-                   int priorityEventCursorPos,
-                   int priorityEventCharMods,
-                   int priorityEventScroll,
-                   void *data,
-                   void *data2,
-                   void (*StartCall)(GUIwidget *widget),
-                   void (*DestroyCall)(GUIwidget *widget));
+GUIid guiWidgetInit(GUIid id,
+                   void (*registerCall)(GUIid id),
+                   void (*logoffCall)(GUIid id),
+                   void (*loadCall)(GUIid id),
+                   void (*uploadCall)(GUIid id),
+                   bool (*drawCall)(GUIid id),
+                   bool (*eventCall)(GUIid id, const GUIevent *event));
 
 /**
- * \brief 销毁控件
+ * \brief 注销一个控件
+ * \param id 控件ID
+ * \param isDelete 是否使用guiIDLogoff删除ID
+ * \return 被注销的ID
  */
-void guiWidgetDestroy(GUIwidget *widget);
+GUIid guiWidgetLogoff(GUIid id, bool isDelete);
+
+/**
+ * \brief 添加一个控件
+ * \param control 控制器
+ * \param id 控件ID
+ * \param flag 控件启动的响应
+ * \param priorityEvent 事件优先级
+ * \param drawEvent 绘制优先级
+ * \param enable 是否启用
+ * \note guiControlAddWidget和guiControlAddCallback的简化版
+ */
+void guiWidgetToControl(GUIControl *control, GUIid id, size_t flag, size_t priorityEvent, size_t drawEvent, bool enable);
 
 #endif // GUI_WIDGET_H
