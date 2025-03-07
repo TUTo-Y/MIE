@@ -28,7 +28,6 @@ void gui_widget_login_choice_msg(GUIwin *win, GUIwidget *widget, uint64_t type, 
 bool gui_widget_login_choice_callDraw(GUIwin *win, GUIwidget *widget)
 {
     
-    
     return true;
 }
 bool gui_widget_login_choice_callEvent(GUIwin *win, GUIwidget *widget, const GUIevent *event)

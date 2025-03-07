@@ -50,8 +50,9 @@ GUIid guiWidgetLogoff(GUIid id, bool isDelete)
 
     return id;
 }
-void guiWidgetToControl(GUIControl *control, GUIid id, size_t flag, size_t priorityEvent, size_t drawEvent, bool enable)
+void guiWidgetToControl(GUIid fid, GUIid id, size_t flag, size_t priorityEvent, size_t drawEvent, bool enable)
 {
+    GUIControl *control = GUI_ID2CONTROLP(fid);
     guiControlAddWidget(control, id);
     // 添加进入绘制回调
     if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_DRAW))

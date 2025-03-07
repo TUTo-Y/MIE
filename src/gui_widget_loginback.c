@@ -7,24 +7,6 @@
 #define LOGINBACK2DISW (((float)WINDOW_WIDTH) * (1.0f - LOGINBACK2SCALE) / 2.0f)
 #define LOGINBACK2DISH (((float)WINDOW_HEIGHT) * (1.0f - LOGINBACK2SCALE) / 2.0f)
 
-typedef struct gui_widget_loginback_struct
-{
-    // 基础数据
-    GLuint loginbackTex;   // 背景纹理
-    GLuint loginbackr2Tex; // 圆角背景纹理
-    int imageW, imageH;    // 图像大小
-    float disW, disH;      // 图像边距
-
-    // 渲染数据
-    GUIdrawr loginback;    // 背景
-    GUIdrawrr loginbackr2; // 圆角背景
-
-    // 物理数据
-    int movX, movY;   // 当前位置
-    int movDX, movDY; // 要移动的目标
-    double animTime;  // 动画时间
-
-} gui_widget_loginback_struct;
 
 void gui_widget_loginback_registerCall(GUIid id)
 {
@@ -49,13 +31,32 @@ void gui_widget_loginback_registerCall(GUIid id)
                                     data2, st->imageW, st->imageH, 0, STBIR_RGB)))
         ERROR("调整大小错误\n");
 
-    // 创建纹理
+    // 创建纹理和高斯模糊纹理
     st->loginbackTex = guiTextureCreate(data2, st->imageW, st->imageH, 3, GL_RGB);
     st->loginbackr2Tex = guiDrawGaussian(st->loginbackTex, (vec4){0, 0, st->imageW, st->imageH}, 20, 5.0f);
 
     // 释放图像数据
     stbi_image_free(data);
     stbi_image_free(data2);
+
+    // 创建用户图标和密码图标
+    unsigned char *user_data = stbi_load(config.user_icon_path, &width, &height, &nrChannels, 4);
+    st->userIcon = guiTextureCreate(user_data, width, height, 4, GL_RGBA);
+    st->user = guiDrawIconCreate(width, height, st->userIcon, (vec4){8.0f, 8.0f, 8.0f, 9.0f});
+    stbi_image_free(user_data);
+
+    unsigned char *pass_data = stbi_load(config.pass_icon_path, &width, &height, &nrChannels, 4);
+    st->passIcon = guiTextureCreate(pass_data, width, height, 4, GL_RGBA);
+    st->pass = guiDrawIconCreate(width, height, st->passIcon, (vec4){8.0f, 8.0f, 8.0f, 9.0f});
+    stbi_image_free(pass_data);
+
+    // 设置图标位置
+    mat4 model = GLM_MAT4_IDENTITY_INIT;
+    glm_translate_make(model, (vec3){-300, 160, 0});
+    guiDrawIconSetModel(st->user, model);
+    glm_translate(model, (vec3){0, -160, 0});
+    guiDrawIconSetModel(st->pass, model);
+
 }
 void gui_widget_loginback_logoffCall(GUIid id)
 {
@@ -64,6 +65,16 @@ void gui_widget_loginback_logoffCall(GUIid id)
     // 释放纹理
     glDeleteTextures(1, &st->loginbackTex);
     glDeleteTextures(1, &st->loginbackr2Tex);
+    glDeleteTextures(1, &st->userIcon);
+    glDeleteTextures(1, &st->passIcon);
+
+    // 释放图标
+    guiDrawIconDestroy(st->user);
+    guiDrawIconDestroy(st->pass);
+
+    // 释放内存
+    guiDrawRTDestroy(st->loginback);
+    guiDrawRRTDestroy(st->loginbackr2);
 
     // 释放内存
     free(st);
@@ -84,8 +95,10 @@ void gui_widget_loginback_loadCall(GUIid id)
     // 初始化物理数据
     double x, y;
     glfwGetCursorPos(GUI_GETWINDOW()->window, &x, &y);
-    x = WINDOW_POS_2_GL_POS_x(x < 0 ? 0 : (x > WINDOW_WIDTH ? WINDOW_WIDTH : x));
-    y = WINDOW_POS_2_GL_POS_y(y < 0 ? 0 : (y > WINDOW_HEIGHT ? WINDOW_HEIGHT : y));
+    x = (x < 0 ? 0 : (x > WINDOW_WIDTH ? WINDOW_WIDTH : x));
+    y = (y < 0 ? 0 : (y > WINDOW_HEIGHT ? WINDOW_HEIGHT : y));
+    x = WINDOW_POS_2_GL_POS_x(x, WINDOW_WIDTH);
+    y = WINDOW_POS_2_GL_POS_y(y, WINDOW_HEIGHT);
 
     st->movDX = -(x / (WINDOW_WIDTH / 2)) * st->disW;
     st->movDY = -(y / (WINDOW_HEIGHT / 2)) * st->disH;
@@ -105,6 +118,7 @@ void gui_widget_loginback_loadCall(GUIid id)
                          st->movX + st->disW + LOGINBACK2DISW,
                          -st->movY + st->disH + LOGINBACK2DISH,
                          LOGINBACK2WIDTH, LOGINBACK2HEIGHT);
+
 }
 
 void gui_widget_loginback_uploadCall(GUIid id)
@@ -121,15 +135,12 @@ bool gui_widget_loginback_drawCall(GUIid id)
     gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)GUI_ID2WIDGET(id)->data1;
 
     // 设置模型矩阵
-    if (st->movX != st->movDX || st->movY != st->movDY)
+    if (st->movDX != st->movX || st->movDY != st->movY)
     {
-        double time = glfwGetTime() - st->animTime;
-        double factor = time * 5;
-
-        double diffX = (st->movDX - st->movX) / 2.0f + 1;
-        double diffY = (st->movDY - st->movY) / 2.0f + 1;
-        st->movX += (int)diffX;
-        st->movY += (int)diffY;
+        int tmp;
+        st->movX += (tmp = st->movDX - st->movX) ? tmp / 2 + 1 : 0;
+        st->movY += (tmp = st->movDY - st->movY) ? tmp / 2 + 1 : 0;
+        // st->movY += (st->movDY - st->movY) / 2 + 1;
 
         // 设置loginback
         mat4 model = GLM_MAT4_IDENTITY_INIT;
@@ -148,6 +159,10 @@ bool gui_widget_loginback_drawCall(GUIid id)
 
     // 渲染圆角背景
     guiDrawRRTRender(st->loginbackr2);
+    
+    // 渲染图标
+    guiDrawIconRender(st->user);
+    guiDrawIconRender(st->pass);
 
     st->animTime = glfwGetTime();
 
@@ -161,8 +176,9 @@ bool gui_widget_loginback_eventCall(GUIid id, const GUIevent *event)
     {
         gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)GUI_ID2WIDGET(id)->data1;
 
-        st->movDX = -(WINDOW_POS_2_GL_POS_x(event->CursorPos.xpos) / (WINDOW_WIDTH / 2)) * st->disW;
-        st->movDY = -(WINDOW_POS_2_GL_POS_y(event->CursorPos.ypos) / (WINDOW_HEIGHT / 2)) * st->disH;
+        st->movDX = -(event->CursorPos.xpos / (WINDOW_WIDTH / 2.0f)) * st->disW;
+        st->movDY = -(event->CursorPos.ypos / (WINDOW_HEIGHT / 2.0f)) * st->disH;
     }
     return true;
 }
+

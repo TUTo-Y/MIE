@@ -52,6 +52,6 @@ GUIid guiWidgetLogoff(GUIid id, bool isDelete);
  * \param enable 是否启用
  * \note guiControlAddWidget和guiControlAddCallback的简化版
  */
-void guiWidgetToControl(GUIControl *control, GUIid id, size_t flag, size_t priorityEvent, size_t drawEvent, bool enable);
+void guiWidgetToControl(GUIid fid, GUIid id, size_t flag, size_t priorityEvent, size_t drawEvent, bool enable);
 
 #endif // GUI_WIDGET_H

@@ -1,18 +1,18 @@
 /**
  * @file gui_str.h
  * @brief GUI 字符串
- * 
+ *
  * // 创建字符串
  * GUIstr *s1 = guiStrCreate(ttf, 64, GUI_STR_MOD_CENTER, program, NULL, (vec4){1.0f, 0.0f, 0.0f, 1.0f});
  * guiStrCpy(s1, L"我shi一个");
- * 
+ *
  * // 修改model和color
  * guiStrSetModel(s1, model);
  * guiStrSetColor(s1, color);
- * 
+ *
  * // 渲染字符串
  * guiStrRender();
- * 
+ *
  */
 #ifndef GUI_STR_H
 #define GUI_STR_H
@@ -29,13 +29,19 @@
 #include <stb_truetype.h>
 
 #include "log.h"
-#include "gui.h"
 
+#include "gui_base.h"
+#include "gui_ttf.h"
+#include "gui_shader.h"
+#include "gui_texture.h"
+
+#define guiStrUseProgram(str) guiShaderUse((str)->program) // 使用字符串渲染器
+
+#define guiStrGetStr(str) ((str)->strText)
+#define guiStrGetStrLen(str) wcslen(guiStrGetStr(str))
 #define guiStrGetFix(str) ((str)->fix)
 #define guiStrGetModel(str) ((str)->model)
 #define guiStrGetColor(str) ((str)->color)
-
-#define guiStrUseProgram(str) guiShaderUse((str)->program) // 使用字符串渲染器
 
 #define guiStrSetFix(str, fix) glm_mat4_copy(fix, guiStrGetFix(str))         // 设置修正矩阵
 #define guiStrSetModel(str, model) glm_mat4_copy(model, guiStrGetModel(str)) // 设置模型矩阵
@@ -83,20 +89,9 @@ enum
     GUI_STR_MOD_LEFT = 0,     // 左对齐
     GUI_STR_MOD_LEFT_TOP = 1, // 左上对其
     GUI_STR_MOD_CENTER = 2,   // 居中对齐
-    GUI_STR_MOD_RIGHT = 3     // 右对齐
+    GUI_STR_MOD_CENTER2 = 3,  // 完全居中对齐
+    GUI_STR_MOD_RIGHT = 4     // 右对齐
 };
-
-/**
- * \brief 渲染字符串
- * \param str 字符串
- */
-void guiStrRender(GUIstr *str);
-
-/**
- * \brief 设置字符串对齐模式(模型矩阵)
- * \param str 字符串
- */
-void guiStrAppMode(GUIstr *str);
 
 /**
  * \brief 创建一个字符串
@@ -112,9 +107,21 @@ void guiStrAppMode(GUIstr *str);
 GUIstr *guiStrCreate(GUIttf *ttf, int pixels, int mode, GLuint program, mat4 model, vec4 color);
 
 /**
+ * \brief 渲染字符串
+ * \param str 字符串
+ */
+void guiStrRender(GUIstr *str);
+
+/**
  * \brief 删除字符串
  */
 void guiStrDelete(GUIstr *str);
+
+/**
+ * \brief 设置字符串对齐模式(模型矩阵)
+ * \param str 字符串
+ */
+void guiStrAppMode(GUIstr *str);
 
 /**
  * \brief 设置字符串文本

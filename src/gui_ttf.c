@@ -4,6 +4,8 @@
 #define GUI_TTF_FONT_INIT 0x20                   // 初始化文字数量
 #define GUI_TTF_FONT_ADD (GUI_TTF_FONT_INIT * 2) // 每次添加文字数量
 
+GUIttf *font_default = NULL;
+
 GUIchar *guiCharCreate(GUIttf *ttf, GUIfont *font, wchar_t text)
 {
     if (!font && !ttf)
@@ -52,12 +54,13 @@ GUIchar *guiCharCreate(GUIttf *ttf, GUIfont *font, wchar_t text)
         (float)(ttfChar->x + ttfChar->w), (float)(ttfChar->y), 1.0f, 0.0f,
         (float)(ttfChar->x + ttfChar->w), (float)(ttfChar->y - ttfChar->h), 1.0f, 1.0f,
         (float)(ttfChar->x), (float)(ttfChar->y - ttfChar->h), 0.0f, 1.0f};
-    const GLuint index[] = {
+    GLuint index[] = {
         0, 1, 2,
         0, 2, 3};
     glGenVertexArrays(1, &ttfChar->VAO);
     glGenBuffers(1, &ttfChar->VBO);
     glGenBuffers(1, &ttfChar->EBO);
+    glBindVertexArray(ttfChar->VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, ttfChar->VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -65,7 +68,6 @@ GUIchar *guiCharCreate(GUIttf *ttf, GUIfont *font, wchar_t text)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ttfChar->EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index), index, GL_STATIC_DRAW);
 
-    glBindVertexArray(ttfChar->VAO);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
@@ -149,13 +151,17 @@ GUIfont *guiFontGet(GUIttf *ttf, int pixels)
             return font;
         }
     }
-
+#if 0
     // 没有找到字号则添加
     ttf->fontCount++;
     ttf->fontList = (GUIfont *)realloc(ttf->fontList, sizeof(GUIfont) * ttf->fontCount);
     guiFontInit(ttf, &ttf->fontList[ttf->fontCount - 1], pixels);
 
     return &ttf->fontList[ttf->fontCount - 1];
+#else
+    ERROR("不允许新添加字号\n");
+    return NULL;
+#endif
 }
 
 GUIttf *guiTTFCreate(const unsigned char *fontData, ...)

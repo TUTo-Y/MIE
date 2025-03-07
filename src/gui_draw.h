@@ -11,6 +11,7 @@
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 
+#include "gui_base.h"
 #include "gui_shader.h"
 #include "gui_program.h"
 
@@ -67,6 +68,15 @@ typedef struct
     };
 } GUIdrawr_t;
 typedef GUIdrawr_t *GUIdrawr;
+
+// 圆
+typedef struct
+{
+    mat4 model;
+    mat4 fix;
+    vec4 color;
+} GUIdrawcc_t;
+typedef GUIdrawcc_t *GUIdrawcc;
 
 typedef struct
 {
@@ -365,6 +375,59 @@ static inline void guiDrawRCDestroy(GUIdrawr drawrc)
 }
 
 /**
+ * \brief 创建圆
+ * \param
+ */
+GUIdrawcc guiDrawCCCreate(float r, vec4 color);
+
+/**
+ * \brief 销毁圆
+ */
+static inline void guiDrawCCDestroy(GUIdrawcc cc)
+{
+    free(cc);
+}
+
+/**
+ * \brief 设置圆颜色
+ */
+static inline void guiDrawCCSetColor(GUIdrawcc cc, vec4 color)
+{
+    glm_vec4_copy(color, cc->color);
+}
+
+/**
+ * \brief 设置圆半径
+ */
+static inline void guiDrawCCSetR(GUIdrawcc cc, float r)
+{
+    glm_scale_make(cc->fix, (vec3){r, r, 1.0f});
+}
+
+/**
+ * \brief 设置圆model
+ */
+static inline void guiDrawCCSetModel(GUIdrawcc cc, mat4 model)
+{
+    glm_mat4_copy(model, cc->model);
+}
+
+/**
+ * \brief 设置圆位置
+ */
+static inline void guiDrawCCSetPos(GUIdrawcc cc, float x, float y)
+{
+    glm_translate_make(cc->model, (vec3){x, y, 0});
+}
+
+/**
+ * \brief 渲染圆
+ * \param cc 圆
+ */
+void guiDrawCCRender(GUIdrawcc cc);
+void guiDrawCC2Render(GUIdrawcc cc2);
+
+/**
  * \brief 创建图标
  * \param width 宽度
  * \param height 高度
@@ -420,6 +483,14 @@ static inline void guiDrawIconSetModel(GUIicon icon, mat4 model)
  */
 void guiDrawIconRender(GUIicon icon);
 
+/**
+ * \brief 销毁图标
+ * \param icon 图标
+ */
+static inline void guiDrawIconDestroy(GUIicon icon)
+{
+    free(icon);
+}
 
 /**
  * \brief 渲染一个高斯模糊图像

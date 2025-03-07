@@ -5,11 +5,9 @@
 #ifndef GUI_FB_H
 #define GUI_FB_H
 
-#include <glad.h>
-#include <glfw/glfw3.h>
-
 #include "log.h"
-#include "gui.h"
+
+#include "gui_base.h"
 #include "gui_texture.h"
 
 typedef struct GUIfb_t

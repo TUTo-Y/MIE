@@ -25,6 +25,7 @@ void guiControlInit(GUIControl *control)
     vectorInit(&control->EventMouseButton, sizeof(GUIcallback), 0x10, guiControlComparePriorityCall);
     vectorInit(&control->EventCursorPos, sizeof(GUIcallback), 0x10, guiControlComparePriorityCall);
     vectorInit(&control->EventCharMods, sizeof(GUIcallback), 0x10, guiControlComparePriorityCall);
+    vectorInit(&control->EventKey, sizeof(GUIcallback), 0x10, guiControlComparePriorityCall);
     vectorInit(&control->EventScroll, sizeof(GUIcallback), 0x10, guiControlComparePriorityCall);
     listInitList(&control->widget);
 }
@@ -48,6 +49,7 @@ void guiControlDestroy(GUIControl *control)
     vectorDestroy(&control->EventMouseButton);
     vectorDestroy(&control->EventCursorPos);
     vectorDestroy(&control->EventCharMods);
+    vectorDestroy(&control->EventKey);
     vectorDestroy(&control->EventScroll);
 }
 
@@ -73,7 +75,7 @@ void guiControlAddCallback(GUIControl *control, GUIid id, size_t flag, uint64_t 
     callback.enable = enable;
 
     // 绘制回调
-    if (GUI_FLAG_CHECK(flag,  GUI_WIDGET_CALLFLAG_DRAW) &&
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_DRAW) &&
         ((GUIwidget *)guiIDGet(id))->drawCall)
     {
         callback.drawCall = ((GUIwidget *)guiIDGet(id))->drawCall;
@@ -103,6 +105,13 @@ void guiControlAddCallback(GUIControl *control, GUIid id, size_t flag, uint64_t 
             vectorAdd(&control->EventCharMods, &callback);
         }
 
+        // 键盘事件回调
+        if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_KEY))
+        {
+            callback.eventCall = ((GUIwidget *)guiIDGet(id))->eventCall;
+            vectorAdd(&control->EventKey, &callback);
+        }
+
         // 滚轮事件回调
         if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_SCROLL))
         {
@@ -117,7 +126,7 @@ void guiControlResetCallbackPriority(GUIControl *control, GUIid id, size_t flag,
     GUIcallback *callback;
 
     // 绘制回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_DRAW))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_DRAW))
     {
         size_t fret = vectorFindSimple(&control->Draw, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->Draw, fret)) // 检查搜索结果
@@ -129,7 +138,7 @@ void guiControlResetCallbackPriority(GUIControl *control, GUIid id, size_t flag,
     }
 
     // 鼠标事件回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON))
     {
         size_t fret = vectorFindSimple(&control->EventMouseButton, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->EventMouseButton, fret)) // 检查搜索结果
@@ -141,7 +150,7 @@ void guiControlResetCallbackPriority(GUIControl *control, GUIid id, size_t flag,
     }
 
     // 光标事件回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS))
     {
         size_t fret = vectorFindSimple(&control->EventCursorPos, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->EventCursorPos, fret)) // 检查搜索结果
@@ -153,7 +162,7 @@ void guiControlResetCallbackPriority(GUIControl *control, GUIid id, size_t flag,
     }
 
     // 字符事件回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_CHAR_MODS))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_CHAR_MODS))
     {
         size_t fret = vectorFindSimple(&control->EventCharMods, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->EventCharMods, fret)) // 检查搜索结果
@@ -164,8 +173,20 @@ void guiControlResetCallbackPriority(GUIControl *control, GUIid id, size_t flag,
         }
     }
 
+    // 键盘事件回调
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_KEY))
+    {
+        size_t fret = vectorFindSimple(&control->EventKey, &id, guiControlCompareFindIDCall);
+        if (vectorCheckFind(&control->EventKey, fret)) // 检查搜索结果
+        {
+            callback = (GUIcallback *)vectorGet(&control->EventKey, fret);
+            callback->priority = priority;
+            vectorSort(&control->EventKey);
+        }
+    }
+
     // 滚轮事件回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_SCROLL))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_SCROLL))
     {
         size_t fret = vectorFindSimple(&control->EventScroll, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->EventScroll, fret)) // 检查搜索结果
@@ -180,7 +201,7 @@ void guiControlResetCallbackPriority(GUIControl *control, GUIid id, size_t flag,
 void guiControlDeleteCallback(GUIControl *control, GUIid id, size_t flag)
 {
     // 绘制回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_DRAW))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_DRAW))
     {
         size_t fret = vectorFindSimple(&control->Draw, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->Draw, fret)) // 检查搜索结果
@@ -188,7 +209,7 @@ void guiControlDeleteCallback(GUIControl *control, GUIid id, size_t flag)
     }
 
     // 鼠标事件回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON))
     {
         size_t fret = vectorFindSimple(&control->EventMouseButton, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->EventMouseButton, fret)) // 检查搜索结果
@@ -196,7 +217,7 @@ void guiControlDeleteCallback(GUIControl *control, GUIid id, size_t flag)
     }
 
     // 光标事件回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS))
     {
         size_t fret = vectorFindSimple(&control->EventCursorPos, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->EventCursorPos, fret)) // 检查搜索结果
@@ -204,15 +225,23 @@ void guiControlDeleteCallback(GUIControl *control, GUIid id, size_t flag)
     }
 
     // 字符事件回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_CHAR_MODS))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_CHAR_MODS))
     {
         size_t fret = vectorFindSimple(&control->EventCharMods, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->EventCharMods, fret)) // 检查搜索结果
             vectorDelete(&control->EventCharMods, fret);
     }
 
+    // 键盘事件回调
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_KEY))
+    {
+        size_t fret = vectorFindSimple(&control->EventKey, &id, guiControlCompareFindIDCall);
+        if (vectorCheckFind(&control->EventKey, fret)) // 检查搜索结果
+            vectorDelete(&control->EventKey, fret);
+    }
+
     // 滚轮事件回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_SCROLL))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_SCROLL))
     {
         size_t fret = vectorFindSimple(&control->EventScroll, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->EventScroll, fret)) // 检查搜索结果
@@ -224,7 +253,7 @@ void guiControlEnableCallback(GUIControl *control, GUIid id, size_t flag, bool e
 {
     GUIcallback *callback;
     // 绘制回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_DRAW))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_DRAW))
     {
         size_t fret = vectorFindSimple(&control->Draw, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->Draw, fret)) // 检查搜索结果
@@ -235,7 +264,7 @@ void guiControlEnableCallback(GUIControl *control, GUIid id, size_t flag, bool e
     }
 
     // 鼠标事件回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON))
     {
         size_t fret = vectorFindSimple(&control->EventMouseButton, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->EventMouseButton, fret)) // 检查搜索结果
@@ -246,7 +275,7 @@ void guiControlEnableCallback(GUIControl *control, GUIid id, size_t flag, bool e
     }
 
     // 光标事件回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS))
     {
         size_t fret = vectorFindSimple(&control->EventCursorPos, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->EventCursorPos, fret)) // 检查搜索结果
@@ -257,7 +286,7 @@ void guiControlEnableCallback(GUIControl *control, GUIid id, size_t flag, bool e
     }
 
     // 字符事件回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_CHAR_MODS))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_CHAR_MODS))
     {
         size_t fret = vectorFindSimple(&control->EventCharMods, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->EventCharMods, fret)) // 检查搜索结果
@@ -267,8 +296,19 @@ void guiControlEnableCallback(GUIControl *control, GUIid id, size_t flag, bool e
         }
     }
 
+    // 键盘事件回调
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_KEY))
+    {
+        size_t fret = vectorFindSimple(&control->EventKey, &id, guiControlCompareFindIDCall);
+        if (vectorCheckFind(&control->EventKey, fret)) // 检查搜索结果
+        {
+            callback = (GUIcallback *)vectorGet(&control->EventKey, fret);
+            callback->enable = enable;
+        }
+    }
+
     // 滚轮事件回调
-    if(GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_SCROLL))
+    if (GUI_FLAG_CHECK(flag, GUI_WIDGET_CALLFLAG_EVENT_SCROLL))
     {
         size_t fret = vectorFindSimple(&control->EventScroll, &id, guiControlCompareFindIDCall);
         if (vectorCheckFind(&control->EventScroll, fret)) // 检查搜索结果
@@ -297,6 +337,7 @@ void guiControlRunEventCallback(Vector *vector, const GUIevent *event)
         GUIcallback *callback = (GUIcallback *)(vector->data + i * vector->step);
         // 检查是否启用
         if (callback->enable)
-            CALL(callback->eventCall, callback->id, event);
+            if (CALL(callback->eventCall, callback->id, event) == false)
+                break;
     }
 }

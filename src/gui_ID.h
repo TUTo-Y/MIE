@@ -14,9 +14,14 @@
 // GUI 的静态ID
 enum
 {
-    GUI_ID_WINDOW = 0, // 窗口ID
-    GUI_ID_MOUSEMOVE,  // 鼠标移动窗口ID
-    GUI_ID_LOGINBACK,  // 登录背景ID
+    GUI_ID_WINDOW = 0,    // 窗口ID
+    GUI_ID_MOUSEMOVE,     // 鼠标移动窗口ID
+    GUI_ID_LOG,           // 日志ID
+    GUI_ID_LOGINBACK,     // 登录背景ID
+    GUI_ID_LOGIN_USER,    // 登录用户名ID
+    GUI_ID_LOGIN_PASS,    // 登录密码ID
+    GUI_ID_LOGIN_BUTTON1, // 登录提交ID
+    GUI_ID_LOGIN_BUTTON2, // 登录注册ID
     GUI_ID_END
 };
 

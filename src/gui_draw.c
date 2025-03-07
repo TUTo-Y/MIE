@@ -267,6 +267,51 @@ void guiDrawRCRender(GUIdrawr drawrc)
     glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, 0);
 }
 
+GUIdrawcc guiDrawCCCreate(float r, vec4 color)
+{
+    GUIdrawcc cc = (GUIdrawcc_t*) malloc(sizeof(GUIdrawcc_t));
+
+    // 初始化color
+    glm_vec4_copy(color, cc->color);
+
+    // 初始化fix
+    glm_scale_make(cc->fix, (vec3){r, r, 1.0f});
+
+    // 初始化model
+    glm_mat4_identity(cc->model);
+
+    return cc;
+}
+
+void guiDrawCCRender(GUIdrawcc cc)
+{
+    guiShaderUse(program.cc);
+
+    // 设置模型矩阵
+    guiShaderUniformMatrix(program.cc, "fix", 4fv, (float *)cc->fix);
+    guiShaderUniformMatrix(program.cc, "model", 4fv, (float *)cc->model);
+    guiShaderUniform(program.cc, "color", 4f, cc->color[0], cc->color[1], cc->color[2], cc->color[3]);
+
+    // 绘制
+    glBindVertexArray(GUIc.VAO);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, 0);
+}
+
+void guiDrawCC2Render(GUIdrawcc cc2)
+{
+    guiShaderUse(program.cc2);
+
+    // 设置模型矩阵
+    guiShaderUniformMatrix(program.cc2, "fix", 4fv, (float *)cc2->fix);
+    guiShaderUniformMatrix(program.cc2, "model", 4fv, (float *)cc2->model);
+    guiShaderUniform(program.cc2, "color", 4f, cc2->color[0], cc2->color[1], cc2->color[2], cc2->color[3]);
+
+    // 绘制
+    glBindVertexArray(GUIc.VAO);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, 0);
+
+}
+
 GUIicon guiDrawIconCreate(float width, float height, GLuint texture, vec4 color)
 {
     GUIicon icon = (GUIicon_t *)malloc(sizeof(GUIicon_t));
@@ -315,8 +360,8 @@ GLuint guiDrawGaussian(GLuint texture, vec4 pos, int n, float step)
 
     // 创建纹理
     GLuint textureGaussian[2];
-    textureGaussian[0] = guiTextureCreateEmpty(w, h, GL_RGB);
-    textureGaussian[1] = guiTextureCreateEmpty(w, h, GL_RGB);
+    textureGaussian[0] = guiTextureCreateEmpty(w, h, GL_RGBA);
+    textureGaussian[1] = guiTextureCreateEmpty(w, h, GL_RGBA);
 
     GLuint textureGaussian_t = texture;
 

@@ -28,6 +28,8 @@
 #include <stb_truetype.h>
 
 #include "log.h"
+
+#include "gui_base.h"
 #include "gui_texture.h"
 
 /**
@@ -80,6 +82,8 @@ typedef struct
     GUIfont *fontList; // 字号列表
     int fontCount;     // 字号数量
 } GUIttf;
+
+extern GUIttf *font_default;
 
 /**
  * \brief 创建一个文字到Font中

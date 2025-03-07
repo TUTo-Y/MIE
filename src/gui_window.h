@@ -5,6 +5,7 @@
 #ifndef GUI_WINDOW_H
 #define GUI_WINDOW_H
 
+#include "gui_base.h"
 #include "gui_type.h"
 #include "gui_ID.h"
 #include "gui_control.h"

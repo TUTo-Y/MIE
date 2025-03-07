@@ -18,15 +18,18 @@
 #include "list.h"
 #include "vector.h"
 
+#include "gui_base.h"
+
 // ID类型
 typedef uint64_t GUIid;
 
 // GUI事件
-#define GUI_EVENT_TYPE_MOUSE_BUTTON 0x1 // 鼠标点击事件
-#define GUI_EVENT_TYPE_CURSOR_POS 0x2   // 光标事件
-#define GUI_EVENT_TYPE_CHAR_MODS 0x4    // 字符事件
-#define GUI_EVENT_TYPE_SCROLL 0x8       // 滚轮事件
-#define GUI_EVENT_TYPE_CUSTOM 0x10      // 自定义事件
+#define GUI_EVENT_TYPE_MOUSE_BUTTON 0x2 // 鼠标点击事件
+#define GUI_EVENT_TYPE_CURSOR_POS 0x4   // 光标事件
+#define GUI_EVENT_TYPE_CHAR_MODS 0x8    // 字符事件
+#define GUI_EVENT_TYPE_KEY 0x10         // 键盘事件
+#define GUI_EVENT_TYPE_SCROLL 0x20      // 滚轮事件
+#define GUI_EVENT_TYPE_CUSTOM 0x40      // 自定义事件
 typedef struct
 {
     uint64_t type; // 事件类型
@@ -41,8 +44,8 @@ typedef struct
 
         struct
         {
-            double xpos; // 鼠标X坐标
-            double ypos; // 鼠标Y坐标
+            double xpos; // 鼠标X坐标, 中心坐标系, 同cursorPos
+            double ypos; // 鼠标Y坐标, 中心坐标系, 同cursorPos
         } CursorPos;     // 光标事件
 
         struct
@@ -50,6 +53,14 @@ typedef struct
             unsigned int codepoint; // 字符
             int mods;               // 修饰键
         } CharMods;                 // 字符事件
+
+        struct
+        {
+            int key;      // 键
+            int scancode; // 扫描码
+            int action;   // 动作
+            int mods;     // 修饰键
+        } Key;            // 键盘事件
 
         struct
         {
@@ -63,6 +74,9 @@ typedef struct
             void *data2; // 数据2
         } Custom;        // 自定义事件
     };
+
+    GUIpos mousePos;   // 鼠标位置，中心坐标系，CursorPos
+    GUIsize fatherSize; // 父控件大小
 } GUIevent;
 
 // 回调函数列表
@@ -91,6 +105,7 @@ typedef struct
     Vector EventMouseButton; // 鼠标事件回调
     Vector EventCursorPos;   // 光标事件回调
     Vector EventCharMods;    // 字符事件回调
+    Vector EventKey;         // 键盘事件回调
     Vector EventScroll;      // 滚轮事件回调
 
     // 控件列表，存储指针指向GUItype
@@ -109,14 +124,14 @@ typedef struct
 } GUIwin;
 
 // 回调函数
-#define GUI_WIDGET_CALLFLAG_DRAW 0x1                           // 绘制回调
-#define GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON 0x2             // 鼠标事件回调
-#define GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS 0x4               // 光标事件回调
-#define GUI_WIDGET_CALLFLAG_EVENT_CHAR_MODS 0x8                // 字符事件回调
-#define GUI_WIDGET_CALLFLAG_EVENT_SCROLL 0x10                  // 滚轮事件回调
-#define GUI_WIDGET_CALLFLAG_EVENT (0x2 | 0x4 | 0x8 | 0x10)     // 所有事件回调
-#define GUI_WIDGET_CALLFLAG_ALL (0x1 | 0x2 | 0x4 | 0x8 | 0x10) // 所有回调
-
+#define GUI_WIDGET_CALLFLAG_DRAW 0x1                                  // 绘制回调
+#define GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON 0x2                    // 鼠标事件回调
+#define GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS 0x4                      // 光标事件回调
+#define GUI_WIDGET_CALLFLAG_EVENT_CHAR_MODS 0x8                       // 字符事件回调
+#define GUI_WIDGET_CALLFLAG_EVENT_KEY 0x10                            // 键盘事件回调
+#define GUI_WIDGET_CALLFLAG_EVENT_SCROLL 0x20                         // 滚轮事件回调
+#define GUI_WIDGET_CALLFLAG_EVENT (0x2 | 0x4 | 0x8 | 0x10 | 0x20)     // 所有事件回调
+#define GUI_WIDGET_CALLFLAG_ALL (0x1 | 0x2 | 0x4 | 0x8 | 0x10 | 0x20) // 所有回调
 
 typedef struct _GUIwidget GUIwidget;
 typedef struct _GUIwidget

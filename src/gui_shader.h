@@ -9,10 +9,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include <glad.h>
-#include <GLFW/glfw3.h>
-
 #include "log.h"
+
+#include "gui_base.h"
 
 #define guiShaderUse(program) glUseProgram(program)
 #define guiShaderUniformGetLocation(program, name) glGetUniformLocation(program, name)

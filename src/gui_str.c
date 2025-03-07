@@ -32,7 +32,7 @@ void guiStrCheckLen(GUIstr *str, size_t count)
         memset(str->strChar + str->count, 0, sizeof(GUIchar *) * (str->countMax - str->count));
     }
 }
-
+#if 1
 void guiStrRender(GUIstr *str)
 {
     if (str == NULL)
@@ -60,7 +60,7 @@ void guiStrRender(GUIstr *str)
         glm_translate(fix, (vec3){str->strChar[i]->advance, 0.0f, 0.0f});
     }
 }
-
+#else
 void guiStrAppMode(GUIstr *str)
 {
     GUIfont *font = str->font;
@@ -91,6 +91,43 @@ void guiStrAppMode(GUIstr *str)
         break;
     case GUI_STR_MOD_LEFT_TOP: // 左上对其
         glm_translate(guiStrGetFix(str), (vec3){0.0f, -(float)y, 0.0f});
+        break;
+    }
+}
+
+#endif
+
+void guiStrAppMode(GUIstr *str)
+{
+    GUIfont *font = str->font;
+
+    float x = 0.0f; // x坐标
+    float y = 0.0f; // y坐标
+    float w = 0.0f; // 宽度
+    float h = 0.0f; // 高度
+
+    for (size_t i = 0; i < str->count; i++)
+    {
+        w += str->strChar[i]->advance;
+    }
+
+    glm_mat4_identity(guiStrGetFix(str));
+    switch (str->mode)
+    {
+    case GUI_STR_MOD_LEFT: // 左对齐
+        glm_translate(guiStrGetFix(str), (vec3){0.0f, font->descent, 0.0f});
+        break;
+    case GUI_STR_MOD_CENTER: // 居中对齐
+        glm_translate(guiStrGetFix(str), (vec3){-(float)w / 2.0f, font->descent, 0.0f});
+        break;
+    case GUI_STR_MOD_CENTER2: // 完全居中对齐
+        glm_translate(guiStrGetFix(str), (vec3){-(float)w / 2.0f, -(font->ascent - font->descent) / 2.0f, 0.0f});
+        break;
+    case GUI_STR_MOD_RIGHT: // 右对齐
+        glm_translate(guiStrGetFix(str), (vec3){-(float)w, font->descent, 0.0f});
+        break;
+    case GUI_STR_MOD_LEFT_TOP: // 左上对其
+        glm_translate(guiStrGetFix(str), (vec3){0.0f, font->descent - font->ascent, 0.0f});
         break;
     }
 }

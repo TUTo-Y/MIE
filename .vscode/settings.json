@@ -105,6 +105,13 @@
         "variant": "c",
         "stb_image_resize2.h": "c",
         "gui_id.h": "c",
-        "gui_control.h": "c"
+        "gui_control.h": "c",
+        "gui_widget_input.h": "c",
+        "gui_draw.h": "c",
+        "gui_fb.h": "c",
+        "gui_widget_login_choice.h": "c",
+        "gui_base.h": "c",
+        "gui_widget_button.h": "c",
+        "gui_widget_log.h": "c"
     }
 }

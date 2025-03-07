@@ -16,7 +16,16 @@ cfg config = {
     .gaussblur_vert = "resource\\gaussblur.vert",
     .gaussblur_frag = "resource\\gaussblur.frag",
     .icon_vert = "resource\\icon.vert",
-    .icon_frag = "resource\\icon.frag"};
+    .icon_frag = "resource\\icon.frag",
+    .font_vert = "resource\\font.vert",
+    .font_frag = "resource\\font.frag",
+    .cc_vert = "resource\\cc.vert",
+    .cc_frag = "resource\\cc.frag",
+    .cc2_vert = "resource\\cc2.vert",
+    .cc2_frag = "resource\\cc2.frag",
+    .user_icon_path = "resource\\user.png",
+    .pass_icon_path = "resource\\pass.png",
+};
 
 bool confInit(const char *configFile)
 {
@@ -52,6 +61,14 @@ bool confInit(const char *configFile)
         fprintf(fp, "gaussblur_frag = %s\n", config.gaussblur_frag);
         fprintf(fp, "icon_vert = %s\n", config.icon_vert);
         fprintf(fp, "icon_frag = %s\n", config.icon_frag);
+        fprintf(fp, "font_vert = %s\n", config.font_vert);
+        fprintf(fp, "font_frag = %s\n", config.font_frag);
+        fprintf(fp, "cc_vert = %s\n", config.cc_vert);
+        fprintf(fp, "cc_frag = %s\n", config.cc_frag);
+        fprintf(fp, "cc2_vert = %s\n", config.cc2_vert);
+        fprintf(fp, "cc2_frag = %s\n", config.cc2_frag);
+        fprintf(fp, "user_icon_path = %s\n", config.user_icon_path);
+        fprintf(fp, "pass_icon_path = %s\n", config.pass_icon_path);
 
         fclose(fp);
         return true;
@@ -164,7 +181,46 @@ bool confInit(const char *configFile)
             strcpy(config.icon_frag, value);
             continue;
         }
-
+        else if (strcmp(key, "font_vert") == 0)
+        {
+            strcpy(config.font_vert, value);
+            continue;
+        }
+        else if (strcmp(key, "font_frag") == 0)
+        {
+            strcpy(config.font_frag, value);
+            continue;
+        }
+        else if (strcmp(key, "cc_vert") == 0)
+        {
+            strcpy(config.cc_vert, value);
+            continue;
+        }
+        else if (strcmp(key, "cc_frag") == 0)
+        {
+            strcpy(config.cc_frag, value);
+            continue;
+        }
+        else if (strcmp(key, "cc2_vert") == 0)
+        {
+            strcpy(config.cc2_vert, value);
+            continue;
+        }
+        else if (strcmp(key, "cc2_frag") == 0)
+        {
+            strcpy(config.cc2_frag, value);
+            continue;
+        }
+        else if (strcmp(key, "user_icon_path") == 0)
+        {
+            strcpy(config.user_icon_path, value);
+            continue;
+        }
+        else if (strcmp(key, "pass_icon_path") == 0)
+        {
+            strcpy(config.pass_icon_path, value);
+            continue;
+        }
         else
         {
             ERROR("第[%2d]行错误配置 : %s\n", lineCount, line);

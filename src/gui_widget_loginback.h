@@ -12,6 +12,30 @@
 #include "config.h"
 #include "resource.h"
 
+typedef struct
+{
+    // 基础数据
+    GLuint loginbackTex;   // 背景纹理
+    GLuint loginbackr2Tex; // 圆角背景纹理
+    int imageW, imageH;    // 图像大小
+    float disW, disH;      // 图像边距
+
+    // 渲染数据
+    GUIdrawr loginback;    // 背景
+    GUIdrawrr loginbackr2; // 圆角背景
+
+    GUIicon user;    // 用户图标
+    GUIicon pass;    // 密码图标
+    GLuint userIcon; // 用户图标
+    GLuint passIcon; // 密码图标
+
+    // 物理数据
+    int movX, movY;   // 当前位置
+    int movDX, movDY; // 要移动的目标
+    double animTime;  // 动画时间
+
+} gui_widget_loginback_struct;
+
 void gui_widget_loginback_registerCall(GUIid id); // 注册控件时的函数
 void gui_widget_loginback_logoffCall(GUIid id);   // 销毁控件时的函数
 

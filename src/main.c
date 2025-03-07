@@ -116,6 +116,9 @@ void Init()
 
     // 初始化资源
     resInit();
+
+    // 加载字体
+    font_default = guiTTFCreate(resGetFile(config.default_ttf_path, NULL, NULL, false), 8, 16, 32, 40, 48, 64, 96, 0);
 }
 
 void Quit()
@@ -169,22 +172,56 @@ void guiPlay(GLFWwindow *window)
 {
     // 初始化控件
     guiWidgetInit(guiIDRegister(GUI_ID_MOUSEMOVE), NULL, NULL, NULL, NULL, NULL, gui_widget_mousemove_eventCall);
+    guiWidgetInit(guiIDRegister(GUI_ID_LOG), gui_widget_log_registerCall, gui_widget_log_logoffCall, NULL, NULL, gui_widget_log_drawCall, NULL);
     guiWidgetInit(guiIDRegister(GUI_ID_LOGINBACK),
                   gui_widget_loginback_registerCall, gui_widget_loginback_logoffCall,
                   gui_widget_loginback_loadCall, gui_widget_loginback_uploadCall,
                   gui_widget_loginback_drawCall, gui_widget_loginback_eventCall);
+    guiWidgetInit(guiIDRegister(GUI_ID_LOGIN_USER), gui_widget_input_registerCall, gui_widget_input_logoffCall, gui_widget_input_loadCall, gui_widget_input_uploadCall, gui_widget_input_drawCall, gui_widget_input_eventCall);
+    guiWidgetInit(guiIDRegister(GUI_ID_LOGIN_PASS), gui_widget_input_registerCall, gui_widget_input_logoffCall, gui_widget_input_loadCall, gui_widget_input_uploadCall, gui_widget_input_drawCall, gui_widget_input_eventCall);
+    guiWidgetInit(guiIDRegister(GUI_ID_LOGIN_BUTTON1), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
+    guiWidgetInit(guiIDRegister(GUI_ID_LOGIN_BUTTON2), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
 
     // 创建窗口
     GUIid winID = guiWindowCreate(guiIDRegister(GUI_ID_WINDOW), window);
 
     // 将控件添加进窗口
-    guiWidgetToControl(GUI_ID2CONTROLP(winID), GUI_ID_MOUSEMOVE,
+    // 窗口移动控件
+    guiWidgetToControl((winID), GUI_ID_MOUSEMOVE,
                        GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
                        0, 0, true);
-    guiWidgetToControl(GUI_ID2CONTROLP(winID), GUI_ID_LOGINBACK,
+    // 日志控件
+    guiWidgetToControl((winID), GUI_ID_LOG,
+                       GUI_WIDGET_CALLFLAG_DRAW,
+                       0, 0, true);
+    // 登录窗口背景控件
+    guiWidgetToControl((winID), GUI_ID_LOGINBACK,
                        GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
-                       20, 20, true);
+                       1000, 1000, true);
+    // 用户名输入框
+    guiWidgetToControl((winID), GUI_ID_LOGIN_USER,
+                       GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_CHAR_MODS | GUI_WIDGET_CALLFLAG_EVENT_KEY | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
+                       800, 100, true);
+    guiWidgetInputSetDefaultText(GUI_ID_LOGIN_USER, L"请输入用户名");
+    guiWidgetInputSetPos(GUI_ID_LOGIN_USER, (vec3){0.0f, 150.0f, 0.0f});
+    // 密码输入框
+    guiWidgetToControl((winID), GUI_ID_LOGIN_PASS,
+                       GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_CHAR_MODS | GUI_WIDGET_CALLFLAG_EVENT_KEY | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
+                       800, 100, true);
+    guiWidgetInputSetDefaultText(GUI_ID_LOGIN_PASS, L"请输入密码");
+    guiWidgetInputSetPasswd(GUI_ID_LOGIN_PASS, true);
+    guiWidgetInputSetPos(GUI_ID_LOGIN_PASS, (vec3){0.0f, 0.0f, 0.0f});
 
+    // 登录按钮
+    guiWidgetToControl((winID), GUI_ID_LOGIN_BUTTON1, GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
+                       800, 100, true);
+    guiWidgetButtonSetText(GUI_ID_LOGIN_BUTTON1, L"登录");
+    guiWidgetButtonSetPos(GUI_ID_LOGIN_BUTTON1, -250, -100, 200, 50);
+    // 注册按钮
+    guiWidgetToControl((winID), GUI_ID_LOGIN_BUTTON2, GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
+                       800, 100, true);
+    guiWidgetButtonSetText(GUI_ID_LOGIN_BUTTON2, L"注册");
+    guiWidgetButtonSetPos(GUI_ID_LOGIN_BUTTON2, 50, -100, 200, 50);
 
     // 开始渲染
     guiWindowStart(winID);
