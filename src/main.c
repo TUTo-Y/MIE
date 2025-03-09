@@ -13,77 +13,23 @@
 #include <locale.h>
 #include <semaphore.h>
 
-#include <stdio.h>
-#if 0
+#if 1
 int main()
 {
-    int w, h;
-    unsigned char *data = stbi_load("anime-girl-3840x2160-cake-cafe-25376.jpeg", &w, &h, NULL, 3);
-    printf("w = %d, h = %d, n = %d\n", w, h);
-    // 将data解析成data1, data2, data3
-    unsigned char *data1 = (unsigned char *)malloc(w * h);
-    unsigned char *data2 = (unsigned char *)malloc(w * h);
-    unsigned char *data3 = (unsigned char *)malloc(w * h);
-    for (int i = 0; i < w * h; i++)
-    {
-        data1[i] = data[i * 3];
-        data2[i] = data[i * 3 + 1];
-        data3[i] = data[i * 3 + 2];
-    }
+    SM3_CTX ctx;
+    uint8_t buf[SM3_DIGEST_SIZE] = {0};
+    sm3_init(&ctx);
+    sm3_update(&ctx, "abc", 3);
+    sm3_update(&ctx, "abc", 3);
+    sm3_finish(&ctx, buf);
 
-    // 保存data1, data2, data3
-    stbi_write_png("r.png", w, h, 1, data1, w);
-    stbi_write_png("g.png", w, h, 1, data2, w);
-    stbi_write_png("b.png", w, h, 1, data3, w);
+    for (int i = 0; i < SM3_DIGEST_SIZE; i++)
+        printf("%d ", (unsigned int)buf[i]);
 
-    // 分别嵌入数据到data1, data2, data3
-    unsigned char *datac[3] = {data1, data2, data3};
-    unsigned char *d = malloc(w * h * 3);
-    for (int i = 0; i < 3; i++)
-    {
-        // 生成随机数
-        for (int i = 0; i < w * h * 3; i++)
-            d[i] = rand() % 256;
-
-        // 分割图像
-        unsigned char *img1, *img2;
-        rdhSplitImage(datac[i], w * h, &img1, &img2);
-
-        // 嵌入数据
-        unsigned char *m = NULL;
-        int mSize = 0;
-        rdhEmbedData(img1, img2, w, h, &m, &mSize, d, w * h * 3);
-
-        // 合并图像
-        rdhCombineImage(img1, img2, w * h, &datac[i]);
-    }
-    free(d);
-    
-    stbi_write_png("r1.png", w, h, 1, data1, w);
-    stbi_write_png("g1.png", w, h, 1, data2, w);
-    stbi_write_png("b1.png", w, h, 1, data3, w);
-
-    // 合并data1, data2, data3
-    for (int i = 0; i < w * h; i++)
-    {
-        data[i * 3] = data1[i];
-        data[i * 3 + 1] = data2[i];
-        data[i * 3 + 2] = data3[i];
-    }
-
-    // 保存合并后的图像
-    stbi_write_png("out.png", w, h, 3, data, w * 3);
-
-    // 释放
-    free(data1);
-    free(data2);
-    free(data3);
-    free(data);
     return 0;
 }
-#endif
-#if 1
 
+#else
 void guiPlay(GLFWwindow *window);
 
 void Init()
@@ -168,6 +114,11 @@ quit:
     return 0;
 }
 
+void test(GUIid id, size_t flag, void *data)
+{
+    guiWidgetLogAddMsg(GUI_ID_LOG, (wchar_t *)data, GUI_WIDGET_LOG_MSG);
+}
+
 void guiPlay(GLFWwindow *window)
 {
     // 初始化控件
@@ -222,6 +173,13 @@ void guiPlay(GLFWwindow *window)
                        800, 100, true);
     guiWidgetButtonSetText(GUI_ID_LOGIN_BUTTON2, L"注册");
     guiWidgetButtonSetPos(GUI_ID_LOGIN_BUTTON2, 50, -100, 200, 50);
+
+    // test
+    guiWidgetLogAddMsg(GUI_ID_LOG, L"测试一般消息框", GUI_WIDGET_LOG_MSG);
+    guiWidgetLogAddMsg(GUI_ID_LOG, L"测试警告消息框", GUI_WIDGET_LOG_WARN);
+    guiWidgetLogAddMsg(GUI_ID_LOG, L"测试错误消息框", GUI_WIDGET_LOG_ERROR);
+    guiWidgetButtonSetBackCall(GUI_ID_LOGIN_BUTTON1, test, 0, L"登录测试");
+    guiWidgetButtonSetBackCall(GUI_ID_LOGIN_BUTTON2, test, 0, L"注册测试");
 
     // 开始渲染
     guiWindowStart(winID);

@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include <gmssl/sm3.h>
+
 #include "rand.h"
 // #include "log.h"
 

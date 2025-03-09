@@ -269,7 +269,7 @@ void guiDrawRCRender(GUIdrawr drawrc)
 
 GUIdrawcc guiDrawCCCreate(float r, vec4 color)
 {
-    GUIdrawcc cc = (GUIdrawcc_t*) malloc(sizeof(GUIdrawcc_t));
+    GUIdrawcc cc = (GUIdrawcc_t *)malloc(sizeof(GUIdrawcc_t));
 
     // 初始化color
     glm_vec4_copy(color, cc->color);
@@ -309,7 +309,6 @@ void guiDrawCC2Render(GUIdrawcc cc2)
     // 绘制
     glBindVertexArray(GUIc.VAO);
     glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, 0);
-
 }
 
 GUIicon guiDrawIconCreate(float width, float height, GLuint texture, vec4 color)
@@ -410,4 +409,78 @@ GLuint guiDrawGaussian(GLuint texture, vec4 pos, int n, float step)
     glDeleteTextures(1, &textureGaussian[0]);
 
     return textureGaussian[1];
+}
+
+/**
+ * ********************************************************************************************************************************
+ */
+/**
+ * 写在一起太难看了，下面这部分和上面分开
+ */
+/**
+ * ********************************************************************************************************************************
+ */
+
+GUIdrawrrc2 guiDrawRRC2Create(vec4 color[4], float r, float vague)
+{
+    GUIdrawrrc2 drawrrc2 = (GUIdrawrrc2_t *)malloc(sizeof(GUIdrawrrc2_t));
+
+    // 初始化halfw, halfh
+    drawrrc2->halfw = 1.0f;
+    drawrrc2->halfh = 1.0f;
+
+    // 初始化fix
+    glm_scale_make(drawrrc2->fix, (vec3){drawrrc2->halfw, drawrrc2->halfh, 1.0f});
+
+    // 初始化model
+    glm_mat4_identity(drawrrc2->model);
+
+    // 初始化r
+    drawrrc2->r = r;
+
+    // 初始化vague
+    drawrrc2->vague = vague;
+
+    // 初始化颜色数据
+    drawrrc2->alpha = 1.0f;
+
+    // 渲染VAO, VBO, EBO
+    float vertex[] = {
+        -1.0f, 1.0f, color[0][0], color[0][1], color[0][2], color[0][3],
+        1.0f, 1.0f, color[1][0], color[1][1], color[1][2], color[1][3],
+        1.0f, -1.0f, color[2][0], color[2][1], color[2][2], color[2][3],
+        -1.0f, -1.0f, color[3][0], color[3][1], color[3][2], color[3][3]};
+    unsigned int indices[] = {
+        0, 1, 2, 3};
+    glGenVertexArrays(1, &drawrrc2->VAO);
+    glBindVertexArray(drawrrc2->VAO);
+    glGenBuffers(1, &drawrrc2->VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, drawrrc2->VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
+    glGenBuffers(1, &drawrrc2->EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawrrc2->EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    return drawrrc2;
+}
+
+void guiDrawRRC2Render(GUIdrawrrc2 drawrrc2)
+{
+    guiShaderUse(program.rrc2);
+
+    // 设置模型矩阵
+    guiShaderUniformMatrix(program.rrc2, "fix", 4fv, (float *)drawrrc2->fix);
+    guiShaderUniformMatrix(program.rrc2, "model", 4fv, (float *)drawrrc2->model);
+    guiShaderUniform(program.rrc2, "r", 1f, drawrrc2->r);
+    guiShaderUniform(program.rrc2, "vague", 1f, drawrrc2->vague);
+    guiShaderUniform(program.rrc2, "halfw", 1f, drawrrc2->halfw);
+    guiShaderUniform(program.rrc2, "halfh", 1f, drawrrc2->halfh);
+    guiShaderUniform(program.rrc2, "alpha", 1f, drawrrc2->alpha);
+
+    // 绘制
+    glBindVertexArray(drawrrc2->VAO);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, 0);
 }

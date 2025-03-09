@@ -46,6 +46,9 @@ typedef struct
     char cc2_vert[PATH_MAX]; // 圆颜色2顶点着色器
     char cc2_frag[PATH_MAX]; // 圆颜色2片段着色器
 
+    char rrc2_vert[PATH_MAX]; // 圆角颜色2顶点着色器
+    char rrc2_frag[PATH_MAX]; // 圆角颜色2片段着色器
+
     char user_icon_path[PATH_MAX]; // 用户图标路径
     char pass_icon_path[PATH_MAX]; // 密码图标路径
 } cfg;

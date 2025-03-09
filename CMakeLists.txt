@@ -15,6 +15,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BUILD_OUTPUT_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BUILD_OUTPUT_DIR})
 
 # 添加子目录
+add_definitions(-DWIN32)
+add_subdirectory(external/GmSSL)
 add_subdirectory(external/glfw)
 add_subdirectory(external/cglm)
 add_subdirectory(src)

@@ -16,9 +16,9 @@
 
 typedef struct
 {
-    wchar_t *msg; // 消息
-    size_t type;  // 类型
-    double time;  // 加入的时间
+    GUIstr *msg; // 消息
+    size_t type; // 类型
+    double time; // 加入的时间
 } GUIlogmsg;
 
 typedef struct
@@ -29,9 +29,7 @@ typedef struct
 
     pthread_mutex_t mutex; // 互斥锁, 用于其他线程向listB添加消息
 
-    vec4 color[3]; // 颜色, 消息颜色，警告颜色，错误颜色
-
-    GUIdrawrr drawrr; // 渲染器
+    GUIdrawrrc2 backColor[3]; // 渲染器
 } GUIwidgetLog;
 
 // 创建和销毁调用函数

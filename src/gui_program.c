@@ -103,6 +103,14 @@ bool guiProgramInit()
     guiShaderUse(program.cc2);
     GUI_PROGRAM_BIND_UNIFORM_BLOCK(program.cc2, "Matrices");
 
+    // 加载圆角颜色2着色器
+    if (0 == (program.rrc2 = guiShaderCreateProgram(resGetFile(config.rrc2_vert, NULL, NULL, false),
+                                                    resGetFile(config.rrc2_frag, NULL, NULL, false),
+                                                    NULL)))
+        return false;
+    guiShaderUse(program.rrc2);
+    GUI_PROGRAM_BIND_UNIFORM_BLOCK(program.rrc2, "Matrices");
+
     // 创建PV块
     glGenBuffers(1, &uboPVBlock);
     glBindBuffer(GL_UNIFORM_BUFFER, uboPVBlock);

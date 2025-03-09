@@ -32,7 +32,7 @@ git submodule update --init --recursive
 ```sh
 mkdir build
 cd build
-cmake -G "MinGW Makefiles" ..
+cmake -G "MinGW Makefiles" -DWIN32=ON ..
 make
 ```
 
@@ -41,7 +41,7 @@ make
 ```sh
 mkdir build
 cd build
-cmake -G "NMake Makefiles" ..
+cmake -G "NMake Makefiles" -DWIN32=ON ..
 nmake
 ```
 

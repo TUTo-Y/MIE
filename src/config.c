@@ -23,6 +23,8 @@ cfg config = {
     .cc_frag = "resource\\cc.frag",
     .cc2_vert = "resource\\cc2.vert",
     .cc2_frag = "resource\\cc2.frag",
+    .rrc2_vert = "resource\\rrc2.vert",
+    .rrc2_frag = "resource\\rrc2.frag",
     .user_icon_path = "resource\\user.png",
     .pass_icon_path = "resource\\pass.png",
 };
@@ -67,6 +69,8 @@ bool confInit(const char *configFile)
         fprintf(fp, "cc_frag = %s\n", config.cc_frag);
         fprintf(fp, "cc2_vert = %s\n", config.cc2_vert);
         fprintf(fp, "cc2_frag = %s\n", config.cc2_frag);
+        fprintf(fp, "rrc2_vert = %s\n", config.rrc2_vert);
+        fprintf(fp, "rrc2_frag = %s\n", config.rrc2_frag);
         fprintf(fp, "user_icon_path = %s\n", config.user_icon_path);
         fprintf(fp, "pass_icon_path = %s\n", config.pass_icon_path);
 
@@ -209,6 +213,16 @@ bool confInit(const char *configFile)
         else if (strcmp(key, "cc2_frag") == 0)
         {
             strcpy(config.cc2_frag, value);
+            continue;
+        }
+        else if (strcmp(key, "rrc2_vert") == 0)
+        {
+            strcpy(config.rrc2_vert, value);
+            continue;
+        }
+        else if (strcmp(key, "rrc2_frag") == 0)
+        {
+            strcpy(config.rrc2_frag, value);
             continue;
         }
         else if (strcmp(key, "user_icon_path") == 0)

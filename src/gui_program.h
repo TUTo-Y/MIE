@@ -25,6 +25,7 @@ typedef struct
     GLuint font;      // 默认字体
     GLuint cc;        // 圆颜色
     GLuint cc2;       // 圆颜色2
+    GLuint rrc2;      // 圆角颜色2
 } GUIprogram;
 
 extern GUIprogram program;

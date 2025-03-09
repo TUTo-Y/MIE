@@ -502,4 +502,111 @@ static inline void guiDrawIconDestroy(GUIicon icon)
  */
 GLuint guiDrawGaussian(GLuint texture, vec4 pos, int n, float step);
 
+/**
+ * ********************************************************************************************************************************
+ */
+/**
+ * 写在一起太难看了，下面这部分和上面分开
+ */
+/**
+ * ********************************************************************************************************************************
+ */
+
+typedef struct
+{
+    GLuint VAO, VBO, EBO;
+    
+    mat4 model;
+    mat4 fix;
+
+    // 圆角信息
+    float halfw, halfh;
+    float r;
+    float vague;
+
+    // 颜色信息
+    float alpha;
+} GUIdrawrrc2_t;
+typedef GUIdrawrrc2_t *GUIdrawrrc2;
+/**
+ * \brief 创建圆角矩形
+ * \param color 颜色, 左上角，右上角，右下角，左下角
+ * \param r 圆角半径
+ * \param vague 模糊度
+ * \return 圆角矩形
+ */
+GUIdrawrrc2 guiDrawRRC2Create(vec4 color[4], float r, float vague);
+
+/**
+ * \brief 设置圆角矩形宽度和高度
+ * \param drawrrc2 圆角矩形
+ * \param width 宽度
+ * \param height 高度
+ */
+static inline void guiDrawRRC2SetWH(GUIdrawrrc2 drawrrc2, float width, float height)
+{
+    drawrrc2->halfw = width / 2.0f;
+    drawrrc2->halfh = height / 2.0f;
+    glm_scale_make(drawrrc2->fix, (vec3){drawrrc2->halfw, drawrrc2->halfh, 1.0f});
+}
+
+/**
+ * \brief 设置圆角矩形model
+ * \param drawrrc2 圆角矩形
+ * \param model model矩阵
+ */
+static inline void guiDrawRRC2SetModel(GUIdrawrrc2 drawrrc2, mat4 model)
+{
+    glm_mat4_copy(model, drawrrc2->model);
+}
+
+/**
+ * \brief 设置圆角矩形半径
+ * \param drawrrc2 圆角矩形
+ * \param r 半径
+ */
+static inline void guiDrawRRC2SetR(GUIdrawrrc2 drawrrc2, float r)
+{
+    drawrrc2->r = r;
+}
+
+/**
+ * \brief 设置圆角矩形模糊度
+ * \param drawrrc2 圆角矩形
+ * \param vague 模糊度
+ */
+static inline void guiDrawRRC2SetVague(GUIdrawrrc2 drawrrc2, float vague)
+{
+    drawrrc2->vague = vague;
+}
+
+/**
+ * \brief 设置圆角矩形透明度
+ * \param drawrrc2 圆角矩形
+ * \param alpha 透明度
+ */
+static inline void guiDrawRRC2SetAlpha(GUIdrawrrc2 drawrrc2, float alpha)
+{
+    drawrrc2->alpha = alpha;
+}
+
+/**
+ * \brief 渲染圆角矩形
+ * \param drawrrc2 圆角矩形
+ */
+void guiDrawRRC2Render(GUIdrawrrc2 drawrrc2);
+
+/**
+ * \brief 销毁圆角矩形
+ * \param drawrrc2 圆角矩形
+ */
+static inline void guiDrawRRC2Destroy(GUIdrawrrc2 drawrrc2)
+{
+    glDeleteVertexArrays(1, &drawrrc2->VAO);
+    glDeleteBuffers(1, &drawrrc2->VBO);
+    glDeleteBuffers(1, &drawrrc2->EBO);
+
+    free(drawrrc2);
+}
+
 #endif // GUI_DRAW_H
