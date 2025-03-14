@@ -38,7 +38,7 @@ void gui_widget_button_logoffCall(GUIid id)
 
     // 释放绘制矩形
     guiDrawRRCDestroy(data->rr);
-    
+
     // 释放绘制圆
     guiDrawCCDestroy(data->cc);
 
@@ -59,18 +59,18 @@ bool gui_widget_button_drawCall(GUIid id)
     GUIwidgetButtonData *data = GUI_ID2WIDGET(id)->data1;
 
     // 使用模板测试需要清空值
-    glClear(GL_DEPTH_BUFFER_BIT);
+    glClear(GL_STENCIL_BUFFER_BIT);
     glStencilMask(0xFF);
 
     // 设置模板测试
-    glStencilFunc(GL_ALWAYS, 2, 0xFF);
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);
     glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 
     // 渲染矩形
     guiDrawRRCRender(data->rr);
 
     // 设置模板测试
-    glStencilFunc(GL_EQUAL, 2, 0xFF);
+    glStencilFunc(GL_EQUAL, 1, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
     // 渲染圆
@@ -91,7 +91,7 @@ bool gui_widget_button_drawCall(GUIid id)
 
     // 恢复模板测试
     glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glStencilMask(0x00);
+    glStencilMask(0xFF);
 
     return true;
 }
@@ -118,7 +118,6 @@ bool gui_widget_button_eventCall(GUIid id, const GUIevent *event)
             {
                 GUI_FLAG_UNSET(data->status, GUI_WIDGET_BUTTON_STATUS_ENTER);
                 CALL(data->onEnter, id, data->flag, data->data);
-                printf("button\n");
 
                 return false;
             }
@@ -156,11 +155,10 @@ bool gui_widget_button_eventCall(GUIid id, const GUIevent *event)
     return true;
 }
 
-
 void guiWidgetButtonSetFont(GUIid id, GUIttf *ttf, int pixels, vec4 color)
 {
     GUIwidgetButtonData *data = GUI_ID2WIDGET(id)->data1;
-    GUIstr *str  = guiStrCreate(ttf, pixels, GUI_STR_MOD_CENTER2, program.font, NULL, color);
+    GUIstr *str = guiStrCreate(ttf, pixels, GUI_STR_MOD_CENTER2, program.font, NULL, color);
     guiStrCpy(str, data->text->strText);
     guiStrDelete(data->text);
     data->text = str;
@@ -169,7 +167,6 @@ void guiWidgetButtonSetFont(GUIid id, GUIttf *ttf, int pixels, vec4 color)
     mat4 model;
     glm_translate_make(model, (vec3){data->pos.x, data->pos.y, 0});
     guiStrSetModel(data->text, model);
-
 }
 
 void guiWidgetButtonSetPos(GUIid id, int x, int y, int width, int height)

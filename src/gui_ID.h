@@ -15,17 +15,16 @@
 enum
 {
     GUI_ID_WINDOW = 0, // 窗口ID
-    GUI_ID_MOUSEMOVE,  // 鼠标移动窗口ID
-    GUI_ID_LOG,        // 日志ID
 
+    GUI_ID_MOUSEMOVE, // 鼠标移动窗口ID
+    GUI_ID_LOG,       // 日志ID
     GUI_ID_LOGINBACK, // 登录背景ID
 
     GUI_ID_LOGIN_USER,    // 登录用户名文本框ID
     GUI_ID_LOGIN_PASS,    // 登录密码文本框ID
     GUI_ID_LOGIN_BUTTON1, // 登录提交按钮ID
     GUI_ID_LOGIN_BUTTON2, // 登录注册按钮ID
-
-    GUI_ID_REGISTER_CHOICE, // 注册用户医生类型
+    GUI_ID_LOGIN_CHOICE,  // 注册选择用户医生类型
 
     GUI_ID_END
 };

@@ -13,6 +13,11 @@
 
 typedef struct
 {
+    char server_ip[PATH_MAX];   // 服务器IP
+    char server_port[PATH_MAX]; // 服务器端口
+
+    char public_key[PATH_MAX]; // 公钥
+
     char default_ttf_path[PATH_MAX]; // 默认字体路径
     char loginback_path[PATH_MAX];   // 登录背景路径
 
@@ -51,6 +56,9 @@ typedef struct
 
     char user_icon_path[PATH_MAX]; // 用户图标路径
     char pass_icon_path[PATH_MAX]; // 密码图标路径
+
+    char login_choice_doctor_path[PATH_MAX];  // 医生图标
+    char login_choice_patient_path[PATH_MAX]; // 患者路径
 } cfg;
 
 extern cfg config;

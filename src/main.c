@@ -1,19 +1,24 @@
-#include "gui.h"
-#include "resource.h"
-#include "config.h"
-#include "stb_image.h"
-#include "stb_image_write.h"
-#include "stb_truetype.h"
-
-#include "rand.h"
-#include "RDH.h"
-#include "vector.h"
 #include <math.h>
 #include <string.h>
 #include <locale.h>
 #include <semaphore.h>
 
-#if 1
+#include "gui.h"
+#include "stb_image.h"
+#include "stb_image_write.h"
+#include "stb_truetype.h"
+
+#include "RDH.h"
+#include "rand.h"
+#include "login.h"
+#include "vector.h"
+#include "config.h"
+#include "resource.h"
+#include "web.h"
+#include "enc.h"
+#include "log.h"
+
+#if 0
 int main()
 {
     SM3_CTX ctx;
@@ -38,6 +43,9 @@ void Init()
     setlocale(LC_ALL, "zh_CN.UTF-8");
     DEBUG("测试glfw版本 : %s\n", glfwGetVersionString());
 
+    // 初始化winsock
+    webInit();
+
     // 初始化glfw
     glfwInit();
     glfwGetError(NULL);
@@ -58,7 +66,7 @@ void Init()
 
     // 初始化配置
     if (confInit("config") == false)
-        ERROR("加载配置文件失败\n");
+        ERR("加载配置文件失败\n");
 
     // 初始化资源
     resInit();
@@ -69,11 +77,14 @@ void Init()
 
 void Quit()
 {
-    /* 释放资源 */
+    // 释放资源
     resQuit();
 
-    /* 释放glfw */
+    // 释放glfw
     glfwTerminate();
+
+    // 释放winsock
+    webQuit();
 }
 
 int main()
@@ -107,6 +118,7 @@ int main()
     // 销毁窗口
     glfwDestroyWindow(window);
 
+    // 退出gui
     guiQuit();
 
 quit:
@@ -114,16 +126,16 @@ quit:
     return 0;
 }
 
-void test(GUIid id, size_t flag, void *data)
-{
-    guiWidgetLogAddMsg(GUI_ID_LOG, (wchar_t *)data, GUI_WIDGET_LOG_MSG);
-}
-
 void guiPlay(GLFWwindow *window)
 {
-    // 初始化控件
+    // 创建窗口
+    GUIid winID = guiWindowCreate(guiIDRegister(GUI_ID_WINDOW), window);
+
+    // 初始化全局控件
     guiWidgetInit(guiIDRegister(GUI_ID_MOUSEMOVE), NULL, NULL, NULL, NULL, NULL, gui_widget_mousemove_eventCall);
     guiWidgetInit(guiIDRegister(GUI_ID_LOG), gui_widget_log_registerCall, gui_widget_log_logoffCall, NULL, NULL, gui_widget_log_drawCall, NULL);
+
+    // 登录注册部分控件
     guiWidgetInit(guiIDRegister(GUI_ID_LOGINBACK),
                   gui_widget_loginback_registerCall, gui_widget_loginback_logoffCall,
                   gui_widget_loginback_loadCall, gui_widget_loginback_uploadCall,
@@ -132,9 +144,7 @@ void guiPlay(GLFWwindow *window)
     guiWidgetInit(guiIDRegister(GUI_ID_LOGIN_PASS), gui_widget_input_registerCall, gui_widget_input_logoffCall, gui_widget_input_loadCall, gui_widget_input_uploadCall, gui_widget_input_drawCall, gui_widget_input_eventCall);
     guiWidgetInit(guiIDRegister(GUI_ID_LOGIN_BUTTON1), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
     guiWidgetInit(guiIDRegister(GUI_ID_LOGIN_BUTTON2), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
-
-    // 创建窗口
-    GUIid winID = guiWindowCreate(guiIDRegister(GUI_ID_WINDOW), window);
+    guiWidgetInit(guiIDRegister(GUI_ID_LOGIN_CHOICE), gui_widget_login_choice_registerCall, gui_widget_login_choice_logoffCall, gui_widget_login_choice_loadCall, gui_widget_login_choice_uploadCall, gui_widget_login_choice_drawCall, gui_widget_login_choice_eventCall);
 
     // 将控件添加进窗口
     // 窗口移动控件
@@ -168,18 +178,13 @@ void guiPlay(GLFWwindow *window)
                        800, 100, true);
     guiWidgetButtonSetText(GUI_ID_LOGIN_BUTTON1, L"登录");
     guiWidgetButtonSetPos(GUI_ID_LOGIN_BUTTON1, -250, -100, 200, 50);
+    guiWidgetButtonSetBackCall(GUI_ID_LOGIN_BUTTON1, loginBackCall, 0, NULL);
     // 注册按钮
     guiWidgetToControl((winID), GUI_ID_LOGIN_BUTTON2, GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
                        800, 100, true);
     guiWidgetButtonSetText(GUI_ID_LOGIN_BUTTON2, L"注册");
     guiWidgetButtonSetPos(GUI_ID_LOGIN_BUTTON2, 50, -100, 200, 50);
-
-    // test
-    guiWidgetLogAddMsg(GUI_ID_LOG, L"测试一般消息框", GUI_WIDGET_LOG_MSG);
-    guiWidgetLogAddMsg(GUI_ID_LOG, L"测试警告消息框", GUI_WIDGET_LOG_WARN);
-    guiWidgetLogAddMsg(GUI_ID_LOG, L"测试错误消息框", GUI_WIDGET_LOG_ERROR);
-    guiWidgetButtonSetBackCall(GUI_ID_LOGIN_BUTTON1, test, 0, L"登录测试");
-    guiWidgetButtonSetBackCall(GUI_ID_LOGIN_BUTTON2, test, 0, L"注册测试");
+    guiWidgetButtonSetBackCall(GUI_ID_LOGIN_BUTTON2, registerBackCall, 0, NULL);
 
     // 开始渲染
     guiWindowStart(winID);

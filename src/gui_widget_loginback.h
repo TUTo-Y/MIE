@@ -12,6 +12,8 @@
 #include "config.h"
 #include "resource.h"
 
+#define GUI_WIDGET_LOGINBACK_DRAW_ICON 0x20
+
 typedef struct
 {
     // 基础数据
@@ -28,6 +30,7 @@ typedef struct
     GUIicon pass;    // 密码图标
     GLuint userIcon; // 用户图标
     GLuint passIcon; // 密码图标
+    bool drawIcon;   // 是否渲染图标
 
     // 物理数据
     int movX, movY;   // 当前位置

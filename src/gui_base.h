@@ -8,10 +8,9 @@
 #define WINDOW_WIDTH 1500
 #define WINDOW_HEIGHT 954
 
+
 #define WINDOW_POS_2_GL_POS_x(x, W) (-((W / 2) - (x)))
 #define WINDOW_POS_2_GL_POS_y(y, H) ((H / 2) - (y))
-// #define GL_POS_2_WINDOW_POS_x(x) ((x) + (WINDOW_WIDTH / 2))
-// #define GL_POS_2_WINDOW_POS_y(y) ((WINDOW_HEIGHT / 2) - (y))
 
 #define PI 3.14159265358979323846
 
@@ -20,7 +19,7 @@
 // 设置默认视图
 #define GUI_SET_DEFAULT_VIEWPORT() glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
 // 默认清屏颜色
-#define GUI_SET_DEFAULT_CLEARCOLOR() glClearColor(0.2f, 0.3f, 0.3f, 1.0f)
+#define GUI_SET_DEFAULT_CLEARCOLOR() glClearColor(0.88f, 0.88f, 0.88f, 1.0f)
 
 // flag操作
 #define GUI_FLAG_CHECK(flag, type) ((flag) & (type))   // 检查

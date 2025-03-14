@@ -145,4 +145,15 @@ static inline void guiWidgetInputDefaultTextColor(GUIid id, vec4 color)
     guiStrSetColor(data1->textRender, color);
 }
 
+/**
+ * \brief 获取文本内容
+ * \param id 控件ID
+ * \return 文本内容
+ */
+static inline wchar_t *guiWidgetInputGetText(GUIid id)
+{
+    GUIwidgetInputData *data1 = (GUIwidgetInputData *)GUI_ID2WIDGET(id)->data1;
+    return wcsdup(data1->textplain);
+}
+
 #endif // GUI_WIDGET_INPUT_H

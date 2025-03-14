@@ -134,6 +134,12 @@ bool gui_widget_log_drawCall(GUIid id)
         listAddNodeInEnd(&log->listT, listGetNodeFromStart(&log->listB));
         pthread_mutex_unlock(&log->mutex);
 
+        // 渲染消息
+        ((GUIlogmsg *)log->listT.fd->data)->msg = guiStrCreate(font_default, 32, GUI_STR_MOD_CENTER2, program.font, NULL, (vec4){0.2f, 0.2f, 0.2f, 1.0f});
+        guiStrCpy(((GUIlogmsg *)log->listT.fd->data)->msg, ((GUIlogmsg *)log->listT.fd->data)->str);
+        free(((GUIlogmsg *)log->listT.fd->data)->str);
+        ((GUIlogmsg *)log->listT.fd->data)->str = NULL;
+
         // 更新时间
         ((GUIlogmsg *)log->listT.fd->data)->time = glfwGetTime();
     }
@@ -178,8 +184,7 @@ void guiWidgetLogAddMsg(GUIid id, const wchar_t *msg, size_t type)
 {
     // 初始化结构体
     GUIlogmsg logmsg;
-    logmsg.msg = guiStrCreate(font_default, 32, GUI_STR_MOD_CENTER2, program.font, NULL, (vec4){0.2f, 0.2f, 0.2f, 1.0f});
-    guiStrCpy(logmsg.msg, msg);
+    logmsg.str = wcsdup(msg);
     logmsg.type = type;
 
     // 添加进入B列表

@@ -7,7 +7,6 @@
 #define LOGINBACK2DISW (((float)WINDOW_WIDTH) * (1.0f - LOGINBACK2SCALE) / 2.0f)
 #define LOGINBACK2DISH (((float)WINDOW_HEIGHT) * (1.0f - LOGINBACK2SCALE) / 2.0f)
 
-
 void gui_widget_loginback_registerCall(GUIid id)
 {
     // 分配内存
@@ -29,7 +28,7 @@ void gui_widget_loginback_registerCall(GUIid id)
 
     if (!(stbir_resize_uint8_linear(data, width, height, 0,
                                     data2, st->imageW, st->imageH, 0, STBIR_RGB)))
-        ERROR("调整大小错误\n");
+        ERR("调整大小错误\n");
 
     // 创建纹理和高斯模糊纹理
     st->loginbackTex = guiTextureCreate(data2, st->imageW, st->imageH, 3, GL_RGB);
@@ -56,7 +55,7 @@ void gui_widget_loginback_registerCall(GUIid id)
     guiDrawIconSetModel(st->user, model);
     glm_translate(model, (vec3){0, -160, 0});
     guiDrawIconSetModel(st->pass, model);
-
+    st->drawIcon = true;
 }
 void gui_widget_loginback_logoffCall(GUIid id)
 {
@@ -118,7 +117,6 @@ void gui_widget_loginback_loadCall(GUIid id)
                          st->movX + st->disW + LOGINBACK2DISW,
                          -st->movY + st->disH + LOGINBACK2DISH,
                          LOGINBACK2WIDTH, LOGINBACK2HEIGHT);
-
 }
 
 void gui_widget_loginback_uploadCall(GUIid id)
@@ -159,10 +157,13 @@ bool gui_widget_loginback_drawCall(GUIid id)
 
     // 渲染圆角背景
     guiDrawRRTRender(st->loginbackr2);
-    
+
     // 渲染图标
-    guiDrawIconRender(st->user);
-    guiDrawIconRender(st->pass);
+    if (st->drawIcon)
+    {
+        guiDrawIconRender(st->user);
+        guiDrawIconRender(st->pass);
+    }
 
     st->animTime = glfwGetTime();
 
@@ -172,13 +173,16 @@ bool gui_widget_loginback_drawCall(GUIid id)
 bool gui_widget_loginback_eventCall(GUIid id, const GUIevent *event)
 {
 
+    gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)GUI_ID2WIDGET(id)->data1;
     if (event->type == GUI_EVENT_TYPE_CURSOR_POS)
     {
-        gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)GUI_ID2WIDGET(id)->data1;
 
         st->movDX = -(event->CursorPos.xpos / (WINDOW_WIDTH / 2.0f)) * st->disW;
         st->movDY = -(event->CursorPos.ypos / (WINDOW_HEIGHT / 2.0f)) * st->disH;
     }
+    else if (event->type == GUI_WIDGET_LOGINBACK_DRAW_ICON)
+    {
+        st->drawIcon = (bool)event->Custom.data1;
+    }
     return true;
 }
-

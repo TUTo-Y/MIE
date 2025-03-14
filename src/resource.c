@@ -62,7 +62,7 @@ uint8_t *resGetFile(const char *fileName, uint8_t **data, size_t *size, bool liv
     FILE *fp = fopen(path, "rb");
     if (fp == NULL)
     {
-        ERROR("资源文件 %s 不存在\n", fileName);
+        ERR("资源文件 %s 不存在\n", fileName);
         return NULL;
     }
 

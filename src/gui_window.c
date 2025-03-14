@@ -163,6 +163,8 @@ void guiWindowStart(GUIid id)
 
     // 模板测试
     glEnable(GL_STENCIL_TEST);
+    glClearStencil(0);
+    glStencilMask(0xFF);
 
     // 帧率控制
     GUIFrame *frame = guiFrameCreate(30);
@@ -180,25 +182,28 @@ void guiWindowStart(GUIid id)
         // 处理任务
         if (0 == sem_trywait(&win->semTask))
         {
-            DEBUG("有任务产生\n");
-            // pthread_mutex_lock(&win->mutexTask);
-            // list *node;
-            // while (node = listGetNodeFromStart(&win->listTask))
-            // {
-            //     // 获取任务
-            //     GUItask *task = (GUItask *)node->data;
+            pthread_mutex_lock(&win->mutexTask);
+            list *node = win->listTask.fd;
+            while (node != &win->listTask)
+            {
+                list *tmp = node;
+                node = node->fd;
+                GUItask *task = tmp->data;
 
-            //     // 处理任务
-            //     pthread_mutex_unlock(&win->mutexTask);
-            //     task->task(win, task->data, task->data2);
+                pthread_mutex_unlock(&win->mutexTask);
+                bool ret = guiTaskRunTask(task);
+                pthread_mutex_lock(&win->mutexTask);
 
-            //     // 释放任务
-            //     listDeleteNode(NULL, node, free);
-
-            //     // 重新加锁
-            //     pthread_mutex_lock(&win->mutexTask);
-            // }
-            // pthread_mutex_unlock(&win->mutexTask);
+                if (ret)
+                {
+                    listDeleteNode(&win->listTask, tmp, free);
+                }
+                else
+                {
+                    sem_post(&win->semTask);
+                }
+            }
+            pthread_mutex_unlock(&win->mutexTask);
         }
 
         // 渲染界面

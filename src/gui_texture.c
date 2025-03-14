@@ -30,7 +30,7 @@ GLuint guiTextureCreate(const unsigned char *data, int width, int height, int ch
         format = GL_RGBA;
         break;
     default:
-        ERROR("无效的颜色通道数:%d\n", channels);
+        ERR("无效的颜色通道数:%d\n", channels);
         return 0;
     }
 

@@ -1,6 +1,9 @@
 #include "config.h"
 
 cfg config = {
+    .server_ip = "192.168.32.129",
+    .server_port = "8899",
+    .public_key = "resource\\public.pem",
     .default_ttf_path = "resource\\Y-B008YeZiGongChangDanDanHei-2.ttf",
     .loginback_path = "resource\\loginback.jpg",
     .img_vert = "resource\\img.vert",
@@ -27,6 +30,8 @@ cfg config = {
     .rrc2_frag = "resource\\rrc2.frag",
     .user_icon_path = "resource\\user.png",
     .pass_icon_path = "resource\\pass.png",
+    .login_choice_doctor_path = "resource\\doctor.png",
+    .login_choice_patient_path = "resource\\patient.png",
 };
 
 bool confInit(const char *configFile)
@@ -39,12 +44,15 @@ bool confInit(const char *configFile)
         fp = fopen(configFile, "w");
         if (fp == NULL)
         {
-            ERROR("创建配置文件失败\n");
+            ERR("创建配置文件失败\n");
             return false;
         }
         DEBUG("写入默认配置...\n");
 
         // 写入新的配置文件
+        fprintf(fp, "server_ip = %s\n", config.server_ip);
+        fprintf(fp, "server_port = %s\n", config.server_port);
+        fprintf(fp, "public_key = %s\n", config.public_key);
         fprintf(fp, "default_ttf_path = %s\n", config.default_ttf_path);
         fprintf(fp, "loginback_path = %s\n", config.loginback_path);
         fprintf(fp, "img_vert = %s\n", config.img_vert);
@@ -73,6 +81,8 @@ bool confInit(const char *configFile)
         fprintf(fp, "rrc2_frag = %s\n", config.rrc2_frag);
         fprintf(fp, "user_icon_path = %s\n", config.user_icon_path);
         fprintf(fp, "pass_icon_path = %s\n", config.pass_icon_path);
+        fprintf(fp, "login_choice_doctor_path = %s\n", config.login_choice_doctor_path);
+        fprintf(fp, "login_choice_patient_path = %s\n", config.login_choice_patient_path);
 
         fclose(fp);
         return true;
@@ -100,12 +110,27 @@ bool confInit(const char *configFile)
         // 解析配置
         if (sscanf(line, "%s = %s", key, value) != 2)
         {
-            ERROR("第[%2d]行错误配置 : %s\n", lineCount, line);
+            ERR("第[%2d]行错误配置 : %s\n", lineCount, line);
             continue;
         }
 
         // 匹配配置
-        if (strcmp(key, "loginback_path") == 0)
+        if (strcmp(key, "server_ip") == 0)
+        {
+            strcpy(config.server_ip, value);
+            continue;
+        }
+        else if (strcmp(key, "server_port") == 0)
+        {
+            strcpy(config.server_port, value);
+            continue;
+        }
+        else if (strcmp(key, "public_key") == 0)
+        {
+            strcpy(config.public_key, value);
+            continue;
+        }
+        else if (strcmp(key, "loginback_path") == 0)
         {
             strcpy(config.loginback_path, value);
             continue;
@@ -235,10 +260,20 @@ bool confInit(const char *configFile)
             strcpy(config.pass_icon_path, value);
             continue;
         }
+        else if (strcmp(key, "login_choice_doctor_path") == 0)
+        {
+            strcpy(config.login_choice_doctor_path, value);
+            continue;
+        }
+        else if (strcmp(key, "login_choice_patient_path") == 0)
+        {
+            strcpy(config.login_choice_patient_path, value);
+            continue;
+        }
         else
         {
-            ERROR("第[%2d]行错误配置 : %s\n", lineCount, line);
-            ERROR("%s %s\n", key, value);
+            ERR("第[%2d]行错误配置 : %s\n", lineCount, line);
+            ERR("%s %s\n", key, value);
         }
     }
 

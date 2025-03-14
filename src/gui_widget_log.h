@@ -16,9 +16,11 @@
 
 typedef struct
 {
-    GUIstr *msg; // 消息
-    size_t type; // 类型
-    double time; // 加入的时间
+    wchar_t *str; // 消息字符串
+    
+    GUIstr *msg;  // 消息
+    size_t type;  // 类型
+    double time;  // 加入的时间
 } GUIlogmsg;
 
 typedef struct

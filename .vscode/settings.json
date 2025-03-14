@@ -112,6 +112,11 @@
         "gui_widget_login_choice.h": "c",
         "gui_base.h": "c",
         "gui_widget_button.h": "c",
-        "gui_widget_log.h": "c"
+        "gui_widget_log.h": "c",
+        "vector.h": "c",
+        "login.h": "c",
+        "gui_task.h": "c",
+        "web.h": "c",
+        "hex.h": "c"
     }
 }

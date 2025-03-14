@@ -159,7 +159,7 @@ GUIfont *guiFontGet(GUIttf *ttf, int pixels)
 
     return &ttf->fontList[ttf->fontCount - 1];
 #else
-    ERROR("不允许新添加字号\n");
+    ERR("不允许新添加字号\n");
     return NULL;
 #endif
 }
@@ -171,7 +171,7 @@ GUIttf *guiTTFCreate(const unsigned char *fontData, ...)
     /* 读取字体信息 */
     if (!stbtt_InitFont(&ttf->fontInfo, fontData, stbtt_GetFontOffsetForIndex(fontData, 0)))
     {
-        ERROR("字体初始化失败\n");
+        ERR("字体初始化失败\n");
         free(ttf);
         return NULL;
     }

@@ -17,6 +17,10 @@ file(GLOB SRC_FILES "${CMAKE_SOURCE_DIR}/src/*.c")                  # src
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
+# 设置编译选项以启用隐藏符号
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+
 # 创建库目标
 add_library(mcore STATIC
     ${STB_SOURCES}
