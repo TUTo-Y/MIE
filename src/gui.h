@@ -38,7 +38,9 @@
 #include "gui_widget_mousemove.h"
 #include "gui_widget_loginback.h"
 #include "gui_widget_login_choice.h"
-
+#include "gui_widget_patient_bigchoice.h"
+#include "gui_widget_img.h"
+#include "gui_widget_wait.h"
 
 bool guiInit();
 

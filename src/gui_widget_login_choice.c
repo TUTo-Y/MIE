@@ -231,7 +231,6 @@ static bool choiceBackCall(size_t flag, void *data)
     guiControlDeleteWidget(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_LOGIN_CHOICE);
 
     // 检查注册的是医生还是患者
-
     wchar_t *user = guiWidgetInputGetText(GUI_ID_LOGIN_USER);
     wchar_t *pass = guiWidgetInputGetText(GUI_ID_LOGIN_PASS);
     wchar_t *user_pass = malloc((wcslen(user) + wcslen(pass) + 2) * sizeof(wchar_t));

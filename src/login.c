@@ -165,10 +165,15 @@ bool loginSuccess(size_t flag, void *data)
     // 医生登录
     if (flag == WEB_MSG_LOGIN_DOCTOR)
     {
+        
     }
     // 患者登录
     else if (flag == WEB_MSG_LOGIN_PATIENT)
     {
+        // 添加患者界面
+        guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_PATIENT_BIGCHOICE,
+                           GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
+                           800, 100, true);
     }
 
     return true;

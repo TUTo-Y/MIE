@@ -59,6 +59,10 @@ typedef struct
 
     char login_choice_doctor_path[PATH_MAX];  // 医生图标
     char login_choice_patient_path[PATH_MAX]; // 患者路径
+
+    char wait_gif_path[PATH_MAX]; // 等待动画路径
+    char wait_gif_vert[PATH_MAX]; // 等待动画顶点着色器
+    char wait_gif_frag[PATH_MAX]; // 等待动画片段着色器
 } cfg;
 
 extern cfg config;

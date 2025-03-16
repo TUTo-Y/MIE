@@ -8,6 +8,10 @@
 #include "stb_image_write.h"
 #include "stb_truetype.h"
 
+
+#include "patient.h"
+#include "doctor.h"
+
 #include "RDH.h"
 #include "rand.h"
 #include "login.h"
@@ -17,20 +21,12 @@
 #include "web.h"
 #include "enc.h"
 #include "log.h"
+#include "choice_file.h"
 
 #if 0
 int main()
 {
-    SM3_CTX ctx;
-    uint8_t buf[SM3_DIGEST_SIZE] = {0};
-    sm3_init(&ctx);
-    sm3_update(&ctx, "abc", 3);
-    sm3_update(&ctx, "abc", 3);
-    sm3_finish(&ctx, buf);
-
-    for (int i = 0; i < SM3_DIGEST_SIZE; i++)
-        printf("%d ", (unsigned int)buf[i]);
-
+    setlocale(LC_ALL, "zh_CN.UTF-8");
     return 0;
 }
 
@@ -134,6 +130,7 @@ void guiPlay(GLFWwindow *window)
     // 初始化全局控件
     guiWidgetInit(guiIDRegister(GUI_ID_MOUSEMOVE), NULL, NULL, NULL, NULL, NULL, gui_widget_mousemove_eventCall);
     guiWidgetInit(guiIDRegister(GUI_ID_LOG), gui_widget_log_registerCall, gui_widget_log_logoffCall, NULL, NULL, gui_widget_log_drawCall, NULL);
+    guiWidgetInit(guiIDRegister(GUI_ID_WAIT), gui_widget_wait_registerCall, gui_widget_wait_logoffCall, gui_widget_wait_loadCall, gui_widget_wait_uploadCall, gui_widget_wait_drawCall, NULL);
 
     // 登录注册部分控件
     guiWidgetInit(guiIDRegister(GUI_ID_LOGINBACK),
@@ -146,7 +143,16 @@ void guiPlay(GLFWwindow *window)
     guiWidgetInit(guiIDRegister(GUI_ID_LOGIN_BUTTON2), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
     guiWidgetInit(guiIDRegister(GUI_ID_LOGIN_CHOICE), gui_widget_login_choice_registerCall, gui_widget_login_choice_logoffCall, gui_widget_login_choice_loadCall, gui_widget_login_choice_uploadCall, gui_widget_login_choice_drawCall, gui_widget_login_choice_eventCall);
 
-    // 将控件添加进窗口
+    // 患者控件
+    guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_BIGCHOICE), gui_widget_patient_bigchoice_registerCall, gui_widget_patient_bigchoice_logoffCall, NULL, NULL, gui_widget_patient_bigchoice_drawCall, gui_widget_patient_bigchoice_eventCall);
+    guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_IMG), gui_widget_img_registerCall, gui_widget_img_logoffCall, gui_widget_img_loadCall, gui_widget_img_uploadCall, gui_widget_img_drawCall, gui_widget_img_eventCall);
+    guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_INPUT_NAME), gui_widget_input_registerCall, gui_widget_input_logoffCall, gui_widget_input_loadCall, gui_widget_input_uploadCall, gui_widget_input_drawCall, gui_widget_input_eventCall);
+    guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_INPUT_AGE), gui_widget_input_registerCall, gui_widget_input_logoffCall, gui_widget_input_loadCall, gui_widget_input_uploadCall, gui_widget_input_drawCall, gui_widget_input_eventCall);
+    guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_INPUT_STATE), gui_widget_input_registerCall, gui_widget_input_logoffCall, gui_widget_input_loadCall, gui_widget_input_uploadCall, gui_widget_input_drawCall, gui_widget_input_eventCall);
+    guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_BUTTON_CHOICE), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
+    guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_BUTTON_UPLOAD), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
+    /* 将控件添加进窗口 */
+
     // 窗口移动控件
     guiWidgetToControl((winID), GUI_ID_MOUSEMOVE,
                        GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,

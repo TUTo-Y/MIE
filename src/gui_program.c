@@ -111,6 +111,15 @@ bool guiProgramInit()
     guiShaderUse(program.rrc2);
     GUI_PROGRAM_BIND_UNIFORM_BLOCK(program.rrc2, "Matrices");
 
+    // 加载等待动画着色器
+    if (0 == (program.wait_gif = guiShaderCreateProgram(resGetFile(config.wait_gif_vert, NULL, NULL, false),
+                                                       resGetFile(config.wait_gif_frag, NULL, NULL, false),
+                                                       NULL)))
+        return false;
+    guiShaderUse(program.wait_gif);
+    GUI_PROGRAM_BIND_UNIFORM_BLOCK(program.wait_gif, "Matrices");
+    guiShaderUniform(program.wait_gif, "Texture", 1i, 0);
+
     // 创建PV块
     glGenBuffers(1, &uboPVBlock);
     glBindBuffer(GL_UNIFORM_BUFFER, uboPVBlock);

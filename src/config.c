@@ -1,7 +1,8 @@
 #include "config.h"
 
 cfg config = {
-    .server_ip = "192.168.32.129",
+    .server_ip = "192.168.32.128", // 本地服务器
+    // .server_ip = "39.99.32.130", // 远程服务器
     .server_port = "8899",
     .public_key = "resource\\public.pem",
     .default_ttf_path = "resource\\Y-B008YeZiGongChangDanDanHei-2.ttf",
@@ -32,6 +33,9 @@ cfg config = {
     .pass_icon_path = "resource\\pass.png",
     .login_choice_doctor_path = "resource\\doctor.png",
     .login_choice_patient_path = "resource\\patient.png",
+    .wait_gif_path = "resource\\wait.gif",
+    .wait_gif_vert = "resource\\wait.vert",
+    .wait_gif_frag = "resource\\wait.frag",
 };
 
 bool confInit(const char *configFile)
@@ -83,6 +87,9 @@ bool confInit(const char *configFile)
         fprintf(fp, "pass_icon_path = %s\n", config.pass_icon_path);
         fprintf(fp, "login_choice_doctor_path = %s\n", config.login_choice_doctor_path);
         fprintf(fp, "login_choice_patient_path = %s\n", config.login_choice_patient_path);
+        fprintf(fp, "wait_gif_path = %s\n", config.wait_gif_path);
+        fprintf(fp, "wait_gif_vert = %s\n", config.wait_gif_vert);
+        fprintf(fp, "wait_gif_frag = %s\n", config.wait_gif_frag);
 
         fclose(fp);
         return true;
@@ -268,6 +275,21 @@ bool confInit(const char *configFile)
         else if (strcmp(key, "login_choice_patient_path") == 0)
         {
             strcpy(config.login_choice_patient_path, value);
+            continue;
+        }
+        else if (strcmp(key, "wait_gif_path") == 0)
+        {
+            strcpy(config.wait_gif_path, value);
+            continue;
+        }
+        else if (strcmp(key, "wait_gif_vert") == 0)
+        {
+            strcpy(config.wait_gif_vert, value);
+            continue;
+        }
+        else if (strcmp(key, "wait_gif_frag") == 0)
+        {
+            strcpy(config.wait_gif_frag, value);
             continue;
         }
         else

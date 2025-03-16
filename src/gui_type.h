@@ -75,7 +75,7 @@ typedef struct
         } Custom;        // 自定义事件
     };
 
-    GUIpos mousePos;   // 鼠标位置，中心坐标系，CursorPos
+    GUIpos mousePos;    // 鼠标位置，中心坐标系，CursorPos
     GUIsize fatherSize; // 父控件大小
 } GUIevent;
 

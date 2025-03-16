@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include <glad.h>
 #include <GLFW/glfw3.h>
@@ -24,6 +25,16 @@
  * \note 该函数会创建一个纹理并返回纹理ID
  */
 GLuint guiTextureCreate(const unsigned char *data, int width, int height, int channels, GLint textureFormat);
+
+/**
+ * \brief 创建灰度图像纹理
+ * \param data 图像数据
+ * \param width 图像宽度
+ * \param height 图像高度
+ * \return GLuint 纹理ID
+ */
+GLuint guiTextureCreate2Gary(const unsigned char *data, int width, int height);
+
 
 /**
  * \brief 创建空纹理

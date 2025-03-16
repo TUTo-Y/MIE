@@ -142,7 +142,7 @@ static inline void guiWidgetInputSetDefaultText(GUIid id, const wchar_t *textRen
 static inline void guiWidgetInputDefaultTextColor(GUIid id, vec4 color)
 {
     GUIwidgetInputData *data1 = (GUIwidgetInputData *)GUI_ID2WIDGET(id)->data1;
-    guiStrSetColor(data1->textRender, color);
+    guiStrSetColor(data1->textDefault, color);
 }
 
 /**

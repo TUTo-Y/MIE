@@ -20,11 +20,21 @@ enum
     GUI_ID_LOG,       // 日志ID
     GUI_ID_LOGINBACK, // 登录背景ID
 
+    GUI_ID_WAIT, // 等待ID
+
     GUI_ID_LOGIN_USER,    // 登录用户名文本框ID
     GUI_ID_LOGIN_PASS,    // 登录密码文本框ID
     GUI_ID_LOGIN_BUTTON1, // 登录提交按钮ID
     GUI_ID_LOGIN_BUTTON2, // 登录注册按钮ID
     GUI_ID_LOGIN_CHOICE,  // 注册选择用户医生类型
+
+    GUI_ID_PATIENT_BIGCHOICE,     // 患者界面巨大的加号
+    GUI_ID_PATIENT_IMG,           // 患者界面图像控件
+    GUI_ID_PATIENT_INPUT_NAME,    // 患者界面姓名输入框
+    GUI_ID_PATIENT_INPUT_AGE,     // 患者界面姓名输入框
+    GUI_ID_PATIENT_INPUT_STATE,   // 患者界面描述输入框
+    GUI_ID_PATIENT_BUTTON_CHOICE, // 重新选择图片按钮
+    GUI_ID_PATIENT_BUTTON_UPLOAD, // 上传按钮
 
     GUI_ID_END
 };

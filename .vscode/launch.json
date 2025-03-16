@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/MIE.exe",
             "args": [],
-            "stopAtEntry": true,
+            "stopAtEntry": false,
             // "cwd": "${fileDirname}",
             "cwd": "${workspaceFolder}/build",
             "environment": [],

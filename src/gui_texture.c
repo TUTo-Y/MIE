@@ -1,15 +1,5 @@
 #include "gui_texture.h"
 
-/**
- * @brief 创建纹理
- * @param data 图像数据
- * @param width 图像宽度
- * @param height 图像高度
- * @param channels 图像通道数
- * @param textureFormat 输出格式(GL_RGB, GL_RGBA等), 默认为0
- * @return GLuint 纹理ID
- * @note 该函数会创建一个纹理并返回纹理ID
- */
 GLuint guiTextureCreate(const unsigned char *data, int width, int height, int channels, GLint textureFormat)
 {
     GLenum format;
@@ -51,12 +41,47 @@ GLuint guiTextureCreate(const unsigned char *data, int width, int height, int ch
 
     // 设置字节对齐方式
     // if (format == GL_RED)
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     // 生成纹理
     glTexImage2D(GL_TEXTURE_2D, 0, textureFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 
     glGenerateMipmap(GL_TEXTURE_2D);
+
+    return texture;
+}
+
+GLuint guiTextureCreate2Gary(const unsigned char *data, int width, int height)
+{
+    uint32_t *convertedData = (uint32_t *)malloc(width * height * 4);
+    for (int i = 0; i < width * height; i++)
+    {
+        uint32_t c = data[i];
+        convertedData[i] = 0xFF000000 | c << 16 | c << 8 | c;
+    }
+    // 生成Texture
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // 设置字节对齐方式
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    // 生成纹理
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, convertedData);
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    // 释放内存
+    free(convertedData);
 
     return texture;
 }

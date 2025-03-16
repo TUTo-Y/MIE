@@ -117,6 +117,15 @@
         "login.h": "c",
         "gui_task.h": "c",
         "web.h": "c",
-        "hex.h": "c"
+        "hex.h": "c",
+        "choice_file.h": "c",
+        "glfw3native.h": "c",
+        "commdlg.h": "c",
+        "gui_widget_patient_bigchoice.h": "c",
+        "gui_widget_img.h": "c",
+        "patient.h": "c",
+        "gui_widget_wait.h": "c",
+        "sm4.h": "c",
+        "pack.h": "c"
     }
 }

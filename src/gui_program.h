@@ -26,6 +26,8 @@ typedef struct
     GLuint cc;        // 圆颜色
     GLuint cc2;       // 圆颜色2
     GLuint rrc2;      // 圆角颜色2
+
+    GLuint wait_gif; // 等待动画
 } GUIprogram;
 
 extern GUIprogram program;

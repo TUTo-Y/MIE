@@ -7,6 +7,7 @@
 
 #include <gmssl/sm2.h>
 #include <gmssl/sm3.h>
+#include <gmssl/sm4.h>
 #include <gmssl/zuc.h>
 
 #include "log.h"
@@ -64,6 +65,19 @@ static inline void encStr2Hash(const char *str, uint8_t hash[SM3_DIGEST_SIZE])
 static inline void encHashPrint(const uint8_t hash[SM3_DIGEST_SIZE])
 {
     putbin2hex(hash, SM3_DIGEST_SIZE, stdout);
+}
+
+/**
+ * \brief 使用SM4加密数据
+ * \param key 密钥
+ * \param iv 偏移量
+ * \param plain 明文
+ * \param plain_len 明文长度
+ * \param cipher 密文
+ */
+static inline void encSm4KeyIv(uint8_t key[SM4_KEY_SIZE], uint8_t iv[SM4_KEY_SIZE])
+{
+    encZucKeyIv(key, iv);
 }
 
 /**

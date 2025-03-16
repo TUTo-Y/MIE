@@ -326,7 +326,8 @@ void guiControlRunDrawCallback(Vector *vector)
         GUIcallback *callback = (GUIcallback *)(vector->data + i * vector->step);
         // 检查是否启用
         if (callback->enable)
-            CALL(callback->drawCall, callback->id);
+            if (CALL(callback->drawCall, callback->id) == false)
+                break;
     }
 }
 
