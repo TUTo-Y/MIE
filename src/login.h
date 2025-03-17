@@ -4,6 +4,8 @@
 #include "gui.h"
 #include "gui_widget_loginback.h"
 #include "web.h"
+#include "patient.h"
+#include "doctor.h"
 
 #define LOGIN_WEB_TASK_DOCTOR 1   // 医生
 #define LOGIN_WEB_TASK_PATIENT 2  // 患者

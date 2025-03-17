@@ -41,9 +41,13 @@
 #include "gui_widget_patient_bigchoice.h"
 #include "gui_widget_img.h"
 #include "gui_widget_wait.h"
+#include "gui_widget_text.h"
+#include "gui_widget_doctor_wait.h"
 
 bool guiInit();
 
 void guiQuit();
+
+void guiSetDefaultClearColor(float r, float g, float b, float a);
 
 #endif // GUI_H

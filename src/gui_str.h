@@ -43,10 +43,10 @@
 #define guiStrGetModel(str) ((str)->model)
 #define guiStrGetColor(str) ((str)->color)
 
-#define guiStrSetFix(str, fix) glm_mat4_copy(fix, guiStrGetFix(str))         // 设置修正矩阵
-#define guiStrSetModel(str, model) glm_mat4_copy(model, guiStrGetModel(str)) // 设置模型矩阵
+#define guiStrSetFix(str, fix) glm_mat4_copy(fix, guiStrGetFix(str))           // 设置修正矩阵
+#define guiStrSetModel(str, model) glm_mat4_copy(model, guiStrGetModel(str))   // 设置模型矩阵
 #define guiStrSetColor(str, color) glm_vec4_copy((color), guiStrGetColor(str)) // 设置颜色
-#define guiStrSetMode(str, mode) ((str)->mode = mode)                        // 设置字符串对齐模式
+#define guiStrSetMode(str, md) ((str)->mode = md)                          // 设置字符串对齐模式
 
 #define guiStrAppFix(str, fix) guiShaderUniformMatrixFromID((str)->fixLoc, 4fv, (float *)(fix))              // 更新修正矩阵数据
 #define guiStrAppModel(str) guiShaderUniformMatrixFromID((str)->modelLoc, 4fv, (float *)guiStrGetModel(str)) // 更新模型矩阵数据

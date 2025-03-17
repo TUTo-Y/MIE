@@ -18,8 +18,11 @@
 
 // 设置默认视图
 #define GUI_SET_DEFAULT_VIEWPORT() glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+
+
 // 默认清屏颜色
-#define GUI_SET_DEFAULT_CLEARCOLOR() glClearColor(0.9f, 0.9f, 0.95f, 1.0f)
+extern vec4 default_color;
+#define GUI_SET_DEFAULT_CLEARCOLOR() glClearColor(default_color[0], default_color[1], default_color[2], default_color[3])
 
 // flag操作
 #define GUI_FLAG_CHECK(flag, type) ((flag) & (type))   // 检查

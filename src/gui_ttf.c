@@ -1,7 +1,7 @@
 #include "gui_ttf.h"
 
 #define GUI_TTF_FONT_R 3                         // 文字预留空间
-#define GUI_TTF_FONT_INIT 0x20                   // 初始化文字数量
+#define GUI_TTF_FONT_INIT 0x100                  // 初始化文字数量
 #define GUI_TTF_FONT_ADD (GUI_TTF_FONT_INIT * 2) // 每次添加文字数量
 
 GUIttf *font_default = NULL;

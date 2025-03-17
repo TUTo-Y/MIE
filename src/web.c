@@ -96,21 +96,20 @@ void webInit()
     // 生成客户端公钥
     sm2_key_generate(&keyClient);
 
-    // 生成公钥DER编码
-    uint8_t buf[SM2_PRIVATE_KEY_BUF_SIZE] = {0};
-    uint8_t *public_der = buf;
-    size_t public_der_len = 0;
-
-    sm2_public_key_info_to_der(&keyClient, &public_der, &public_der_len);
+    // 生成公钥PEM编码
+    uint8_t *public_pem = NULL;
+    size_t public_pem_len = 0;
+    encSM2PublicSave(&keyClient, &public_pem, &public_pem_len);
 
     // 发送公钥
-    ENCkem kem = encKEMEnc(public_der, public_der_len, &keyServer);
+    ENCkem kem = encKEMEnc(public_pem, public_pem_len, &keyServer);
     webSendFlag(sockfd, WEB_MSG_CPUBLIC_KEY);
     webSendData(sockfd, (const char *)kem, encKEMSizeKEM(kem));
 
     // 连接成功
     SUCESS("(%s:%s)连接服务器成功: \n", config.server_ip, config.server_port);
     encKEMFree(kem);
+    free(public_pem);
 
     // 创建线程
     listInitList(&WebTaskSend.task);

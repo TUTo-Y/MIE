@@ -1,5 +1,7 @@
 #include "gui.h"
 
+vec4 default_color = {0.9f, 0.9f, 0.95f, 1.0f};
+
 bool guiInit()
 {
     // 设置默认视图
@@ -34,4 +36,12 @@ void guiQuit()
 
     // 控件销毁
     guiIDQuit();
+}
+
+void guiSetDefaultClearColor(float r, float g, float b, float a)
+{
+    default_color[0] = r;
+    default_color[1] = g;
+    default_color[2] = b;
+    default_color[3] = a;
 }

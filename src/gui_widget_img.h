@@ -27,6 +27,7 @@ void gui_widget_img_logoffCall(GUIid id);   // 销毁控件时的函数
 
 // 回调函数
 void gui_widget_img_loadCall(GUIid id);   // 添加控件时
+void gui_widget_img_loadCall(GUIid id);   // 添加控件时
 void gui_widget_img_uploadCall(GUIid id); // 移除控件时
 
 bool gui_widget_img_drawCall(GUIid id);                         // 绘制, 返回值为是否继续调用其他响应函数

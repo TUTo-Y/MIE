@@ -9,6 +9,11 @@ struct
 } upload;
 
 void *patientButtonUploadThread(void *data);
+bool patientCheck(size_t flag, void *data);
+void patientAllow(GUIid id, size_t flag, void *data);
+void *patientWaitThread(void *data);
+void patientOver(GUIid id, size_t flag, void *data);
+bool patientAdvice(size_t flag, void *data);
 
 bool patientChoiceImage(size_t wh, void *data)
 {
@@ -79,6 +84,45 @@ bool patientChoiceImage(size_t wh, void *data)
     guiWidgetButtonSetBackCall(GUI_ID_PATIENT_BUTTON_CHOICE, patientButtonChoiceBackcall, 0, NULL);
     guiWidgetButtonSetBackCall(GUI_ID_PATIENT_BUTTON_UPLOAD, patientButtonUploadBackcall, 0, NULL);
 
+    // 启用等待控件，但不显示
+    guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_WAIT, GUI_WIDGET_CALLFLAG_DRAW, 800, 100, false);
+    mat4 model;
+    glm_translate_make(model, (vec3){0.0f, -300.0f, 0.0f});
+    guiWidgetWaitSetModel(GUI_ID_WAIT, model);
+
+    // 检查和选择控件
+    guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_PATIENT_CHECK_TEXT, GUI_WIDGET_CALLFLAG_DRAW, 800, 100, false);
+    guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_PATIENT_CHECK_BUTTON1, GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS, 800, 100, false);
+    guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_PATIENT_CHECK_BUTTON2, GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS, 800, 100, false);
+
+    glm_translate_make(model, (vec3){0.0f, -250.0f, 0.0f});
+    guiStrCpy(guiWidgetTextGetStr(GUI_ID_PATIENT_CHECK_TEXT), L"Text");
+
+    guiWidgetButtonSetText(GUI_ID_PATIENT_CHECK_BUTTON1, L"允许");
+    guiWidgetButtonSetText(GUI_ID_PATIENT_CHECK_BUTTON2, L"不允许");
+
+    guiWidgetButtonSetPos(GUI_ID_PATIENT_CHECK_BUTTON1, -550, -300, 300, 100);
+    guiWidgetButtonSetPos(GUI_ID_PATIENT_CHECK_BUTTON2, 250, -300, 300, 100);
+
+    guiWidgetButtonSetColor(GUI_ID_PATIENT_CHECK_BUTTON1, (vec4){0xe4 / 255.0f, 0xf9 / 255.0f, 0xf5 / 255.0f, 1.0f}, (vec4){0x30 / 255.0f, 0xe3 / 255.0f, 0xca / 255.0f, 1.0f});
+    guiWidgetButtonSetColor(GUI_ID_PATIENT_CHECK_BUTTON2, (vec4){0xff / 255.0f, 0xaa / 255.0f, 0xa6 / 255.0f, 1.0f}, (vec4){0xff / 255.0f, 0x8c / 255.0f, 0x94 / 255.0f, 1.0f});
+
+    guiWidgetButtonSetBackCall(GUI_ID_PATIENT_CHECK_BUTTON1, patientAllow, 1, NULL);
+    guiWidgetButtonSetBackCall(GUI_ID_PATIENT_CHECK_BUTTON2, patientAllow, 0, NULL);
+
+    // 获取建议的控件
+    guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_PATIENT_ADVICE_TEXT, GUI_WIDGET_CALLFLAG_DRAW, 800, 100, false);
+    guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_PATIENT_ADVICE_BUTTON, GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS, 800, 100, false);
+
+    GUIstr *advice = guiWidgetTextGetStr(GUI_ID_PATIENT_ADVICE_TEXT);
+    glm_translate_make(model, (vec3){0.0f, -200.0f, 0.0f});
+    guiStrSetModel(advice, model);
+
+    guiWidgetButtonSetText(GUI_ID_PATIENT_ADVICE_BUTTON, L"确定");
+    guiWidgetButtonSetPos(GUI_ID_PATIENT_ADVICE_BUTTON, -100, -260, 200, 100);
+    guiWidgetButtonSetColor(GUI_ID_PATIENT_ADVICE_BUTTON, (vec4){0x0b / 255.0f, 0xe8 / 255.0f, 0x81 / 255.0f, 1.0f}, (vec4){0x05 / 255.0f, 0xc4 / 255.0f, 0x6b / 255.0f, 1.0f});
+    guiWidgetButtonSetBackCall(GUI_ID_PATIENT_ADVICE_BUTTON, patientOver, 0, NULL);
+
     return true;
 }
 
@@ -113,15 +157,17 @@ void patientButtonUploadBackcall(GUIid id, size_t flag, void *data)
 {
     guiWidgetLogAddMsg(GUI_ID_LOG, L"上传图像", GUI_WIDGET_LOG_WARN);
 
+    // 禁用文本框的消息
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_INPUT_NAME, GUI_WIDGET_CALLFLAG_EVENT, false);
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_INPUT_AGE, GUI_WIDGET_CALLFLAG_EVENT, false);
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_INPUT_STATE, GUI_WIDGET_CALLFLAG_EVENT, false);
+
     // 禁用按钮
     guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_BUTTON_UPLOAD, GUI_WIDGET_CALLFLAG_ALL, false);
     guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_BUTTON_CHOICE, GUI_WIDGET_CALLFLAG_ALL, false);
 
-    // 启用控件
-    guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_WAIT, GUI_WIDGET_CALLFLAG_DRAW, 800, 100, true);
-    mat4 model;
-    glm_translate_make(model, (vec3){0.0f, -300.0f, 0.0f});
-    guiWidgetWaitSetModel(GUI_ID_WAIT, model);
+    // 启用等待控件
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_WAIT, GUI_WIDGET_CALLFLAG_DRAW, true);
 
     // 保存数据
     GUIwidgetimg *st = (GUIwidgetimg *)GUI_ID2WIDGET(GUI_ID_PATIENT_IMG)->data1;
@@ -137,24 +183,23 @@ void patientButtonUploadBackcall(GUIid id, size_t flag, void *data)
     // 创建线程用来上传数据
     pthread_t thread; // 线程标识符
     pthread_create(&thread, NULL, patientButtonUploadThread, NULL);
+    pthread_detach(thread);
 }
 // 任务函数
 void *patientButtonUploadThread(void *data)
 {
     /* 生成图像加密密钥key1 */
     uint64_t key1 = rand();
-    DEBUG("key1: %llx\n", key1);
     /* 生成图像加密密钥key2 */
     uint8_t key2[SM4_KEY_SIZE * 2];
     encSm4KeyIv(&key2[0], &key2[SM4_KEY_SIZE]);
-    DEBUG("key2: %llx %llx %llx %llx\n", ((uint64_t *)key2)[0], ((uint64_t *)key2)[1], ((uint64_t *)key2)[2], ((uint64_t *)key2)[3]);
-    SM4_CBC_CTX sm4_key;
-    sm4_cbc_encrypt_init(&sm4_key, &key2[0], &key2[SM4_KEY_SIZE]);
 
     /* 加密数据 */
     PACKbuf packbuf;
     size_t packlen;
     size_t packlen2;
+    SM4_CBC_CTX sm4_key;
+    sm4_cbc_encrypt_init(&sm4_key, &key2[0], &key2[SM4_KEY_SIZE]);
     sm4_cbc_encrypt_update(&sm4_key, (uint8_t *)&upload.pack, sizeof(PACK), (uint8_t *)&packbuf, &packlen);
     sm4_cbc_encrypt_finish(&sm4_key, ((char *)&packbuf) + packlen, &packlen2);
     packlen += packlen2;
@@ -200,15 +245,125 @@ void *patientButtonUploadThread(void *data)
     // 释放冗余数据
     encKEMFree(kem);
     free(upload.img);
-    free(m);
-    free(img1);
-    free(img2);
 
+    FLAG t;
     /* 开始监听模式, 直到下载 */
-    while (webRecvFlag(sockfd) == WEB_MSG_PAITENT_DOWNLOAD)
+    while ((t = webRecvFlag(sockfd)) != WEB_MSG_PAITENT_CHECK)
         ;
-
-    /* 下载服务器的请求 */
+    /* 添加任务让用户确认 */
+    char *name = webRecvData(sockfd, NULL, NULL);
+    guiTaskAddTask(patientCheck, 0, name);
 
     return NULL;
+}
+
+bool patientCheck(size_t flag, void *data)
+{
+    // 禁用等待状态
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_WAIT, GUI_WIDGET_CALLFLAG_ALL, false);
+    // 启用控件
+    wchar_t name[0x40];
+    wcscpy(name, L"是否允许");
+    mbstowcs(name + wcslen(name), data, strlen(data));
+    wcscat(name, L"检查?");
+    guiStrCpy(guiWidgetTextGetStr(GUI_ID_PATIENT_CHECK_TEXT), name);
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_CHECK_TEXT, GUI_WIDGET_CALLFLAG_ALL, true);
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_CHECK_BUTTON1, GUI_WIDGET_CALLFLAG_ALL, true);
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_CHECK_BUTTON2, GUI_WIDGET_CALLFLAG_ALL, true);
+    free(data);
+
+    return true;
+}
+
+// 允许
+void patientAllow(GUIid id, size_t flag, void *data)
+{
+    // 禁用控件
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_CHECK_TEXT, GUI_WIDGET_CALLFLAG_ALL, false);
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_CHECK_BUTTON1, GUI_WIDGET_CALLFLAG_ALL, false);
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_CHECK_BUTTON2, GUI_WIDGET_CALLFLAG_ALL, false);
+
+    if (flag) // 允许
+    {
+        // 告诉服务器允许上传
+        webSendFlag(sockfd, WEB_MSG_PAITENT_YES);
+
+        // 启用控件
+        guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_WAIT, GUI_WIDGET_CALLFLAG_ALL, true);
+
+        // 创建等待线程
+        pthread_t thread;
+        pthread_create(&thread, NULL, patientWaitThread, NULL);
+        pthread_detach(thread);
+    }
+    else // 不允许
+    {
+        // 告诉服务器不允许上传
+        webSendFlag(sockfd, WEB_MSG_PAITENT_NO);
+
+        // 文本框的消息
+        guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_INPUT_NAME, GUI_WIDGET_CALLFLAG_EVENT, true);
+        guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_INPUT_AGE, GUI_WIDGET_CALLFLAG_EVENT, true);
+        guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_INPUT_STATE, GUI_WIDGET_CALLFLAG_EVENT, true);
+
+        // 按钮
+        guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_BUTTON_UPLOAD, GUI_WIDGET_CALLFLAG_ALL, true);
+        guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_BUTTON_CHOICE, GUI_WIDGET_CALLFLAG_ALL, true);
+    }
+}
+void *patientWaitThread(void *t)
+{
+    webRecvFlag(sockfd);
+    // 接受数据
+    ENCkem kem = (ENCkem)webRecvData(sockfd, NULL, NULL);
+    uint8_t *data = encKEMDec(kem, &keyClient);
+    size_t data_size = encKEMSizeText(kem);
+    encKEMFree(kem);
+    memcpy(&upload.pack.advice, data, data_size);
+    free(data);
+
+    // 添加控件启动
+    guiTaskAddTask(patientAdvice, 0, NULL);
+
+    return NULL;
+}
+
+bool patientAdvice(size_t flag, void *data)
+{
+    // 禁用控件
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_WAIT, GUI_WIDGET_CALLFLAG_ALL, false);
+
+    // 设置控件
+    wchar_t advice[0x50];
+    wcscpy(advice, L"医生建议: ");
+    wcscat(advice, upload.pack.advice);
+    guiStrCpy(guiWidgetTextGetStr(GUI_ID_PATIENT_ADVICE_TEXT), advice);
+    
+    // 启用控件
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_ADVICE_TEXT, GUI_WIDGET_CALLFLAG_ALL, true);
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_ADVICE_BUTTON, GUI_WIDGET_CALLFLAG_ALL, true);
+
+    return true;
+
+}
+bool patientOverTask(size_t flag, void *data)
+{
+
+    // 禁用控件
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_ADVICE_TEXT, GUI_WIDGET_CALLFLAG_ALL, false);
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_ADVICE_BUTTON, GUI_WIDGET_CALLFLAG_ALL, false);
+
+    // 启用控件
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_INPUT_NAME, GUI_WIDGET_CALLFLAG_EVENT, true);
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_INPUT_AGE, GUI_WIDGET_CALLFLAG_EVENT, true);
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_INPUT_STATE, GUI_WIDGET_CALLFLAG_EVENT, true);
+
+    // 启用按钮
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_BUTTON_UPLOAD, GUI_WIDGET_CALLFLAG_ALL, true);
+    guiControlEnableCallback(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_PATIENT_BUTTON_CHOICE, GUI_WIDGET_CALLFLAG_ALL, true);
+    return true;
+}
+void patientOver(GUIid id, size_t flag, void *data)
+{
+    guiTaskAddTask(patientOverTask, 0, NULL);
 }

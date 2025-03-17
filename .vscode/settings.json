@@ -126,6 +126,9 @@
         "patient.h": "c",
         "gui_widget_wait.h": "c",
         "sm4.h": "c",
-        "pack.h": "c"
+        "pack.h": "c",
+        "doctor.h": "c",
+        "gui_widget_doctor_wait.h": "c",
+        "ratio": "c"
     }
 }
