@@ -17,9 +17,9 @@ void loginBackCall(GUIid id, size_t flag, void *data);
 // 注册按钮backcall回调
 void registerBackCall(GUIid id, size_t flag, void *data);
 
+
 // 登录或注册的web任务
 void loginWebTask(SOCKET fd, size_t flag, char *data);
-
 // 登录成功后的操作
 bool loginSuccess(size_t flag, void *data);
 

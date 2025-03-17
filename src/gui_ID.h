@@ -36,11 +36,12 @@ enum
     GUI_ID_PATIENT_BUTTON_CHOICE, // 重新选择图片按钮
     GUI_ID_PATIENT_BUTTON_UPLOAD, // 上传按钮
 
-    GUI_ID_PATIENT_CHECK_TEXT,    // 患者界面检查文本
-    GUI_ID_PATIENT_CHECK_BUTTON1, // 患者界面检查按钮
-    GUI_ID_PATIENT_CHECK_BUTTON2, // 患者界面检查按钮
-    GUI_ID_PATIENT_ADVICE_TEXT,   // 患者界面建议输入框
-    GUI_ID_PATIENT_ADVICE_BUTTON, // 患者界面建议输入框
+    GUI_ID_PATIENT_TEXT_CHECK,    // 患者界面检查文本
+    GUI_ID_PATIENT_BUTTON1_CHECK, // 患者界面检查按钮
+    GUI_ID_PATIENT_BUTTON2_CHECK, // 患者界面检查按钮
+
+    GUI_ID_PATIENT_TEXT_ADVICE,   // 患者界面建议输入框
+    GUI_ID_PATIENT_BUTTON_ADVICE, // 患者界面建议输入框
 
     GUI_ID_DOCTOR_TEXT_WAIT,    // 医生等待文字
     GUI_ID_DOCTOR_IMG,          // 医生图像控件
@@ -50,6 +51,10 @@ enum
     GUI_ID_DOCTOR_TEXT_ADVICE,  // 医生文本控件
     GUI_ID_DOCTOR_INPUT_ADVICE, // 医生建议输入框
     GUI_ID_DOCTOR_BUTTON_SEND,  // 医生发送按钮
+
+    GUI_ID_DOCTOR_TEXT_CHECK, // 医生界面检查文本
+    GUI_ID_DOCTOR_BUTTON_YES, // 医生界面是否允许治疗
+    GUI_ID_DOCTOR_BUTTON_NO,  // 医生界面是否允许治疗
 
     GUI_ID_END
 };

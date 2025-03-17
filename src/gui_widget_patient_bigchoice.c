@@ -1,6 +1,5 @@
 #include "gui_widget_patient_bigchoice.h"
 
-
 // 创建和销毁调用函数
 void gui_widget_patient_bigchoice_registerCall(GUIid id)
 {
@@ -75,28 +74,35 @@ bool gui_widget_patient_bigchoice_eventCall(GUIid id, const GUIevent *event)
                 st->press = false;
 
                 // 选择图片
-                char *img_str = choiceImageFile();
-                if (!img_str)
-                {
-                    guiWidgetLogAddMsg(GUI_ID_LOG, L"未选择图片", GUI_WIDGET_LOG_WARN);
-                    break;
-                }
+                // char *img_str = choiceImageFile();
+                // if (!img_str)
+                // {
+                //     guiWidgetLogAddMsg(GUI_ID_LOG, L"未选择图片", GUI_WIDGET_LOG_WARN);
+                //     break;
+                // }
 
-                // 读取图片
-                int width, height, channels;
-                unsigned char *data = stbi_load(img_str, &width, &height, &channels, 1);
-                if (!data)
-                {
-                    guiWidgetLogAddMsg(GUI_ID_LOG, L"加载图片失败", GUI_WIDGET_LOG_ERROR);
-                    free(img_str);
-                    break;
-                }
+                // // 读取图片
+                // int width, height, channels;
+                // unsigned char *data = stbi_load(img_str, &width, &height, &channels, 1);
+                // if (!data)
+                // {
+                //     guiWidgetLogAddMsg(GUI_ID_LOG, L"加载图片失败", GUI_WIDGET_LOG_ERROR);
+                //     free(img_str);
+                //     break;
+                // }
+
+                // // 选择图片
+                // guiTaskAddTask(patientChoiceImage, ((size_t)width) << 32 | height, data);
+
+                // // 释放内存
+                // free(img_str);
 
                 // 选择图片
-                guiTaskAddTask(patientChoiceImage, ((size_t)width) << 32 | height, data);
-
-                // 释放内存
-                free(img_str);
+                patientButtonChoiceBackcall(id, 0, NULL);
+                
+                // 检查如果选择了图片则进入下一步
+                if (((GUIwidgetimg *)GUI_ID2WIDGET(GUI_ID_PATIENT_IMG)->data1)->w != 0)
+                    guiTaskAddTask(patientChoiceImage, 0, NULL);
             }
             // 按钮外谈起
             else if (event->MouseButton.action == GLFW_RELEASE)

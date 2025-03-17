@@ -122,6 +122,8 @@ void loginWebTask(SOCKET fd, size_t flag, char *data)
         {
             FLAG type = webRecvFlag(fd);
             guiWidgetLogAddMsg(GUI_ID_LOG, L"登录成功", GUI_WIDGET_LOG_MSG);
+
+            // 登录成功任务
             guiTaskAddTask(loginSuccess, type, NULL);
         }
         else
@@ -165,94 +167,14 @@ bool loginSuccess(size_t flag, void *data)
     // 患者登录
     if (flag == WEB_MSG_LOGIN_PATIENT)
     {
-        guiSetDefaultClearColor(1.0f, 0.9f, 0.8f, 1.0f);
-        // 添加患者界面
-        guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_PATIENT_BIGCHOICE,
-                           GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
-                           800, 100, true);
+        SUCESS("患者登录成功");
+        patientInit();
     }
     // 医生登录
     else if (flag == WEB_MSG_LOGIN_DOCTOR)
     {
-        guiSetDefaultClearColor(0.8f, 0.9f, 1.0f, 1.0f);
-        // 设置医生等待界面
-        mat4 model;
-        glm_translate_make(model, (vec3){0.0f, -250.0f, 0.0f});
-        guiStrCpy(guiWidgetTextGetStr(GUI_ID_DOCTOR_TEXT_WAIT), L"等待患者上传文件中...");
-
-        // 添加医生等待界面
-        guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_WAIT, GUI_WIDGET_CALLFLAG_DRAW, 0, 100, true);
-        guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_DOCTOR_TEXT_WAIT, GUI_WIDGET_CALLFLAG_DRAW, 0, 100, true);
-
-        // 启用控件
-        guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_DOCTOR_IMG,
-                           GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS | GUI_WIDGET_CALLFLAG_EVENT_KEY | GUI_WIDGET_CALLFLAG_EVENT_SCROLL,
-                           800, 100, false);
-
-        guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_DOCTOR_TEXT_NAME,
-                           GUI_WIDGET_CALLFLAG_DRAW,
-                           800, 100, false);
-        guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_DOCTOR_TEXT_AGE,
-                           GUI_WIDGET_CALLFLAG_DRAW,
-                           800, 100, false);
-        guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_DOCTOR_TEXT_STATE,
-                           GUI_WIDGET_CALLFLAG_DRAW,
-                           800, 100, false);
-        guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_DOCTOR_TEXT_ADVICE,
-                           GUI_WIDGET_CALLFLAG_DRAW,
-                           800, 100, false);
-        guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_DOCTOR_INPUT_ADVICE,
-                           GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_CHAR_MODS | GUI_WIDGET_CALLFLAG_EVENT_KEY | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
-                           800, 100, false);
-        guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_DOCTOR_BUTTON_SEND, GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
-                           800, 100, false);
-
-        // 设置图片显示控件
-        guiWidgetImgSetRect(GUI_ID_DOCTOR_IMG, (GUIrect){-640.0f, 400.0f, 500.0f, 500.0f});
-
-        // 设置四个文本的位置
-        GUIstr *name = guiWidgetTextGetStr(GUI_ID_DOCTOR_TEXT_NAME);
-        GUIstr *age = guiWidgetTextGetStr(GUI_ID_DOCTOR_TEXT_AGE);
-        GUIstr *state = guiWidgetTextGetStr(GUI_ID_DOCTOR_TEXT_STATE);
-        GUIstr *advice = guiWidgetTextGetStr(GUI_ID_DOCTOR_TEXT_ADVICE);
-        guiStrSetMode(name, GUI_STR_MOD_LEFT_TOP);
-        guiStrSetMode(age, GUI_STR_MOD_LEFT_TOP);
-        guiStrSetMode(state, GUI_STR_MOD_LEFT_TOP);
-        guiStrSetMode(advice, GUI_STR_MOD_LEFT_TOP);
-        guiStrAppMode(name);
-        guiStrAppMode(age);
-        guiStrAppMode(state);
-        guiStrAppMode(advice);
-
-        glm_translate_make(model, (vec3){-640.0f, -240.0f, 0.0f});
-        guiStrSetModel(advice, model);
-        glm_translate_make(model, (vec3){100.0f, 0.0f, 0.0f});
-        guiStrSetModel(state, model);
-        glm_translate(model, (vec3){0.0f, 190.0f, 0.0f});
-        guiStrSetModel(age, model);
-        glm_translate(model, (vec3){0.0f, 190.0f, 0.0f});
-        guiStrSetModel(name, model);
-
-        guiStrCpy(advice, L"建议:");
-
-        // 设置输入框
-        guiWidgetInputSetPos(GUI_ID_DOCTOR_INPUT_ADVICE, (vec3){-50.0f, -320.0f, 0.0f});
-        guiWidgetInputSetDefaultText(GUI_ID_DOCTOR_INPUT_ADVICE, L"请输入诊断建议");
-        guiWidgetInputDefaultTextColor(GUI_ID_DOCTOR_INPUT_ADVICE, (vec4){0.5f, 0.5f, 0.5f, 0.9f});
-        guiWidgetInputSetTextColor(GUI_ID_DOCTOR_INPUT_ADVICE, (vec4){0.26f, 0.26f, 0.26f, 1.0f});
-        guiWidgetInputSetLineSize(GUI_ID_DOCTOR_INPUT_ADVICE, 800.0f);
-        guiWidgetInputSetMax(GUI_ID_DOCTOR_INPUT_ADVICE, 0x15);
-
-        // 设置按钮
-        guiWidgetButtonSetText(GUI_ID_DOCTOR_BUTTON_SEND, L"发送");
-        guiWidgetButtonSetPos(GUI_ID_DOCTOR_BUTTON_SEND, 400, -250, 200, 100);
-        guiWidgetButtonSetColor(GUI_ID_DOCTOR_BUTTON_SEND, (vec4){0x0b / 255.0f, 0xe8 / 255.0f, 0x81 / 255.0f, 1.0f}, (vec4){0x05 / 255.0f, 0xc4 / 255.0f, 0x6b / 255.0f, 1.0f});
-        guiWidgetButtonSetBackCall(GUI_ID_DOCTOR_BUTTON_SEND, doctorSend, 0, NULL);
-
-        // 进入医生的Recv模式
-        pthread_t thread;
-        pthread_create(&thread, NULL, doctorWaitThread, NULL);
-        pthread_detach(thread);
+        SUCESS("病人登录成功");
+        doctorInit();
     }
 
     return true;
