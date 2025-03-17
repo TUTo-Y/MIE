@@ -1,14 +1,14 @@
 # 医学图像加密
 
 
-## 环境
+## 环境依赖
 
 |模块|功能|
 |:----:|:----:|
-|stb|用于读取和保存图片，渲染字体|
 |GmSSL|国密算法库|
 |GLFW|窗口管理|
 |cglm|矩阵计算|
+|stb|用于读取和保存图片，渲染字体|
 |OpenGL|渲染界面, 基于OpenGL的核心渲染模式|
 |glad|OpenGL的加载器生成器|
 
@@ -21,9 +21,7 @@ git init
 git submodule update --init --recursive
 ```
 
-### GLAD
-
-在[glad在线网站](https://glad.dav1d.de/)下载，选择OpenGL3.3的core模式
+GLAD需要在[glad在线网站](https://glad.dav1d.de/)下载，选择OpenGL3.3的core模式
 
 ### 编译
 
@@ -32,7 +30,7 @@ git submodule update --init --recursive
 ```sh
 mkdir build
 cd build
-cmake -G "MinGW Makefiles" -DWIN32=ON ..
+cmake -G "MinGW Makefiles" ..
 make
 ```
 
@@ -41,7 +39,7 @@ make
 ```sh
 mkdir build
 cd build
-cmake -G "NMake Makefiles" -DWIN32=ON ..
+cmake -G "NMake Makefiles" ..
 nmake
 ```
 
