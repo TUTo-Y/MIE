@@ -11,7 +11,14 @@
 
 #include <glad.h>
 #include <cglm/cglm.h>
-#include <GLFW/glfw3.h>
+
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <windows.h>
+#include <Commctrl.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <glfw/glfw3.h>
+#include <glfw/glfw3native.h>
 
 
 #include "log.h"
@@ -38,11 +45,14 @@
 #include "gui_widget_mousemove.h"
 #include "gui_widget_loginback.h"
 #include "gui_widget_login_choice.h"
-#include "gui_widget_patient_bigchoice.h"
 #include "gui_widget_img.h"
 #include "gui_widget_wait.h"
 #include "gui_widget_text.h"
-#include "gui_widget_doctor_wait.h"
+#include "gui_widget_img_choice.h"
+
+extern HWND hEdit;  // 编辑框句柄
+extern HWND hEdit2;  // 编辑框句柄
+extern HFONT hFont; // 字体句柄
 
 bool guiInit();
 

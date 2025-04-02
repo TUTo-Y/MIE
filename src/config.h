@@ -63,6 +63,10 @@ typedef struct
     char wait_gif_path[PATH_MAX]; // 等待动画路径
     char wait_gif_vert[PATH_MAX]; // 等待动画顶点着色器
     char wait_gif_frag[PATH_MAX]; // 等待动画片段着色器
+
+    char waste_icon_path[PATH_MAX]; // 垃圾桶图标路径
+    char edit_icon_path[PATH_MAX];  // 编辑图标路径
+    char add_icon_path[PATH_MAX];   // 添加图标路径
 } cfg;
 
 extern cfg config;

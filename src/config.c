@@ -36,6 +36,9 @@ cfg config = {
     .wait_gif_path = "resource\\wait.gif",
     .wait_gif_vert = "resource\\wait.vert",
     .wait_gif_frag = "resource\\wait.frag",
+    .waste_icon_path = "resource\\waste.png",
+    .edit_icon_path = "resource\\edit.png",
+    .add_icon_path = "resource\\add.png"
 };
 
 bool confInit(const char *configFile)
@@ -90,6 +93,9 @@ bool confInit(const char *configFile)
         fprintf(fp, "wait_gif_path = %s\n", config.wait_gif_path);
         fprintf(fp, "wait_gif_vert = %s\n", config.wait_gif_vert);
         fprintf(fp, "wait_gif_frag = %s\n", config.wait_gif_frag);
+        fprintf(fp, "waste_icon_path = %s\n", config.waste_icon_path);
+        fprintf(fp, "edit_icon_path = %s\n", config.edit_icon_path);
+        fprintf(fp, "add_icon_path = %s\n", config.add_icon_path);
 
         fclose(fp);
         return true;
@@ -290,6 +296,21 @@ bool confInit(const char *configFile)
         else if (strcmp(key, "wait_gif_frag") == 0)
         {
             strcpy(config.wait_gif_frag, value);
+            continue;
+        }
+        else if (strcmp(key, "waste_icon_path") == 0)
+        {
+            strcpy(config.waste_icon_path, value);
+            continue;
+        }
+        else if (strcmp(key, "edit_icon_path") == 0)
+        {
+            strcpy(config.edit_icon_path, value);
+            continue;
+        }
+        else if (strcmp(key, "add_icon_path") == 0)
+        {
+            strcpy(config.add_icon_path, value);
             continue;
         }
         else

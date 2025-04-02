@@ -1,5 +1,9 @@
 #include "gui.h"
 
+HWND hEdit = NULL; // 编辑框句柄
+HWND hEdit2 = NULL; // 编辑框句柄
+HFONT hFont = NULL; // 字体句柄
+
 vec4 default_color = {0.9f, 0.9f, 0.95f, 1.0f};
 
 bool guiInit()

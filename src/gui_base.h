@@ -8,9 +8,10 @@
 #define WINDOW_WIDTH 1500
 #define WINDOW_HEIGHT 954
 
-
 #define WINDOW_POS_2_GL_POS_x(x, W) (-((W / 2) - (x)))
 #define WINDOW_POS_2_GL_POS_y(y, H) ((H / 2) - (y))
+#define GL_POS_2_WINDOW_POS_x(x, W) ((W / 2) + (x))
+#define GL_POS_2_WINDOW_POS_y(y, H) ((H / 2) - (y))
 
 #define PI 3.14159265358979323846
 
@@ -18,7 +19,6 @@
 
 // 设置默认视图
 #define GUI_SET_DEFAULT_VIEWPORT() glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
-
 
 // 默认清屏颜色
 extern vec4 default_color;
@@ -64,6 +64,12 @@ static inline void guiRectCopy(GUIrect *src, GUIrect *dst)
     dst->y = src->y;
     dst->width = src->width;
     dst->height = src->height;
+}
+
+// 检查点是否在矩形内(中心坐标)
+static inline bool guiCheckPosInRect(GUIrect *dst, double x, double y)
+{
+    return x >= dst->x && x <= dst->x + dst->width && y <= dst->y && y >= dst->y - dst->height;
 }
 
 #endif // GUI_BASE_H

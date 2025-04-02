@@ -7,9 +7,10 @@
 #include <locale.h>
 #include <stdbool.h>
 
-#include "gui.h"
+#include "gui_type.h"
 #include "gui_str.h"
 #include "gui_draw.h"
+#include "gui_ID.h"
 
 #define GUI_WIDGET_BUTTON_STATUS_SELECT 0x01 // 选中状态
 #define GUI_WIDGET_BUTTON_STATUS_ENTER 0x02  // 鼠标进入状态

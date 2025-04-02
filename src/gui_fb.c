@@ -25,7 +25,7 @@ GUIfb guiFbCreate(int width, int height)
     // 检查帧缓冲是否完整
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
-        ERR("帧缓冲创建失败:帧缓冲不完整!");
+        ERR("帧缓冲创建失败:帧缓冲不完整\n");
         glDeleteFramebuffers(1, &fb->fbo);
         glDeleteRenderbuffers(1, &fb->rbo);
         free(fb);

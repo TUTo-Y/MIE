@@ -46,4 +46,10 @@ GLuint guiTextureCreate2Gary(const unsigned char *data, int width, int height);
  */
 GLuint guiTextureCreateEmpty(int width, int height, GLint textureFormat);
 
+static inline GLuint guiTextureCreateEmpty2()
+{
+    uint64_t color = 0L;
+    return guiTextureCreate2Gary((unsigned char*)&color, 1, 1);
+}
+
 #endif // GUI_TEXTURE_H

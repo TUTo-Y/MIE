@@ -9,7 +9,10 @@
 #include "gui_type.h"
 #include "gui_ID.h"
 #include "gui_control.h"
-#include "gui.h"
+
+#include "gui_frame.h"
+#include "gui_task.h"
+
 
 /**
  * \brief 创建一个窗口控件

@@ -4,11 +4,11 @@
 #include "list.h"
 #include "vector.h"
 
-#include "gui_ID.h"
 #include "gui_base.h"
 #include "gui_draw.h"
 #include "gui_str.h"
 #include "gui_type.h"
+#include "gui_ID.h"
 
 #define GUI_WIDGET_LOG_MSG 0   // 消息
 #define GUI_WIDGET_LOG_WARN 1  // 警告

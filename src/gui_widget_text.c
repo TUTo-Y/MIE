@@ -3,10 +3,9 @@
 // 创建和销毁调用函数
 void gui_widget_text_registerCall(GUIid id)
 {
-
-    GUI_ID2WIDGET(id)->data1 = malloc(sizeof(GUIwidgetDoctorWait));
-    GUIwidgetDoctorWait *st = (GUIwidgetDoctorWait *)GUI_ID2WIDGET(id)->data1;
-    memset(st, 0, sizeof(GUIwidgetDoctorWait));
+    GUI_ID2WIDGET(id)->data1 = malloc(sizeof(GUIwidgetText));
+    GUIwidgetText *st = (GUIwidgetText *)GUI_ID2WIDGET(id)->data1;
+    memset(st, 0, sizeof(GUIwidgetText));
 
     mat4 model;
     glm_translate_make(model, (vec3){0.0f, -250.0f, 0.0f});
@@ -15,14 +14,14 @@ void gui_widget_text_registerCall(GUIid id)
 }
 void gui_widget_text_logoffCall(GUIid id)
 {
-    GUIwidgetDoctorWait *st = (GUIwidgetDoctorWait *)GUI_ID2WIDGET(id)->data1;
+    GUIwidgetText *st = (GUIwidgetText *)GUI_ID2WIDGET(id)->data1;
     guiStrDelete(st->str);
     free(st);
 }
 
 bool gui_widget_text_drawCall(GUIid id)
 {
-    GUIwidgetDoctorWait *st = (GUIwidgetDoctorWait *)GUI_ID2WIDGET(id)->data1;
+    GUIwidgetText *st = (GUIwidgetText *)GUI_ID2WIDGET(id)->data1;
     guiStrRender(st->str);
 
     return true;

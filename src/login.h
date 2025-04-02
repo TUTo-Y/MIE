@@ -7,6 +7,12 @@
 #include "patient.h"
 #include "doctor.h"
 
+#include <windows.h>
+#include <Commctrl.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <glfw/glfw3.h>
+#include <glfw/glfw3native.h>
+
 #define LOGIN_WEB_TASK_DOCTOR 1   // 医生
 #define LOGIN_WEB_TASK_PATIENT 2  // 患者
 #define LOGIN_WEB_TASK_LOGIN 4    // 注册

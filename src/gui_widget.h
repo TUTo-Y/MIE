@@ -11,7 +11,9 @@
 
 #include "gui_type.h"
 #include "gui_ID.h"
-#include "gui.h"
+#include "gui_control.h"
+#include "gui_window.h"
+#include "gui_task.h"
 
 /**
  * \brief 注册时初始化一个控件
@@ -51,7 +53,27 @@ GUIid guiWidgetLogoff(GUIid id, bool isDelete);
  * \param drawEvent 绘制优先级
  * \param enable 是否启用
  * \note guiControlAddWidget和guiControlAddCallback的简化版
+ * \note 不是线程安全的
  */
-void guiWidgetToControl(GUIid fid, GUIid id, size_t flag, size_t priorityEvent, size_t drawEvent, bool enable);
+void guiWidgetAddToControl(GUIid fid, GUIid id, size_t flag, size_t priorityEvent, size_t drawEvent, bool enable);
+
+/**
+ * \brief 删除一个控件
+ * \param fid 控制器ID
+ * \param id 控件ID
+ * \note 不是线程安全的
+ */
+static inline void guiWidgetDeleteControl(GUIid fid, GUIid id)
+{
+    guiControlDeleteWidget(GUI_ID2CONTROLP(fid), id);
+}
+
+/**
+ * \brief 设置控件状态
+ * \param id 控件ID
+ * \param flag 控件状态
+ * \param enable 是否启用
+ */
+void guiWidgetSetControl(GUIid id, size_t flag, bool enable);
 
 #endif // GUI_WIDGET_H

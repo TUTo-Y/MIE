@@ -1,6 +1,8 @@
 #ifndef CHOICE_FILE_H
 #define CHOICE_FILE_H
 
-char *choiceImageFile();
+#include <wchar.h>
 
+char *choiceImageFile();
+char *choiceTextFile();
 #endif // CHOICE_FILE_H

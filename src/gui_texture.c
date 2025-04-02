@@ -98,7 +98,7 @@ GLuint guiTextureCreateEmpty(int width, int height, GLint textureFormat)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // 生成纹理
-    glTexImage2D(GL_TEXTURE_2D, 0, textureFormat, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, textureFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
     return texture;
 }

@@ -6,8 +6,10 @@
 #include <stb_image_resize2.h>
 #include <stb_image_write.h>
 
-#include "gui.h"
+#include "gui_type.h"
+#include "gui_str.h"
 #include "gui_draw.h"
+#include "gui_ID.h"
 
 #include "config.h"
 #include "resource.h"

@@ -129,6 +129,11 @@
         "pack.h": "c",
         "doctor.h": "c",
         "gui_widget_doctor_wait.h": "c",
-        "ratio": "c"
+        "ratio": "c",
+        "gui_widget_img_choice.h": "c",
+        "windows.applicationmodel.core.h": "c",
+        "gui_widget_text.h": "c",
+        "commctrl.h": "c",
+        "sm3.h": "c"
     }
 }

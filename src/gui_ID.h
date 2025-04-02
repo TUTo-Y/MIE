@@ -28,33 +28,35 @@ enum
     GUI_ID_LOGIN_BUTTON2, // 登录注册按钮ID
     GUI_ID_LOGIN_CHOICE,  // 注册选择用户医生类型
 
-    GUI_ID_PATIENT_BIGCHOICE,     // 患者界面巨大的加号
-    GUI_ID_PATIENT_IMG,           // 患者界面图像控件
-    GUI_ID_PATIENT_INPUT_NAME,    // 患者界面姓名输入框
-    GUI_ID_PATIENT_INPUT_AGE,     // 患者界面姓名输入框
-    GUI_ID_PATIENT_INPUT_STATE,   // 患者界面描述输入框
-    GUI_ID_PATIENT_BUTTON_CHOICE, // 重新选择图片按钮
-    GUI_ID_PATIENT_BUTTON_UPLOAD, // 上传按钮
+    // 医生和患者公用的图像列表ID
+    GUI_ID_IMG_CHOICE_LIST, // 图像列表ID
 
-    GUI_ID_PATIENT_TEXT_CHECK,    // 患者界面检查文本
-    GUI_ID_PATIENT_BUTTON1_CHECK, // 患者界面检查按钮
-    GUI_ID_PATIENT_BUTTON2_CHECK, // 患者界面检查按钮
+    // 患者控件ID
+    GUI_ID_PATIENT_IMG_IMG1,            // 患者图像, 未嵌入的图像ID
+    GUI_ID_PATIENT_IMG_IMG2,            // 患者图像, 嵌入的图像ID
+    GUI_ID_PATIENT_BUTTON_CHOICE_IMG,   // 患者选择文本按钮
+    GUI_ID_PATIENT_BUTTON_CHOICE_TXET,  // 患者选择文本按钮
+    GUI_ID_PATIENT_BUTTON_IMPLANT_TXET, // 患者嵌入文本按钮
+    GUI_ID_PATIENT_BUTTON_UPLOAD,       // 患者上传按钮ID
 
-    GUI_ID_PATIENT_TEXT_ADVICE,   // 患者界面建议输入框
-    GUI_ID_PATIENT_BUTTON_ADVICE, // 患者界面建议输入框
+    GUI_ID_PATIENT_TEXT_WAIT1, // 患者等待医生接单文本
 
-    GUI_ID_DOCTOR_TEXT_WAIT,    // 医生等待文字
-    GUI_ID_DOCTOR_IMG,          // 医生图像控件
-    GUI_ID_DOCTOR_TEXT_NAME,    // 医生文本控件
-    GUI_ID_DOCTOR_TEXT_AGE,     // 医生文本控件
-    GUI_ID_DOCTOR_TEXT_STATE,   // 医生文本控件
-    GUI_ID_DOCTOR_TEXT_ADVICE,  // 医生文本控件
-    GUI_ID_DOCTOR_INPUT_ADVICE, // 医生建议输入框
-    GUI_ID_DOCTOR_BUTTON_SEND,  // 医生发送按钮
+    GUI_ID_PATIENT_TEXT_ALLOW,    // 患者是否允许医生治疗
+    GUI_ID_PATIENT_BUTTON_ALLOW,  // 患者允许医生接单按钮ID
+    GUI_ID_PATIENT_BUTTON_REFUSE, // 患者拒绝医生接单按钮ID
 
-    GUI_ID_DOCTOR_TEXT_CHECK, // 医生界面检查文本
-    GUI_ID_DOCTOR_BUTTON_YES, // 医生界面是否允许治疗
-    GUI_ID_DOCTOR_BUTTON_NO,  // 医生界面是否允许治疗
+    GUI_ID_PATIENT_TEXT_WAIT2, // 患者等待医生检查文本
+
+    GUI_ID_PATIENT_BUTTON_RESULT, // 患者查看检查结果按钮ID
+
+    // 医生控件ID
+    GUI_ID_DOCTOR_TEXT_WAIT1, // 医生等待接单文本
+
+    GUI_ID_DOCTOR_IMG_IMG,       // 图像
+    GUI_ID_DOCTOR_BUTTON_RESULT, // 医生请求查看病例按钮
+    GUI_ID_DOCTOR_BUTTON_UPLOAD, // 医生上传医嘱按钮
+
+    GUI_ID_DOCTOR_TEXT_ADVICE,    // 医生医嘱提示文本
 
     GUI_ID_END
 };

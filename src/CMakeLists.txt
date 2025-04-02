@@ -43,4 +43,4 @@ add_executable(MIE
     ${SRC_FILES})
 
 # 链接库到可执行文件
-target_link_libraries(MIE PRIVATE glfw cglm opengl32 m pthread gmssl)
+target_link_libraries(MIE PRIVATE glfw cglm opengl32 m pthread gmssl Comctl32)

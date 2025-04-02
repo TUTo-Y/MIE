@@ -1,7 +1,7 @@
 #include "gui_ttf.h"
 
 #define GUI_TTF_FONT_R 3                         // 文字预留空间
-#define GUI_TTF_FONT_INIT 0x100                  // 初始化文字数量
+#define GUI_TTF_FONT_INIT 0x100                  // 初始化文字数量, 由于存在索引bug，暂时先设置0x100字节，不再增加数量，详情见guiFontGet()函数
 #define GUI_TTF_FONT_ADD (GUI_TTF_FONT_INIT * 2) // 每次添加文字数量
 
 GUIttf *font_default = NULL;
@@ -151,6 +151,7 @@ GUIfont *guiFontGet(GUIttf *ttf, int pixels)
             return font;
         }
     }
+    // bug
 #if 0
     // 没有找到字号则添加
     ttf->fontCount++;
@@ -160,6 +161,9 @@ GUIfont *guiFontGet(GUIttf *ttf, int pixels)
     return &ttf->fontList[ttf->fontCount - 1];
 #else
     ERR("不允许新添加字号\n");
+    ERR("这里的bug是因为GUIstr按照指针索引GUIchar,导致GUIchar重新分配内存后GUIstr指向的内存不再有效\n");
+    ERR("修复时应使用hash索引\n");
+    ERR("我反正懒得改了\n");
     return NULL;
 #endif
 }

@@ -13,9 +13,9 @@ static bool login_choice(size_t flag, void *data)
     CALL(GUI_ID2WIDGET(GUI_ID_LOGINBACK)->eventCall, GUI_ID_LOGINBACK, &event);
 
     // 添加控件
-    guiWidgetToControl(GUI_ID_WINDOW, GUI_ID_LOGIN_CHOICE,
-                       GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
-                       800, 100, true);
+    guiWidgetAddToControl(GUI_ID_WINDOW, GUI_ID_LOGIN_CHOICE,
+                          GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
+                          800, 100, true);
     return true;
 }
 
@@ -157,23 +157,57 @@ void loginWebTask(SOCKET fd, size_t flag, char *data)
 bool loginSuccess(size_t flag, void *data)
 {
     // 删除登录页面
-    guiControlDeleteWidget(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_LOGINBACK);
-    guiControlDeleteWidget(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_LOGIN_USER);
-    guiControlDeleteWidget(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_LOGIN_PASS);
-    guiControlDeleteWidget(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_LOGIN_BUTTON1);
-    guiControlDeleteWidget(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_LOGIN_BUTTON2);
-    guiControlDeleteWidget(GUI_ID2CONTROLP(GUI_ID_WINDOW), GUI_ID_LOGIN_CHOICE);
+    guiWidgetDeleteControl(GUI_ID_WINDOW, GUI_ID_LOGINBACK);
+    guiWidgetDeleteControl(GUI_ID_WINDOW, GUI_ID_LOGIN_USER);
+    guiWidgetDeleteControl(GUI_ID_WINDOW, GUI_ID_LOGIN_PASS);
+    guiWidgetDeleteControl(GUI_ID_WINDOW, GUI_ID_LOGIN_BUTTON1);
+    guiWidgetDeleteControl(GUI_ID_WINDOW, GUI_ID_LOGIN_BUTTON2);
+    guiWidgetDeleteControl(GUI_ID_WINDOW, GUI_ID_LOGIN_CHOICE);
+
+
+    // // 创建文本输入框控件
+    // HINSTANCE hInstance = GetModuleHandle(NULL);
+    // HWND hEdit = CreateWindowEx(
+    //     WS_EX_CLIENTEDGE, // 添加凹陷边框
+    //     "EDIT",
+    //     "",
+    //     WS_CHILD | WS_BORDER | ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL,
+    //     50, 50,
+    //     500, 200,
+    //     glfwGetWin32Window(guiIDGet(GUI_ID_WINDOW)->win.window),
+    //     NULL,
+    //     hInstance,
+    //     NULL);
+
+    // // 设置字体
+    // HFONT hFont = CreateFont(
+    //     18, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+    //     DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+    //     DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, "Segoe UI");
+    // SendMessage(hEdit, WM_SETFONT, (WPARAM)hFont, TRUE);
+
+    // // 显示控件
+    // ShowWindow(hEdit, SW_SHOW);
+    // UpdateWindow(hEdit);
+
+    // // 销毁控件
+    // DestroyWindow(hEdit);
+    // // 销毁字体
+    // DeleteObject(hFont);
+    
 
     // 患者登录
     if (flag == WEB_MSG_LOGIN_PATIENT)
     {
-        SUCESS("患者登录成功");
+        SUCESS("患者登录成功\n");
+
         patientInit();
     }
     // 医生登录
     else if (flag == WEB_MSG_LOGIN_DOCTOR)
     {
-        SUCESS("病人登录成功");
+        SUCESS("病人登录成功\n");
+
         doctorInit();
     }
 

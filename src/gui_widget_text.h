@@ -7,10 +7,11 @@
 #include <locale.h>
 #include <stdbool.h>
 
-#include "gui.h"
 #include "gui_str.h"
 #include "gui_draw.h"
 #include "stb_image.h"
+#include "gui_ID.h"
+
 
 typedef struct
 {

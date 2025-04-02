@@ -7,7 +7,6 @@
 
 #include "gui_type.h"
 #include "gui_ID.h"
-#include "gui.h"
 
 /**
  * \brief 控制器回调函数优先级比较回调函数

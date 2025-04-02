@@ -7,9 +7,10 @@
 #include <locale.h>
 #include <stdbool.h>
 
-#include "gui.h"
+#include "gui_type.h"
 #include "gui_str.h"
 #include "gui_draw.h"
+#include "gui_ID.h"
 
 #define GUI_WIDGET_INPUT_PASSWD 0x1 // 使用密码模式
 #define GUI_WIDGET_INPUT_FOCUS 0x2  // 获得焦点

@@ -93,7 +93,7 @@ void webAddTask(enum WEB_TASK TaskFlag, void (*func)(SOCKET fd, size_t flag, cha
  */
 static inline void webSendFlag(SOCKET fd, FLAG flag)
 {
-    send(fd, (const char *)&flag, sizeof(FLAG), 0);
+    assert(send(fd, (const char *)&flag, sizeof(FLAG), 0) == sizeof(FLAG)); // 断开连接不发送
 }
 
 /**

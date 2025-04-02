@@ -13,7 +13,8 @@
 
 #include "gui_type.h"
 #include "gui_ID.h"
-#include "gui.h"
+#include "gui_str.h"
+#include "gui_draw.h"
 
 bool gui_widget_mousemove_eventCall(GUIid id, const GUIevent *event);
 
