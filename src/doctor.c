@@ -85,7 +85,7 @@ void doctorInit()
     // 等待文本
     guiWidgetAddToControl(GUI_ID_WINDOW, GUI_ID_DOCTOR_TEXT_WAIT1, GUI_WIDGET_CALLFLAG_DRAW, 800, 100, true);
     str = guiWidgetTextGetStr(GUI_ID_DOCTOR_TEXT_WAIT1);
-    guiStrCpy(str, L"正在患者...");
+    guiStrCpy(str, L"正在等待患者...");
     glm_translate_make(model, (vec3){0.0f, 280.0f, 0.0f});
     guiStrSetModel(str, model);
 
@@ -107,8 +107,8 @@ void doctorInit()
     // 解密按钮控件
     guiWidgetAddToControl(GUI_ID_WINDOW, GUI_ID_DOCTOR_BUTTON_RESULT, GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
                           800, 100, false);
-    guiWidgetButtonSetText(GUI_ID_DOCTOR_BUTTON_RESULT, L"解密文本");
-    guiWidgetButtonSetColor(GUI_ID_DOCTOR_BUTTON_RESULT, (vec4){0xe4 / 255.0f, 0xf9 / 255.0f, 0xf5 / 255.0f, 1.0f}, (vec4){0x30 / 255.0f, 0xe3 / 255.0f, 0xca / 255.0f, 1.0f});
+    guiWidgetButtonSetText(GUI_ID_DOCTOR_BUTTON_RESULT, L"解密病历");
+    guiWidgetButtonSetColor(GUI_ID_DOCTOR_BUTTON_RESULT, (vec4){0x02 / 255.0f, 0xAA / 255.0f, 0xB0 / 255.0f, 1.0f}, (vec4){0x00 / 255.0f, 0xCD / 255.0f, 0xAC / 255.0f, 1.0f});
     guiWidgetButtonSetPos(GUI_ID_DOCTOR_BUTTON_RESULT, -200.0f, 416.0f - 300.0f - 120.0f - 200.0f - 20.0f, 300.0f, 80.0f);
     guiWidgetButtonSetBackCall(GUI_ID_DOCTOR_BUTTON_RESULT, DoctorButtonBackCall, 0, NULL);
 
@@ -116,7 +116,7 @@ void doctorInit()
     guiWidgetAddToControl(GUI_ID_WINDOW, GUI_ID_DOCTOR_BUTTON_UPLOAD, GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
                           800, 100, false);
     guiWidgetButtonSetText(GUI_ID_DOCTOR_BUTTON_UPLOAD, L"上传医嘱");
-    guiWidgetButtonSetColor(GUI_ID_DOCTOR_BUTTON_UPLOAD, (vec4){0xe4 / 255.0f, 0xf9 / 255.0f, 0xf5 / 255.0f, 1.0f}, (vec4){0x30 / 255.0f, 0xe3 / 255.0f, 0xca / 255.0f, 1.0f});
+    guiWidgetButtonSetColor(GUI_ID_DOCTOR_BUTTON_UPLOAD, (vec4){0x02 / 255.0f, 0xAA / 255.0f, 0xB0 / 255.0f, 1.0f}, (vec4){0x00 / 255.0f, 0xCD / 255.0f, 0xAC / 255.0f, 1.0f});
     guiWidgetButtonSetPos(GUI_ID_DOCTOR_BUTTON_UPLOAD, 250.0f, 416.0f - 300.0f - 120.0f - 200.0f - 20.0f, 300.0f, 80.0f);
     guiWidgetButtonSetBackCall(GUI_ID_DOCTOR_BUTTON_UPLOAD, DoctorButtonBackCall, 0, NULL);
 
@@ -377,243 +377,3 @@ void *doctorWait2Thread(void *data)
     }
     upload = true;
 }
-
-// void *doctorWaitThread(void *data)
-// {
-//     // 告诉服务器进入医生的Recv模式
-//     webSendFlag(sockfd, WEB_MSG_DOCTOR_WAIT);
-
-//     // 等待服务器的消息
-//     while (webRecvFlag(sockfd) != WEB_MSG_DOCTOR_MSG)
-//         ;
-
-//     // 接受图像
-//     size_t wh = webRecvFlag(sockfd);
-//     download.w = wh >> 32;
-//     download.h = wh & 0xffffffff;
-//     uint8_t *img1 = (uint8_t *)webRecvData(sockfd, NULL, NULL);
-//     uint8_t *img2 = (uint8_t *)webRecvData(sockfd, NULL, NULL);
-//     int mSize = (int)webRecvFlag(sockfd);
-//     uint8_t *m = (uint8_t *)webRecvData(sockfd, NULL, NULL);
-
-//     // 接受key1
-//     size_t key1;
-//     ENCkem kem = (ENCkem)webRecvData(sockfd, NULL, NULL);
-//     uint8_t *key = encKEMDec(kem, &keyClient);
-//     key1 = *(uint64_t *)key;
-//     free(key);
-//     encKEMFree(kem);
-
-//     // test
-//     DEBUG("key1 : ");
-//     putbin2hex((uint8_t *)&key1, sizeof(key1), stdout);
-//     DEBUG("");
-
-//     // 使用key1解密图像
-//     rdhCombineImage((uint8_t *)img1, (uint8_t *)img2, download.w * download.h, (uint8_t **)&download.img);
-//     rdhUnshuffleImage((uint8_t *)download.img, download.w * download.h, key1);
-
-//     // 提取图像数据信息
-//     char *buf;
-//     if (rdhExtractData(img1, img2, download.w, download.h, m, mSize, (uint8_t **)&buf) == RDH_ERROR)
-//     {
-//         guiWidgetLogAddMsg(GUI_ID_LOG, L"提取数据失败", GUI_WIDGET_LOG_ERROR);
-//         return NULL;
-//     }
-//     memcpy((void *)&download.pack, buf, sizeof(PACKbuf));
-
-//     free(img1);
-//     free(img2);
-//     free(m);
-//     free(buf);
-
-//     // 添加任务进入医生检查界面
-//     guiTaskAddTask(doctorCheckTask, 0, NULL);
-
-//     return NULL;
-// }
-
-// // 医生检查任务
-// bool doctorCheckTask(size_t flag, void *data)
-// {
-//     // 禁用控件
-//     guiWidgetSetControl(GUI_ID_WAIT, GUI_WIDGET_CALLFLAG_DRAW, false);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_WAIT, GUI_WIDGET_CALLFLAG_DRAW, false);
-
-//     // 设置控件
-//     guiWidgetImgSetRect(GUI_ID_DOCTOR_IMG, (GUIrect){-250.0f, 400.0f, 500.0f, 500.0f});
-//     guiWidgetImgSetTexture(GUI_ID_DOCTOR_IMG, (unsigned char *)download.img, download.w, download.h);
-
-//     // 启用控件
-//     guiWidgetSetControl(GUI_ID_DOCTOR_IMG, GUI_WIDGET_CALLFLAG_ALL, true);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_CHECK, GUI_WIDGET_CALLFLAG_ALL, true);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_BUTTON_YES, GUI_WIDGET_CALLFLAG_ALL, true);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_BUTTON_NO, GUI_WIDGET_CALLFLAG_ALL, true);
-
-//     return true;
-// }
-
-// void doctorCheckBackcall(GUIid id, size_t flag, void *data)
-// {
-//     // 禁用控件
-//     guiWidgetSetControl(GUI_ID_DOCTOR_IMG, GUI_WIDGET_CALLFLAG_ALL, false);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_CHECK, GUI_WIDGET_CALLFLAG_ALL, false);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_BUTTON_YES, GUI_WIDGET_CALLFLAG_ALL, false);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_BUTTON_NO, GUI_WIDGET_CALLFLAG_ALL, false);
-//     // guiWidgetSetControl(GUI_ID_DOCTOR_IMG, GUI_WIDGET_CALLFLAG_ALL, false);
-//     // guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_CHECK, GUI_WIDGET_CALLFLAG_ALL, false);
-//     // guiWidgetSetControl(GUI_ID_DOCTOR_BUTTON_YES, GUI_WIDGET_CALLFLAG_ALL, false);
-//     // guiWidgetSetControl(GUI_ID_DOCTOR_BUTTON_NO, GUI_WIDGET_CALLFLAG_ALL, false);
-
-//     // 启用控件
-//     guiWidgetSetControl(GUI_ID_WAIT, GUI_WIDGET_CALLFLAG_DRAW, true);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_WAIT, GUI_WIDGET_CALLFLAG_DRAW, true);
-//     // guiWidgetSetControl(GUI_ID_WAIT, GUI_WIDGET_CALLFLAG_DRAW, true);
-//     // guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_WAIT, GUI_WIDGET_CALLFLAG_DRAW, true);
-
-//     if (flag) // 可以治疗
-//     {
-//         // 发送消息
-//         webSendFlag(sockfd, WEB_MSG_DOCTOR_YES);
-
-//         // 进入等待线程2
-//         pthread_t thread;
-//         pthread_create(&thread, NULL, doctorWait2Thread, NULL);
-//         pthread_detach(thread);
-//     }
-//     // 无法治疗
-//     else
-//     {
-//         // 发送消息
-//         webSendFlag(sockfd, WEB_MSG_DOCTOR_NO);
-
-//         memset(&download, 0, sizeof(download));
-
-//         // 进入医生的Recv模式
-//         pthread_t thread;
-//         pthread_create(&thread, NULL, doctorWaitThread, NULL);
-//         pthread_detach(thread);
-//     }
-// }
-
-// bool doctorQuit(size_t flag, void *data)
-// {
-//     memset(&download, 0, sizeof(download));
-
-//     // 进入医生的Recv模式
-//     pthread_t thread;
-//     pthread_create(&thread, NULL, doctorWaitThread, NULL);
-//     pthread_detach(thread);
-// }
-
-// void *doctorWait2Thread(void *t)
-// {
-//     // 患者不接受治疗
-//     if (webRecvFlag(sockfd) == WEB_MSG_DOCTOR_NO)
-//         guiTaskAddTask(doctorQuit, 0, NULL);
-
-//     // 接受key2
-//     uint8_t key2[SM4_KEY_SIZE * 2];
-//     ENCkem kem = (ENCkem)webRecvData(sockfd, NULL, NULL);
-//     uint8_t *key = encKEMDec(kem, &keyClient);
-//     memcpy(key2, key, SM4_KEY_SIZE * 2);
-//     free(key);
-//     encKEMFree(kem);
-
-//     DEBUG("key2 : ");
-//     putbin2hex((uint8_t *)key2, sizeof(key2), stdout);
-//     DEBUG("");
-
-//     // 解密图像数据
-//     PACKbuf packbuf;
-//     size_t packlen = sizeof(PACKbuf);
-//     size_t packlen2;
-//     SM4_CBC_CTX sm4_key;
-//     sm4_cbc_decrypt_init(&sm4_key, &key2[0], &key2[SM4_KEY_SIZE]);
-//     sm4_cbc_decrypt_update(&sm4_key, (uint8_t *)&download.pack, sizeof(PACKbuf), (uint8_t *)&packbuf, &packlen);
-//     sm4_cbc_decrypt_finish(&sm4_key, ((char *)&packbuf) + packlen, &packlen2);
-//     packlen += packlen2;
-//     memcpy(&download.pack, &packbuf, sizeof(PACKbuf));
-
-//     // 添加任务进入医生建议
-//     guiTaskAddTask(doctorAdviceTask, 0, NULL);
-// }
-
-// bool doctorAdviceTask(size_t flag, void *data)
-// {
-//     // 禁用等待控件
-//     guiWidgetSetControl(GUI_ID_WAIT, GUI_WIDGET_CALLFLAG_DRAW, false);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_WAIT, GUI_WIDGET_CALLFLAG_DRAW, false);
-
-//     // 设置控件
-//     guiWidgetImgSetRect(GUI_ID_DOCTOR_IMG, (GUIrect){-640.0f, 400.0f, 500.0f, 500.0f});
-
-//     wchar_t str[0x50];
-//     wcscpy(str, L"姓名: ");
-//     wcscat(str, download.pack.name);
-//     guiStrCpy(guiWidgetTextGetStr(GUI_ID_DOCTOR_TEXT_NAME), str);
-
-//     wcscpy(str, L"年龄: ");
-//     wcscat(str, download.pack.age);
-//     guiStrCpy(guiWidgetTextGetStr(GUI_ID_DOCTOR_TEXT_AGE), str);
-
-//     wcscpy(str, L"描述: ");
-//     wcscat(str, download.pack.state);
-//     guiStrCpy(guiWidgetTextGetStr(GUI_ID_DOCTOR_TEXT_STATE), str);
-
-//     // 清空建议
-//     GUIwidgetInputData *st = (GUIwidgetInputData *)GUI_ID2WIDGET(GUI_ID_DOCTOR_INPUT_ADVICE)->data1;
-//     guiStrCpy(st->textRender, L"");
-//     wcscpy(st->textplain, L"");
-
-//     // 启用控件
-//     guiWidgetSetControl(GUI_ID_DOCTOR_IMG, GUI_WIDGET_CALLFLAG_ALL, true);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_NAME, GUI_WIDGET_CALLFLAG_ALL, true);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_AGE, GUI_WIDGET_CALLFLAG_ALL, true);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_STATE, GUI_WIDGET_CALLFLAG_ALL, true);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_ADVICE, GUI_WIDGET_CALLFLAG_ALL, true);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_INPUT_ADVICE, GUI_WIDGET_CALLFLAG_ALL, true);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_BUTTON_SEND, GUI_WIDGET_CALLFLAG_ALL, true);
-
-//     return true;
-// }
-
-// void doctorSend(GUIid id, size_t flag, void *data)
-// {
-//     // 禁用控件
-//     guiWidgetSetControl(GUI_ID_DOCTOR_IMG, GUI_WIDGET_CALLFLAG_ALL, false);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_NAME, GUI_WIDGET_CALLFLAG_ALL, false);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_AGE, GUI_WIDGET_CALLFLAG_ALL, false);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_STATE, GUI_WIDGET_CALLFLAG_ALL, false);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_ADVICE, GUI_WIDGET_CALLFLAG_ALL, false);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_INPUT_ADVICE, GUI_WIDGET_CALLFLAG_ALL, false);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_BUTTON_SEND, GUI_WIDGET_CALLFLAG_ALL, false);
-
-//     // 启用控件
-//     guiWidgetSetControl(GUI_ID_WAIT, GUI_WIDGET_CALLFLAG_DRAW, true);
-//     guiWidgetSetControl(GUI_ID_DOCTOR_TEXT_WAIT, GUI_WIDGET_CALLFLAG_DRAW, true);
-
-//     // 复制建议
-//     wchar_t *advice = ((GUIwidgetInputData *)GUI_ID2WIDGET(GUI_ID_DOCTOR_INPUT_ADVICE)->data1)->textplain;
-//     wcscpy(download.pack.advice, advice);
-
-//     // 添加建议
-//     guiWidgetLogAddMsg(GUI_ID_LOG, L"感谢您的建议", GUI_WIDGET_LOG_MSG);
-
-//     // 启用发送线程
-//     pthread_t thread;
-//     pthread_create(&thread, NULL, doctorSendThread, NULL);
-//     pthread_detach(thread);
-// }
-
-// void *doctorSendThread(void *data)
-// {
-//     // 发送数据
-//     ENCkem kem = encKEMEnc((uint8_t *)&download.pack.advice, sizeof(download.pack.advice), &keyServer);
-//     webSendData(sockfd, (uint8_t *)kem, encKEMSizeKEM(kem));
-//     encKEMFree(kem);
-
-//     doctorQuit(0, NULL);
-
-//     return NULL;
-// }

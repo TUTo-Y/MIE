@@ -164,43 +164,20 @@ bool loginSuccess(size_t flag, void *data)
     guiWidgetDeleteControl(GUI_ID_WINDOW, GUI_ID_LOGIN_BUTTON2);
     guiWidgetDeleteControl(GUI_ID_WINDOW, GUI_ID_LOGIN_CHOICE);
 
-
-    // // 创建文本输入框控件
-    // HINSTANCE hInstance = GetModuleHandle(NULL);
-    // HWND hEdit = CreateWindowEx(
-    //     WS_EX_CLIENTEDGE, // 添加凹陷边框
-    //     "EDIT",
-    //     "",
-    //     WS_CHILD | WS_BORDER | ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL,
-    //     50, 50,
-    //     500, 200,
-    //     glfwGetWin32Window(guiIDGet(GUI_ID_WINDOW)->win.window),
-    //     NULL,
-    //     hInstance,
-    //     NULL);
-
-    // // 设置字体
-    // HFONT hFont = CreateFont(
-    //     18, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
-    //     DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-    //     DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, "Segoe UI");
-    // SendMessage(hEdit, WM_SETFONT, (WPARAM)hFont, TRUE);
-
-    // // 显示控件
-    // ShowWindow(hEdit, SW_SHOW);
-    // UpdateWindow(hEdit);
-
-    // // 销毁控件
-    // DestroyWindow(hEdit);
-    // // 销毁字体
-    // DeleteObject(hFont);
-    
+    mat4 model;
+    guiWidgetAddToControl(GUI_ID_WINDOW, GUI_ID_TEXT_PATIENT_DOCTOR, GUI_WIDGET_CALLFLAG_DRAW, 800, 100, true);
+    GUIstr **str = guiWidgetTextGetStrP(GUI_ID_TEXT_PATIENT_DOCTOR);
+    guiStrDelete(*str);
+    *str = guiStrCreate(font_default, 32, GUI_STR_MOD_LEFT_TOP, program.font, model, (vec4){0.1f, 0.2f, 0.4f, 1.0f});
+    glm_translate_make(model, (vec3){-700.0f, 450.0f, 0.0f});
+    guiStrSetModel(*str, model);
 
     // 患者登录
     if (flag == WEB_MSG_LOGIN_PATIENT)
     {
         SUCESS("患者登录成功\n");
 
+        guiStrCpy(*str, L"患者端");
         patientInit();
     }
     // 医生登录
@@ -208,6 +185,7 @@ bool loginSuccess(size_t flag, void *data)
     {
         SUCESS("病人登录成功\n");
 
+        guiStrCpy(*str, L"医生端");
         doctorInit();
     }
 

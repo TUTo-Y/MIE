@@ -155,7 +155,8 @@ void guiPlay(GLFWwindow *window)
 
     // 医生和患者公用的图像列表控件
     guiWidgetInit(guiIDRegister(GUI_ID_IMG_CHOICE_LIST), gui_widget_img_choice_registerCall, gui_widget_img_choice_logoffCall, gui_widget_img_choice_loadCall, gui_widget_img_choice_uploadCall, gui_widget_img_choice_drawCall, gui_widget_img_choice_eventCall);
-
+    guiWidgetInit(guiIDRegister(GUI_ID_TEXT_PATIENT_DOCTOR), gui_widget_text_registerCall, gui_widget_text_logoffCall, NULL, NULL, gui_widget_text_drawCall, NULL);
+    
     // 患者控件
     guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_IMG_IMG1), gui_widget_img_registerCall, gui_widget_img_logoffCall, gui_widget_img_loadCall, gui_widget_img_uploadCall, gui_widget_img_drawCall, gui_widget_img_eventCall);
     guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_IMG_IMG2), gui_widget_img_registerCall, gui_widget_img_logoffCall, gui_widget_img_loadCall, gui_widget_img_uploadCall, gui_widget_img_drawCall, gui_widget_img_eventCall);
@@ -178,35 +179,6 @@ void guiPlay(GLFWwindow *window)
     guiWidgetInit(guiIDRegister(GUI_ID_DOCTOR_TEXT_ADVICE), gui_widget_text_registerCall, gui_widget_text_logoffCall, NULL, NULL, gui_widget_text_drawCall, NULL);
     
     
-    // // 患者控件
-    // guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_BIGCHOICE), gui_widget_patient_bigchoice_registerCall, gui_widget_patient_bigchoice_logoffCall, NULL, NULL, gui_widget_patient_bigchoice_drawCall, gui_widget_patient_bigchoice_eventCall);
-    // guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_IMG), gui_widget_img_registerCall, gui_widget_img_logoffCall, gui_widget_img_loadCall, gui_widget_img_uploadCall, gui_widget_img_drawCall, gui_widget_img_eventCall);
-    // guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_INPUT_NAME), gui_widget_input_registerCall, gui_widget_input_logoffCall, gui_widget_input_loadCall, gui_widget_input_uploadCall, gui_widget_input_drawCall, gui_widget_input_eventCall);
-    // guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_INPUT_AGE), gui_widget_input_registerCall, gui_widget_input_logoffCall, gui_widget_input_loadCall, gui_widget_input_uploadCall, gui_widget_input_drawCall, gui_widget_input_eventCall);
-    // guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_INPUT_STATE), gui_widget_input_registerCall, gui_widget_input_logoffCall, gui_widget_input_loadCall, gui_widget_input_uploadCall, gui_widget_input_drawCall, gui_widget_input_eventCall);
-    // guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_BUTTON_CHOICE), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
-    // guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_BUTTON_UPLOAD), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
-    // guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_TEXT_CHECK), gui_widget_text_registerCall, gui_widget_text_logoffCall, NULL, NULL, gui_widget_text_drawCall, NULL);
-    // guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_BUTTON1_CHECK), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
-    // guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_BUTTON2_CHECK), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
-
-    // guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_TEXT_ADVICE), gui_widget_text_registerCall, gui_widget_text_logoffCall, NULL, NULL, gui_widget_text_drawCall, NULL);
-    // guiWidgetInit(guiIDRegister(GUI_ID_PATIENT_BUTTON_ADVICE), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
-
-    // // 医生控件
-    // guiWidgetInit(guiIDRegister(GUI_ID_DOCTOR_TEXT_WAIT), gui_widget_text_registerCall, gui_widget_text_logoffCall, NULL, NULL, gui_widget_text_drawCall, NULL);
-    // guiWidgetInit(guiIDRegister(GUI_ID_DOCTOR_IMG), gui_widget_img_registerCall, gui_widget_img_logoffCall, gui_widget_img_loadCall, gui_widget_img_uploadCall, gui_widget_img_drawCall, gui_widget_img_eventCall);
-    // guiWidgetInit(guiIDRegister(GUI_ID_DOCTOR_TEXT_NAME), gui_widget_text_registerCall, gui_widget_text_logoffCall, NULL, NULL, gui_widget_text_drawCall, NULL);
-    // guiWidgetInit(guiIDRegister(GUI_ID_DOCTOR_TEXT_AGE), gui_widget_text_registerCall, gui_widget_text_logoffCall, NULL, NULL, gui_widget_text_drawCall, NULL);
-    // guiWidgetInit(guiIDRegister(GUI_ID_DOCTOR_TEXT_STATE), gui_widget_text_registerCall, gui_widget_text_logoffCall, NULL, NULL, gui_widget_text_drawCall, NULL);
-    // guiWidgetInit(guiIDRegister(GUI_ID_DOCTOR_TEXT_ADVICE), gui_widget_text_registerCall, gui_widget_text_logoffCall, NULL, NULL, gui_widget_text_drawCall, NULL);
-    // guiWidgetInit(guiIDRegister(GUI_ID_DOCTOR_INPUT_ADVICE), gui_widget_input_registerCall, gui_widget_input_logoffCall, gui_widget_input_loadCall, gui_widget_input_uploadCall, gui_widget_input_drawCall, gui_widget_input_eventCall);
-    // guiWidgetInit(guiIDRegister(GUI_ID_DOCTOR_BUTTON_SEND), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
-
-    // guiWidgetInit(guiIDRegister(GUI_ID_DOCTOR_TEXT_CHECK), gui_widget_text_registerCall, gui_widget_text_logoffCall, NULL, NULL, gui_widget_text_drawCall, NULL);
-    // guiWidgetInit(guiIDRegister(GUI_ID_DOCTOR_BUTTON_YES), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
-    // guiWidgetInit(guiIDRegister(GUI_ID_DOCTOR_BUTTON_NO), gui_widget_button_registerCall, gui_widget_button_logoffCall, gui_widget_button_loadCall, gui_widget_button_uploadCall, gui_widget_button_drawCall, gui_widget_button_eventCall);
-
     /* 将控件添加进窗口 */
 
     // 窗口移动控件
@@ -226,26 +198,26 @@ void guiPlay(GLFWwindow *window)
                           GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_CHAR_MODS | GUI_WIDGET_CALLFLAG_EVENT_KEY | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
                           800, 100, true);
     guiWidgetInputSetDefaultText(GUI_ID_LOGIN_USER, L"请输入用户名");
-    guiWidgetInputSetPos(GUI_ID_LOGIN_USER, (vec3){0.0f, 150.0f, 0.0f});
+    guiWidgetInputSetPos(GUI_ID_LOGIN_USER, (vec3){0.0f, 150.0f - 80.0f, 0.0f});
     // 密码输入框
     guiWidgetAddToControl((winID), GUI_ID_LOGIN_PASS,
                           GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_CHAR_MODS | GUI_WIDGET_CALLFLAG_EVENT_KEY | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
                           800, 100, true);
     guiWidgetInputSetDefaultText(GUI_ID_LOGIN_PASS, L"请输入密码");
     guiWidgetInputSetPasswd(GUI_ID_LOGIN_PASS, true);
-    guiWidgetInputSetPos(GUI_ID_LOGIN_PASS, (vec3){0.0f, 0.0f, 0.0f});
+    guiWidgetInputSetPos(GUI_ID_LOGIN_PASS, (vec3){0.0f, 0.0f - 80.0f, 0.0f});
 
     // 登录按钮
     guiWidgetAddToControl((winID), GUI_ID_LOGIN_BUTTON1, GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
                           800, 100, true);
     guiWidgetButtonSetText(GUI_ID_LOGIN_BUTTON1, L"登录");
-    guiWidgetButtonSetPos(GUI_ID_LOGIN_BUTTON1, -250, -100, 200, 50);
+    guiWidgetButtonSetPos(GUI_ID_LOGIN_BUTTON1, -250, -100 - 80.0f, 200, 50);
     guiWidgetButtonSetBackCall(GUI_ID_LOGIN_BUTTON1, loginBackCall, 0, NULL);
     // 注册按钮
     guiWidgetAddToControl((winID), GUI_ID_LOGIN_BUTTON2, GUI_WIDGET_CALLFLAG_DRAW | GUI_WIDGET_CALLFLAG_EVENT_MOUSE_BUTTON | GUI_WIDGET_CALLFLAG_EVENT_CURSOR_POS,
                           800, 100, true);
     guiWidgetButtonSetText(GUI_ID_LOGIN_BUTTON2, L"注册");
-    guiWidgetButtonSetPos(GUI_ID_LOGIN_BUTTON2, 50, -100, 200, 50);
+    guiWidgetButtonSetPos(GUI_ID_LOGIN_BUTTON2, 50, -100 - 80.0f, 200, 50);
     guiWidgetButtonSetBackCall(GUI_ID_LOGIN_BUTTON2, registerBackCall, 0, NULL);
 
     // 开始渲染

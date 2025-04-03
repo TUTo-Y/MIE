@@ -29,7 +29,8 @@ enum
     GUI_ID_LOGIN_CHOICE,  // 注册选择用户医生类型
 
     // 医生和患者公用的图像列表ID
-    GUI_ID_IMG_CHOICE_LIST, // 图像列表ID
+    GUI_ID_IMG_CHOICE_LIST,     // 图像列表ID
+    GUI_ID_TEXT_PATIENT_DOCTOR, // 医生患者文本ID
 
     // 患者控件ID
     GUI_ID_PATIENT_IMG_IMG1,            // 患者图像, 未嵌入的图像ID
@@ -56,7 +57,7 @@ enum
     GUI_ID_DOCTOR_BUTTON_RESULT, // 医生请求查看病例按钮
     GUI_ID_DOCTOR_BUTTON_UPLOAD, // 医生上传医嘱按钮
 
-    GUI_ID_DOCTOR_TEXT_ADVICE,    // 医生医嘱提示文本
+    GUI_ID_DOCTOR_TEXT_ADVICE, // 医生医嘱提示文本
 
     GUI_ID_END
 };

@@ -39,6 +39,14 @@ typedef struct
     int movDX, movDY; // 要移动的目标
     double animTime;  // 动画时间
 
+    // logo
+    GLuint logoVAO, logoVBO, logoEBO; // logo VAO VBO EBO
+    GLuint logoTex;                   // logo纹理
+    mat4 logoModel;                   // logo模型
+
+    // 标题
+    GUIttf *titleTTF; // 字体
+    GUIstr *title;    // 标题
 } gui_widget_loginback_struct;
 
 void gui_widget_loginback_registerCall(GUIid id); // 注册控件时的函数

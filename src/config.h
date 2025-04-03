@@ -67,6 +67,10 @@ typedef struct
     char waste_icon_path[PATH_MAX]; // 垃圾桶图标路径
     char edit_icon_path[PATH_MAX];  // 编辑图标路径
     char add_icon_path[PATH_MAX];   // 添加图标路径
+
+    char logo_icon_path[PATH_MAX]; // logo图标路径
+    
+    char title_ttf_path[PATH_MAX]; // 标题字体路径
 } cfg;
 
 extern cfg config;

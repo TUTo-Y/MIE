@@ -51,11 +51,60 @@ void gui_widget_loginback_registerCall(GUIid id)
 
     // 设置图标位置
     mat4 model = GLM_MAT4_IDENTITY_INIT;
-    glm_translate_make(model, (vec3){-300, 160, 0});
+    glm_translate_make(model, (vec3){-300, 160 - 80.0f, 0});
     guiDrawIconSetModel(st->user, model);
     glm_translate(model, (vec3){0, -160, 0});
     guiDrawIconSetModel(st->pass, model);
     st->drawIcon = true;
+
+    // 加载logo
+    {
+        float vertex[] = {
+            -1.0f, 1.0f, 0.0f, 1.0f,
+            1.0f, 1.0f, 1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f, 0.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f};
+        unsigned int indices[] = {
+            0, 1, 2,
+            0, 2, 3};
+        
+        glGenVertexArrays(1, &st->logoVAO);
+        glGenBuffers(1, &st->logoVBO);
+        glGenBuffers(1, &st->logoEBO);
+        glBindVertexArray(st->logoVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, st->logoVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, st->logoEBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+
+        unsigned char *logo_data = stbi_load(config.logo_icon_path, &width, &height, &nrChannels, 4);
+        st->logoTex = guiTextureCreate(logo_data, width, height, 4, GL_RGBA);
+        
+        glm_translate_make(st->logoModel, (vec3){-650.0f, 377.0f, 0.0f});
+        glm_scale(st->logoModel, (vec3){100.0f, 100.0f, 1.0f});
+
+        GLFWimage icon[1];
+        icon[0].pixels = logo_data;
+        icon[0].width = width;
+        icon[0].height = height;
+        glfwSetWindowIcon(GUI_GETWINDOW()->window, 1, icon);
+        glfwSetWindowTitle(GUI_GETWINDOW()->window, "MIE - 医学图像加密测试系统");
+
+        stbi_image_free(logo_data);
+    }
+
+    // 加载字体
+    {
+        mat4 model = GLM_MAT4_IDENTITY_INIT;
+        glm_translate_make(model, (vec3){0.0f, 260.0f - 10.0f, 0});
+        st->titleTTF = guiTTFCreate(resGetFile(config.title_ttf_path, NULL, NULL, false), 72, 0);
+        st->title = guiStrCreate(st->titleTTF, 72, GUI_STR_MOD_CENTER, program.font, model, (vec4){0.1f, 0.1f, 0.1f, 1.0f});
+        guiStrCpy(st->title, L"隐图云诊");
+    }
 }
 void gui_widget_loginback_logoffCall(GUIid id)
 {
@@ -74,6 +123,16 @@ void gui_widget_loginback_logoffCall(GUIid id)
     // 释放内存
     guiDrawRTDestroy(st->loginback);
     guiDrawRRTDestroy(st->loginbackr2);
+
+    // 释放logo
+    glDeleteVertexArrays(1, &st->logoVAO);
+    glDeleteBuffers(1, &st->logoVBO);
+    glDeleteBuffers(1, &st->logoEBO);
+    glDeleteTextures(1, &st->logoTex);
+
+    // 释放文字
+    guiStrDelete(st->title);
+    guiTTFDelete(st->titleTTF);
 
     // 释放内存
     free(st);
@@ -138,7 +197,6 @@ bool gui_widget_loginback_drawCall(GUIid id)
         int tmp;
         st->movX += (tmp = st->movDX - st->movX) ? tmp / 2 + 1 : 0;
         st->movY += (tmp = st->movDY - st->movY) ? tmp / 2 + 1 : 0;
-        // st->movY += (st->movDY - st->movY) / 2 + 1;
 
         // 设置loginback
         mat4 model = GLM_MAT4_IDENTITY_INIT;
@@ -167,6 +225,20 @@ bool gui_widget_loginback_drawCall(GUIid id)
 
     st->animTime = glfwGetTime();
 
+    // 渲染logo
+    guiShaderUse(program.wait_gif);
+    guiShaderUniformMatrix(program.wait_gif, "model", 4fv, (float *)st->logoModel);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, st->logoTex);
+
+    glBindVertexArray(st->logoVAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+
+    // 渲染标题
+    guiStrRender(st->title);
+
     return true;
 }
 
@@ -176,7 +248,6 @@ bool gui_widget_loginback_eventCall(GUIid id, const GUIevent *event)
     gui_widget_loginback_struct *st = (gui_widget_loginback_struct *)GUI_ID2WIDGET(id)->data1;
     if (event->type == GUI_EVENT_TYPE_CURSOR_POS)
     {
-
         st->movDX = -(event->CursorPos.xpos / (WINDOW_WIDTH / 2.0f)) * st->disW;
         st->movDY = -(event->CursorPos.ypos / (WINDOW_HEIGHT / 2.0f)) * st->disH;
     }

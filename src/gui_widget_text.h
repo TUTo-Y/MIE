@@ -12,7 +12,6 @@
 #include "stb_image.h"
 #include "gui_ID.h"
 
-
 typedef struct
 {
     GUIstr *str; // 文本
@@ -27,6 +26,11 @@ bool gui_widget_text_drawCall(GUIid id); // 绘制, 返回值为是否继续调�
 static inline GUIstr *guiWidgetTextGetStr(GUIid id)
 {
     return ((GUIwidgetText *)GUI_ID2WIDGET(id)->data1)->str;
+}
+
+static inline GUIstr **guiWidgetTextGetStrP(GUIid id)
+{
+    return &((GUIwidgetText *)GUI_ID2WIDGET(id)->data1)->str;
 }
 
 #endif // GUI_WIDGET_TEXT_H
